@@ -1,0 +1,49 @@
+{
+  "skill_id": "antigravity-awesome-skills-main::clerk-auth",
+  "name": "clerk-auth",
+  "title": "Clerk Authentication",
+  "summary": "Expert patterns for Clerk auth implementation, middleware, organizations, webhooks, and user sync Use when: adding authentication, clerk auth, user authentication, sign in, sign up.",
+  "category": {
+    "l1": "E. 平台配置与运行支撑",
+    "l2": "E1. 平台配置与安装",
+    "l3": "E1-1. 配置、部署与运行支撑"
+  },
+  "usage_category": {
+    "usage_method": "知识治理与持续学习",
+    "family": "知识治理类",
+    "domain": "技能治理与持续学习"
+  },
+  "capability_type": "支撑能力",
+  "priority": "P1",
+  "integration_phase": "中期",
+  "asset_status": "可执行技能",
+  "status": "registered",
+  "review_status": "ready",
+  "source_origin": "antigravity-awesome-skills-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/clerk-auth/SKILL.md",
+  "language_hint": "en",
+  "vcp_mapping": [
+    "PluginBridge",
+    "WorkflowEngine"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": true,
+  "executable_level": "stub",
+  "duplicate_group": "",
+  "issue_flags": [],
+  "recommended_action": "纳入标准化台账并继续评估",
+  "tags": [
+    "E. 平台配置与运行支撑",
+    "E1. 平台配置与安装",
+    "P1",
+    "antigravity-awesome-skills-main",
+    "lang:en",
+    "taskflow:执行与编排",
+    "支撑能力"
+  ],
+  "version": "0.1.0-draft",
+  "taskflow_category": "执行与编排",
+  "canonical_group": "clerk-auth",
+  "canonical_selection_reason": "无重复候选，直接保留",
+  "canonical": true
+}

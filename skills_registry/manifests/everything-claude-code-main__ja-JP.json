@@ -1,0 +1,48 @@
+{
+  "skill_id": "everything-claude-code-main::ja-JP",
+  "name": "ja-JP",
+  "title": "Everything Claude Code",
+  "summary": "",
+  "category": {
+    "l1": "Z. 待确认",
+    "l2": "Z1. 待补充分析",
+    "l3": "Z1-1. 未识别技能"
+  },
+  "usage_category": {
+    "usage_method": "专项领域技能",
+    "family": "专项场景类",
+    "domain": "未归一专项方向"
+  },
+  "capability_type": "通用能力",
+  "priority": "P1",
+  "integration_phase": "中期",
+  "asset_status": "待确认技能说明",
+  "status": "registered",
+  "review_status": "needs_review",
+  "source_origin": "everything-claude-code-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/docs/ja-JP/README.md",
+  "language_hint": "unknown",
+  "vcp_mapping": [
+    "PluginBridge"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": false,
+  "executable_level": "metadata_only",
+  "duplicate_group": "",
+  "issue_flags": [
+    "待确认分类",
+    "缺少描述",
+    "非标准技能文件"
+  ],
+  "recommended_action": "补充读取内容后再分类",
+  "tags": [
+    "everything-claude-code-main",
+    "P1",
+    "通用能力",
+    "Z. 待确认",
+    "Z1. 待补充分析",
+    "lang:unknown"
+  ],
+  "version": "0.1.0-draft",
+  "canonical": true
+}

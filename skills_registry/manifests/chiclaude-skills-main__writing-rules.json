@@ -1,0 +1,51 @@
+{
+  "skill_id": "chiclaude-skills-main::writing-rules",
+  "name": "writing-rules",
+  "title": "编写 Hookify 规则",
+  "summary": "",
+  "category": {
+    "l1": "E. 平台配置与运行支撑",
+    "l2": "E1. 平台配置与安装",
+    "l3": "E1-1. 配置、部署与运行支撑"
+  },
+  "usage_category": {
+    "usage_method": "输出与交付",
+    "family": "产出交付类",
+    "domain": "写作表达与最终交付"
+  },
+  "capability_type": "支撑能力",
+  "priority": "P1",
+  "integration_phase": "中期",
+  "asset_status": "可执行技能",
+  "status": "registered",
+  "review_status": "ready",
+  "source_origin": "chiclaude-skills-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/anthropics-claude-plugins-official/plugins/hookify/skills/writing-rules/SKILL.md",
+  "language_hint": "unknown",
+  "vcp_mapping": [
+    "PluginBridge",
+    "WorkflowEngine"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": true,
+  "executable_level": "stub",
+  "duplicate_group": "",
+  "issue_flags": [
+    "缺少描述"
+  ],
+  "recommended_action": "纳入标准化台账并继续评估",
+  "tags": [
+    "E. 平台配置与运行支撑",
+    "E1. 平台配置与安装",
+    "P1",
+    "chiclaude-skills-main",
+    "lang:unknown",
+    "taskflow:执行与编排",
+    "支撑能力"
+  ],
+  "version": "0.1.0-draft",
+  "taskflow_category": "执行与编排",
+  "canonical_group": "writing-rules",
+  "canonical_selection_reason": "无重复候选，直接保留",
+  "canonical": true
+}

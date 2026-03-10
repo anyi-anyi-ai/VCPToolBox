@@ -1,0 +1,49 @@
+{
+  "skill_id": "antigravity-awesome-skills-main::ml-pipeline-workflow",
+  "name": "ml-pipeline-workflow",
+  "title": "ML Pipeline Workflow",
+  "summary": "Build end-to-end MLOps pipelines from data preparation through model training, validation, and production deployment. Use when creating ML pipelines, implementing MLOps practices, or automating mod...",
+  "category": {
+    "l1": "E. 平台配置与运行支撑",
+    "l2": "E1. 平台配置与安装",
+    "l3": "E1-1. 配置、部署与运行支撑"
+  },
+  "usage_category": {
+    "usage_method": "执行与编排",
+    "family": "执行编排类",
+    "domain": "工作流与协同执行"
+  },
+  "capability_type": "支撑能力",
+  "priority": "P1",
+  "integration_phase": "中期",
+  "asset_status": "可执行技能",
+  "status": "registered",
+  "review_status": "ready",
+  "source_origin": "antigravity-awesome-skills-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/ml-pipeline-workflow/SKILL.md",
+  "language_hint": "en",
+  "vcp_mapping": [
+    "PluginBridge",
+    "WorkflowEngine"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": true,
+  "executable_level": "stub",
+  "duplicate_group": "",
+  "issue_flags": [],
+  "recommended_action": "纳入标准化台账并继续评估",
+  "tags": [
+    "E. 平台配置与运行支撑",
+    "E1. 平台配置与安装",
+    "P1",
+    "antigravity-awesome-skills-main",
+    "lang:en",
+    "taskflow:规划与拆解",
+    "支撑能力"
+  ],
+  "version": "0.1.0-draft",
+  "taskflow_category": "规划与拆解",
+  "canonical_group": "ml-pipeline-workflow",
+  "canonical_selection_reason": "优先中文，其次高价值任务流分类，再保留更稳定的主 skill 路径",
+  "canonical": true
+}

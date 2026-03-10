@@ -1,0 +1,91 @@
+VCP主动调用插件分类说明（执行与操作类）
+
+一、说明目标
+本分类中的工具包含着极其核心的宿主工程与脚本级别的系统影响能力（如目录级写入擦除计算）。执行此部分工具不仅可以获取更精确的运行状态及开发数据，也能够在系统内直接改变用户目录与环境文件。由于其特殊性，调用前务必再三审阅传参安全性！
+
+二、核心重型工具指南
+
+【1. FileOperator】 (VCP 服务器安全高权限文件处理器)
+- tool_name: FileOperator
+- 功能定位: 在后台开放白名单内，提供全能型的读、写、列目录、更新 JSON 及强制覆盖与搜索功能。此工具极其特殊，它内置了针对如 `.pdf`, `.docx`, `.xlsx`, `.csv` 的提取模块，甚至能在执行 ReadFile 时直接解析返回最核心的文本流，不再需要额外的解析转换。
+- 主要命令参数与适用情境:
+  1. `ListDirectory`：摸清未知目录状态，支持显示全部文件。（传 `directoryPath` 绝对路径）
+  2. `ReadFile`：日常检查文件源结构（支持PDF提取），若内容包含网络路径建议改为 `WebReadFile` （后台下载转本地并提取文本）。
+  3. `WriteFile`：安全生成全新文件，**目标路径已被占用时，将放弃覆盖并自动变更为 file(1).txt 保留结果，防篡改首选。**
+  4. `EditFile`：粗暴直接的修改。一旦被激活，目标文本会被以完全替代（覆写）形式消灭，一定要深思熟虑！只能操作原本就存在的文件。
+  5. `WriteEscapedFile`：当你试图写入的文件（例如 `plugin-manifest.json` 或本示例大全时）本身包含了VCP使用的工具标记（`<<<[\u0054OOL_REQUEST]>>>` 和 `「始」「末」`等），避免该次调用被系统自身框架打断的防混淆安全写入方案。（自动替换转义字符为目标字符）
+  6. `SearchFiles`：通过 `searchPath` 和 `pattern` 快速模糊寻找本地路径，免去频繁 ListDirectory 漫游困境。
+  7. `UpdateHistory`：一种专用的热更新对话历史 JSON 安全逻辑，AI可以直接修改自己的废话。（`searchString` & `replaceString`）
+  8. `CreateCanvas`：在服务器落地新文档后顺带推给主界面，弹出一个好看且具有交互性的 Canvas HTML/文档大屏面板。
+- 调用格式范例 (安全写入测试):
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」FileOperator「末」,
+command:「始」WriteFile「末」,
+filePath:「始」H:/VCP/workspace/test.md「末」,
+content:「始」AI自动代笔生成的初始安全大纲。\n\n「末」
+<<<[END_TOOL_REQUEST]>>>
+
+【2. SciCalculator】 (强化科学运算执行器)
+- tool_name: SciCalculator
+- 功能定位: 虽然 Python 原生内置很多功能，但要规避长链或黑盒运行带来的复杂性与不可控风险，这个内置安全边界工具可供处理多段式计算及极复杂微积分函数。
+- 适用功能点:
+  - 包括 `sqrt()`, `asin()`, `variance()`, 甚至 `integral()` 这种能解决不定积分返回 LaTeX 和极限定积分的操作。
+  - 非常适用于面对主人丢出学术题目时的完美算筹，不仅规避了幻觉和算错的尴尬，还能直接引用出准确答案。
+- 调用格式和强制要求:
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」SciCalculator「末」,
+expression:「始」integral('log(x)*sin(x)', '1', 'pi') + variance([3, 5, 8, 1])「末」
+<<<[END_TOOL_REQUEST]>>>
+*注意：公式等需要嵌套的字符串必须用单（双）引号包住！比如 `integral('表达式')`，否则由于参数隔离会导致解析报错失败！*
+
+【3. GitOperator】 (Git 版本库操作器)
+- tool_name: GitOperator
+- 功能定位: 在服务器本地 Git 仓库中执行版本控制操作，如 commit、push、pull、diff、log 等。
+- 注意: 属于高风险操作类插件，Git 操作不可逆性较高，调用前应确认操作对象。
+
+【4. ProjectAnalyst】 (项目结构分析与诊断)
+- tool_name: ProjectAnalyst
+- 功能定位: 分析本地项目的目录结构、依赖关系、代码组织，生成结构化分析报告，辅助开发者快速理解项目全貌。
+
+【5. SkillFactory】 (动态技能工厂)
+- tool_name: SkillFactory
+- 功能定位: 运行时动态创建、注册和管理 AI 技能模块，支持热插拔式的能力扩展。
+
+【6. VCPSkillsBridge】 (VCP 技能桥接器)
+- tool_name: VCPSkillsBridge
+- 功能定位: 连接和调用已注册的 VCP Skills 技能模块，是技能系统的运行时调用入口。
+
+【7. PowerShellExecutor】 (PowerShell 脚本执行器)
+- tool_name: PowerShellExecutor
+- 功能定位: 直接在宿主 Windows 系统上执行 PowerShell 命令或脚本。
+- ⚠️高危警告: 这是一个极其强大且危险的工具，可直接控制操作系统。必须在充分理解命令后果的前提下谨慎使用！
+
+【8. LinuxShellExecutor】 (Linux Shell 脚本执行器)
+- tool_name: LinuxShellExecutor
+- 功能定位: 在 Linux 环境下执行 Shell 命令或 Bash 脚本。
+- ⚠️高危警告: 与 PowerShellExecutor 同级别的危险工具，直接操作底层系统！
+
+【9. ScheduleManager】 (日程任务管理器)
+- tool_name: ScheduleManager
+- 功能定位: 创建、查询、修改和删除日程任务（会议、提醒、待办事项等），支持定时触发。
+
+【10. SemanticGroupEditor】 (语义组编辑器)
+- tool_name: SemanticGroupEditor
+- 功能定位: 对结构化的语义分组数据进行编辑、合并、拆分等操作，用于知识组织和分类管理。
+
+【11. ThoughtClusterManager】 (思维簇管理器)
+- tool_name: ThoughtClusterManager
+- 功能定位: 管理和操作高维思维聚类数据，用于复杂推理和知识图谱式的内容组织。
+
+【12. VCPEverything】 (极速本地文件检索)
+- tool_name: VCPEverything
+- 功能定位: 基于 Everything 搜索引擎的本地文件极速检索，可在毫秒级别完成全盘文件名搜索。
+- 适用场景: 需要快速定位本地某个文件但不确定具体路径时使用。
+
+【13. ChromeBridge】 (浏览器桥接通信)
+- tool_name: ChromeBridge
+- 功能定位: 与外部 Chrome 浏览器建立桥接通信，可能用于网页自动化、截图或数据提取。
+
+【14. LinuxLogMonitor】 (Linux 日志监控)
+- tool_name: LinuxLogMonitor
+- 功能定位: 监控和抓取 Linux 系统日志文件，用于实时故障诊断和系统状态跟踪。

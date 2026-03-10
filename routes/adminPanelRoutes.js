@@ -21,7 +21,485 @@ module.exports = function (DEBUG_MODE, dailyNoteRootPath, pluginManager, getCurr
 
     const adminApiRouter = express.Router();
     const AGENT_FILES_DIR = agentDirPath;
+    const SKILLS_REGISTRY_PATH = path.join(__dirname, '..', 'skills_registry', 'index.json');
+    const SKILLS_RUNTIME_CONFIG_PATH = path.join(__dirname, '..', 'skills_registry', 'runtime_config.json');
+    const WORKSPACE_ROOT = path.resolve(__dirname, '..');
+    const SKILL_PRIORITY_OPTIONS = ['P0', 'P1', 'P2', 'P3'];
     console.log('[AdminPanelRoutes] Agent files directory:', AGENT_FILES_DIR);
+
+    function toWorkspaceRelativePath(filePath) {
+        if (typeof filePath !== 'string' || !filePath.trim()) {
+            return '';
+        }
+
+        const normalizedInput = path.normalize(filePath);
+        const relativePath = path.relative(WORKSPACE_ROOT, normalizedInput);
+
+        if (!relativePath || relativePath.startsWith('..') || path.isAbsolute(relativePath)) {
+            return '[external-path]/' + path.basename(normalizedInput);
+        }
+
+        return relativePath.replace(/\\/g, '/');
+    }
+
+    function sanitizeDuplicateReport(report) {
+        if (!report || typeof report !== 'object') {
+            return {};
+        }
+
+        return Object.fromEntries(
+            Object.entries(report).map(([groupKey, item]) => {
+                const safeItem = item && typeof item === 'object' ? item : {};
+                return [groupKey, {
+                    count: typeof safeItem.count === 'number' ? safeItem.count : 0,
+                    selected_source_path: toWorkspaceRelativePath(safeItem.selected_source_path),
+                    selection_reason: safeItem.selection_reason || '',
+                    candidates: Array.isArray(safeItem.candidates)
+                        ? safeItem.candidates.map(candidate => toWorkspaceRelativePath(candidate)).filter(Boolean)
+                        : [],
+                    canonical_group: safeItem.canonical_group || '',
+                }];
+            })
+        );
+    }
+
+    function sanitizeSkillRegistrySkill(skill, runtimeDefaults = null) {
+        if (!skill || typeof skill !== 'object') {
+            return {};
+        }
+
+        const sourcePath = toWorkspaceRelativePath(skill.source_path);
+        const runtime = skill.runtime && typeof skill.runtime === 'object' ? skill.runtime : {};
+        const usageCategory = skill.usage_category && typeof skill.usage_category === 'object'
+            ? {
+                usage_method: skill.usage_category.usage_method || '',
+                family: skill.usage_category.family || '',
+                domain: skill.usage_category.domain || '',
+            }
+            : null;
+        const defaults = {
+            ...getDefaultRuntimeConfig().defaults,
+            ...(runtimeDefaults && typeof runtimeDefaults === 'object' ? runtimeDefaults : {}),
+        };
+        const enabled = runtime.enabled ?? skill.enabled ?? defaults.enabled;
+        const bridgeEnabled = runtime.bridge_enabled ?? skill.bridge_enabled ?? defaults.bridge_enabled;
+        const recommendable = runtime.recommendable ?? skill.recommendable ?? defaults.recommendable;
+        const deepExecuteEnabled = runtime.deep_execute_enabled ?? skill.deep_execute_enabled ?? defaults.deep_execute_enabled;
+        const effectivePriority = runtime.priority || skill.effective_priority || skill.priority || 'P3';
+
+        return {
+            skill_id: skill.skill_id || '',
+            name: skill.name || '',
+            title: skill.title || '',
+            summary: skill.summary || '',
+            capability_type: skill.capability_type || '',
+            priority: skill.priority || '',
+            effective_priority: effectivePriority,
+            bridgeable: Boolean(skill.bridgeable),
+            bridge_enabled: Boolean(bridgeEnabled),
+            enabled: Boolean(enabled),
+            recommendable: Boolean(recommendable),
+            deep_execute_enabled: Boolean(deepExecuteEnabled),
+            category: skill.category && typeof skill.category === 'object'
+                ? {
+                    l1: skill.category.l1 || '',
+                    l2: skill.category.l2 || '',
+                    l3: skill.category.l3 || '',
+                }
+                : null,
+            usage_category: usageCategory,
+            language_hint: skill.language_hint || '',
+            source_origin: skill.source_origin || '',
+            source_path: sourcePath,
+            source_file: sourcePath ? path.basename(sourcePath) : '',
+            tags: Array.isArray(skill.tags) ? skill.tags : [],
+            vcp_mapping: Array.isArray(skill.vcp_mapping) ? skill.vcp_mapping : [],
+            trigger_mode: skill.trigger_mode || '',
+            version: skill.version || '',
+            runtime: {
+                enabled,
+                priority: runtime.priority || effectivePriority,
+                recommendable,
+                bridge_enabled: bridgeEnabled,
+                deep_execute_enabled: deepExecuteEnabled,
+                status: runtime.status || (enabled ? 'active' : 'disabled'),
+                notes: runtime.notes || '',
+                category: runtime.category || '',
+            },
+        };
+    }
+
+    function sanitizeSkillRegistry(registry, runtimeConfig = null) {
+        const safeRegistry = registry && typeof registry === 'object' ? registry : {};
+        const skills = Array.isArray(safeRegistry.skills) ? safeRegistry.skills : [];
+        const normalizedSkills = runtimeConfig
+            ? skills.map(skill => mergeRuntimeIntoSkill(skill, runtimeConfig))
+            : skills;
+
+        const runtimeDefaults = runtimeConfig?.defaults || null;
+
+        return {
+            version: safeRegistry.version || 'unknown',
+            updatedAt: safeRegistry.updatedAt || null,
+            total: typeof safeRegistry.total === 'number' ? safeRegistry.total : (typeof safeRegistry.registeredTotal === 'number' ? safeRegistry.registeredTotal : normalizedSkills.length),
+            registeredTotal: typeof safeRegistry.registeredTotal === 'number' ? safeRegistry.registeredTotal : normalizedSkills.length,
+            activeTotal: typeof safeRegistry.activeTotal === 'number' ? safeRegistry.activeTotal : undefined,
+            disabledTotal: typeof safeRegistry.disabledTotal === 'number' ? safeRegistry.disabledTotal : undefined,
+            sourceCandidateTotal: typeof safeRegistry.sourceCandidateTotal === 'number' ? safeRegistry.sourceCandidateTotal : undefined,
+            duplicateGroupCount: typeof safeRegistry.duplicateGroupCount === 'number' ? safeRegistry.duplicateGroupCount : undefined,
+            canonicalDecisionSource: toWorkspaceRelativePath(safeRegistry.canonicalDecisionSource),
+            duplicateResolution: safeRegistry.duplicateResolution || '',
+            categories: safeRegistry.categories && typeof safeRegistry.categories === 'object' ? safeRegistry.categories : {},
+            prioritySummary: safeRegistry.prioritySummary && typeof safeRegistry.prioritySummary === 'object' ? safeRegistry.prioritySummary : {},
+            duplicateReport: sanitizeDuplicateReport(safeRegistry.duplicateReport),
+            skills: normalizedSkills.map(skill => sanitizeSkillRegistrySkill(skill, runtimeDefaults)),
+        };
+    }
+
+    function getDefaultRuntimeConfig() {
+        return {
+            version: '1.0.0',
+            updatedAt: new Date().toISOString(),
+            defaults: {
+                enabled: false,
+                recommendable: true,
+                bridge_enabled: true,
+                deep_execute_enabled: false,
+            },
+            summary: {
+                total: 0,
+                activeTotal: 0,
+                disabledTotal: 0,
+                recommendableTotal: 0,
+                bridgeEnabledTotal: 0,
+            },
+            skills: {},
+        };
+    }
+
+    async function loadSkillRegistryRaw() {
+        const raw = await fs.readFile(SKILLS_REGISTRY_PATH, 'utf-8');
+        return JSON.parse(raw);
+    }
+
+    async function loadRuntimeConfigRaw() {
+        try {
+            const raw = await fs.readFile(SKILLS_RUNTIME_CONFIG_PATH, 'utf-8');
+            const parsed = JSON.parse(raw);
+            const defaults = parsed.defaults && typeof parsed.defaults === 'object' ? parsed.defaults : {};
+            return {
+                ...getDefaultRuntimeConfig(),
+                ...parsed,
+                defaults: {
+                    ...getDefaultRuntimeConfig().defaults,
+                    ...defaults,
+                },
+                summary: parsed.summary && typeof parsed.summary === 'object'
+                    ? { ...getDefaultRuntimeConfig().summary, ...parsed.summary }
+                    : { ...getDefaultRuntimeConfig().summary },
+                skills: parsed.skills && typeof parsed.skills === 'object' ? parsed.skills : {},
+            };
+        } catch (error) {
+            if (error.code === 'ENOENT') {
+                return getDefaultRuntimeConfig();
+            }
+            throw error;
+        }
+    }
+
+    function rebuildRuntimeSummary(runtimeConfig, registry) {
+        const skills = Array.isArray(registry?.skills) ? registry.skills : [];
+        const defaults = runtimeConfig?.defaults || getDefaultRuntimeConfig().defaults;
+        let activeTotal = 0;
+        let recommendableTotal = 0;
+        let bridgeEnabledTotal = 0;
+
+        skills.forEach(skill => {
+            const runtime = runtimeConfig.skills?.[skill.skill_id] || {};
+            const enabled = runtime.enabled ?? defaults.enabled ?? false;
+            const recommendable = runtime.recommendable ?? defaults.recommendable ?? true;
+            const bridgeEnabled = runtime.bridge_enabled ?? defaults.bridge_enabled ?? true;
+            if (enabled) activeTotal += 1;
+            if (recommendable) recommendableTotal += 1;
+            if (bridgeEnabled) bridgeEnabledTotal += 1;
+        });
+
+        return {
+            total: skills.length,
+            activeTotal,
+            disabledTotal: Math.max(skills.length - activeTotal, 0),
+            recommendableTotal,
+            bridgeEnabledTotal,
+        };
+    }
+
+    async function saveRuntimeConfig(runtimeConfig, registry) {
+        const normalized = {
+            ...getDefaultRuntimeConfig(),
+            ...runtimeConfig,
+            updatedAt: new Date().toISOString(),
+            defaults: {
+                ...getDefaultRuntimeConfig().defaults,
+                ...(runtimeConfig.defaults || {}),
+            },
+            skills: runtimeConfig.skills && typeof runtimeConfig.skills === 'object' ? runtimeConfig.skills : {},
+        };
+        normalized.summary = rebuildRuntimeSummary(normalized, registry);
+        await fs.writeFile(SKILLS_RUNTIME_CONFIG_PATH, JSON.stringify(normalized, null, 2), 'utf-8');
+        return normalized;
+    }
+
+    function mergeRuntimeIntoSkill(skill, runtimeConfig) {
+        const defaults = runtimeConfig?.defaults || getDefaultRuntimeConfig().defaults;
+        const runtimeSkill = runtimeConfig?.skills?.[skill.skill_id] || {};
+        const runtime = {
+            enabled: runtimeSkill.enabled ?? defaults.enabled ?? false,
+            priority: runtimeSkill.priority || skill.priority || 'P3',
+            recommendable: runtimeSkill.recommendable ?? defaults.recommendable ?? true,
+            bridge_enabled: runtimeSkill.bridge_enabled ?? defaults.bridge_enabled ?? true,
+            deep_execute_enabled: runtimeSkill.deep_execute_enabled ?? defaults.deep_execute_enabled ?? false,
+            status: runtimeSkill.status || ((runtimeSkill.enabled ?? defaults.enabled ?? false) ? 'active' : 'disabled'),
+            notes: runtimeSkill.notes || '',
+            category: runtimeSkill.category || skill.usage_category?.usage_method || '',
+        };
+
+        return {
+            ...skill,
+            runtime,
+            effective_priority: runtime.priority || skill.priority || 'P3',
+            enabled: Boolean(runtime.enabled),
+            recommendable: Boolean(runtime.recommendable),
+            bridge_enabled: Boolean(runtime.bridge_enabled),
+            deep_execute_enabled: Boolean(runtime.deep_execute_enabled),
+        };
+    }
+
+    function buildRuntimeView(registry, runtimeConfig, filters = {}) {
+        const safeRegistry = registry && typeof registry === 'object' ? registry : {};
+        const skills = Array.isArray(safeRegistry.skills) ? safeRegistry.skills : [];
+        const mergedSkills = skills.map(skill => mergeRuntimeIntoSkill(skill, runtimeConfig));
+        const keyword = String(filters.keyword || '').trim().toLowerCase();
+
+        const filteredSkills = mergedSkills.filter(skill => {
+            if (filters.usage_method && skill?.usage_category?.usage_method !== filters.usage_method) {
+                return false;
+            }
+            if (filters.family && skill?.usage_category?.family !== filters.family) {
+                return false;
+            }
+            if (filters.priority && (skill?.effective_priority || skill?.priority) !== filters.priority) {
+                return false;
+            }
+            if (filters.enabled !== undefined && filters.enabled !== '' && String(skill.enabled) !== String(filters.enabled)) {
+                return false;
+            }
+            if (filters.bridge_enabled !== undefined && filters.bridge_enabled !== '' && String(skill.bridge_enabled) !== String(filters.bridge_enabled)) {
+                return false;
+            }
+            if (filters.category_l1 && skill?.category?.l1 !== filters.category_l1) {
+                return false;
+            }
+            if (keyword) {
+                const searchableText = [
+                    skill.skill_id,
+                    skill.name,
+                    skill.title,
+                    skill.summary,
+                    skill.source_origin,
+                    skill.category?.l1,
+                    skill.usage_category?.usage_method,
+                    skill.usage_category?.family,
+                    ...(Array.isArray(skill.tags) ? skill.tags : []),
+                ].filter(Boolean).join(' ').toLowerCase();
+                return searchableText.includes(keyword);
+            }
+            return true;
+        });
+
+        const filteredActiveTotal = filteredSkills.filter(skill => skill.enabled).length;
+        const filteredDisabledTotal = Math.max(filteredSkills.length - filteredActiveTotal, 0);
+
+        const effectiveRuntimeDefaults = runtimeConfig.defaults || getDefaultRuntimeConfig().defaults;
+        const runtimeSummary = rebuildRuntimeSummary(runtimeConfig, safeRegistry);
+
+        return {
+            ...sanitizeSkillRegistry({
+                ...safeRegistry,
+                total: filteredSkills.length,
+                registeredTotal: filteredSkills.length,
+                activeTotal: filteredActiveTotal,
+                disabledTotal: filteredDisabledTotal,
+                skills: filteredSkills,
+            }, runtimeConfig),
+            runtime: {
+                version: runtimeConfig.version || 'unknown',
+                updatedAt: runtimeConfig.updatedAt || null,
+                defaults: effectiveRuntimeDefaults,
+                summary: runtimeSummary,
+                filteredSummary: {
+                    total: filteredSkills.length,
+                    activeTotal: filteredActiveTotal,
+                    disabledTotal: filteredDisabledTotal,
+                },
+            },
+            skills: filteredSkills.map(skill => sanitizeSkillRegistrySkill(skill, effectiveRuntimeDefaults)),
+        };
+    }
+
+    function validateRuntimePatch(patch) {
+        const allowedFields = new Set(['enabled', 'priority', 'recommendable', 'bridge_enabled', 'deep_execute_enabled', 'notes', 'category']);
+        const safePatch = {};
+
+        if (!patch || typeof patch !== 'object' || Array.isArray(patch)) {
+            throw new Error('Patch body must be an object.');
+        }
+
+        Object.entries(patch).forEach(([key, value]) => {
+            if (!allowedFields.has(key)) {
+                throw new Error(`Unsupported runtime field: ${key}`);
+            }
+
+            if (key === 'enabled' || key === 'recommendable' || key === 'bridge_enabled') {
+                if (typeof value !== 'boolean') {
+                    throw new Error(`${key} must be a boolean.`);
+                }
+                safePatch[key] = value;
+                return;
+            }
+
+            if (key === 'deep_execute_enabled') {
+                if (value !== false) {
+                    throw new Error('deep_execute_enabled is reserved for future skill engine support and must remain false.');
+                }
+                safePatch[key] = false;
+                return;
+            }
+
+            if (key === 'priority') {
+                if (!SKILL_PRIORITY_OPTIONS.includes(String(value || '').toUpperCase())) {
+                    throw new Error('priority must be one of P0, P1, P2, P3.');
+                }
+                safePatch[key] = String(value).toUpperCase();
+                return;
+            }
+
+            if (key === 'notes' || key === 'category') {
+                if (typeof value !== 'string') {
+                    throw new Error(`${key} must be a string.`);
+                }
+                safePatch[key] = value.trim();
+                return;
+            }
+        });
+
+        if (Object.keys(safePatch).length === 0) {
+            throw new Error('No valid runtime fields were provided.');
+        }
+
+        return safePatch;
+    }
+
+    function applyRuntimePatch(runtimeConfig, skillId, patch, registry) {
+        const skills = Array.isArray(registry?.skills) ? registry.skills : [];
+        const defaults = runtimeConfig?.defaults || getDefaultRuntimeConfig().defaults;
+        const targetSkill = skills.find(skill => skill.skill_id === skillId || skill.name === skillId);
+        if (!targetSkill) {
+            const error = new Error(`Skill not found in registry: ${skillId}`);
+            error.code = 'SKILL_NOT_FOUND';
+            throw error;
+        }
+
+        const normalizedPatch = validateRuntimePatch(patch);
+        const current = runtimeConfig.skills?.[targetSkill.skill_id] || {};
+        const next = {
+            ...current,
+            ...normalizedPatch,
+        };
+        const effectiveEnabled = next.enabled ?? current.enabled ?? defaults.enabled ?? false;
+        next.enabled = effectiveEnabled;
+        next.status = effectiveEnabled ? 'active' : 'disabled';
+        next.priority = next.priority || current.priority || targetSkill.priority || 'P3';
+        next.category = next.category || current.category || targetSkill.usage_category?.usage_method || '';
+        next.deep_execute_enabled = false;
+
+        runtimeConfig.skills = {
+            ...(runtimeConfig.skills || {}),
+            [targetSkill.skill_id]: next,
+        };
+
+        return { targetSkill, runtimeEntry: next };
+    }
+
+    function hasEffectiveSkillFilter(filters = {}) {
+        if (!filters || typeof filters !== 'object' || Array.isArray(filters)) {
+            return false;
+        }
+
+        return [
+            filters.usage_method,
+            filters.family,
+            filters.priority,
+            filters.enabled,
+            filters.bridge_enabled,
+            filters.category_l1,
+        ].some(value => value !== undefined && value !== null && String(value).trim() !== '');
+    }
+
+    function matchSkillByFilter(skill, filters = {}) {
+        const normalizedSkill = skill;
+
+        if (filters.usage_method && normalizedSkill?.usage_category?.usage_method !== filters.usage_method) {
+            return false;
+        }
+        if (filters.family && normalizedSkill?.usage_category?.family !== filters.family) {
+            return false;
+        }
+        if (filters.priority && (normalizedSkill?.effective_priority || normalizedSkill?.priority) !== filters.priority) {
+            return false;
+        }
+        if (filters.enabled !== undefined && filters.enabled !== '' && String(normalizedSkill?.enabled) !== String(filters.enabled)) {
+            return false;
+        }
+        if (filters.bridge_enabled !== undefined && filters.bridge_enabled !== '' && String(normalizedSkill?.bridge_enabled) !== String(filters.bridge_enabled)) {
+            return false;
+        }
+        if (filters.category_l1 && normalizedSkill?.category?.l1 !== filters.category_l1) {
+            return false;
+        }
+        return true;
+    }
+
+    function applyBatchRuntimePatch(runtimeConfig, registry, filter, changes) {
+        const effectiveFilter = filter && typeof filter === 'object' && !Array.isArray(filter) ? filter : {};
+        if (!hasEffectiveSkillFilter(effectiveFilter)) {
+            throw new Error('Batch runtime updates require at least one filter condition.');
+        }
+
+        const safeChanges = validateRuntimePatch(changes);
+        const defaults = runtimeConfig?.defaults || getDefaultRuntimeConfig().defaults;
+        const mergedSkills = (Array.isArray(registry?.skills) ? registry.skills : []).map(skill => mergeRuntimeIntoSkill(skill, runtimeConfig));
+        const matched = mergedSkills.filter(skill => matchSkillByFilter(skill, effectiveFilter));
+
+        matched.forEach(skill => {
+            const current = runtimeConfig.skills?.[skill.skill_id] || {};
+            const next = {
+                ...current,
+                ...safeChanges,
+            };
+            const effectiveEnabled = next.enabled ?? current.enabled ?? defaults.enabled ?? false;
+            next.enabled = effectiveEnabled;
+            next.status = effectiveEnabled ? 'active' : 'disabled';
+            next.priority = next.priority || current.priority || skill.priority || 'P3';
+            next.category = next.category || current.category || skill.usage_category?.usage_method || '';
+            next.deep_execute_enabled = false;
+            runtimeConfig.skills = {
+                ...(runtimeConfig.skills || {}),
+                [skill.skill_id]: next,
+            };
+        });
+
+        return matched;
+    }
 
 
 
@@ -2523,5 +3001,158 @@ module.exports = function (DEBUG_MODE, dailyNoteRootPath, pluginManager, getCurr
         return fileUrl;
     }
     // --- End AgentDream API ---
+    // --- Skills Registry API ---
+    adminApiRouter.get('/skills/registry', async (req, res) => {
+        try {
+            const registry = await loadSkillRegistryRaw();
+            const runtimeConfig = await loadRuntimeConfigRaw();
+            res.json({ success: true, data: sanitizeSkillRegistry(registry, runtimeConfig) });
+        } catch (error) {
+            if (error.code === 'ENOENT') {
+                return res.status(404).json({ success: false, error: 'Skills registry not found.' });
+            }
+            console.error('[AdminAPI] Error reading skills registry:', error);
+            res.status(500).json({ success: false, error: 'Failed to read skills registry', details: error.message });
+        }
+    });
+
+    adminApiRouter.get('/skills/registry/runtime-view', async (req, res) => {
+        try {
+            const registry = await loadSkillRegistryRaw();
+            const runtimeConfig = await loadRuntimeConfigRaw();
+            const view = buildRuntimeView(registry, runtimeConfig, {
+                usage_method: req.query.usage_method,
+                family: req.query.family,
+                priority: req.query.priority,
+                enabled: req.query.enabled,
+                bridge_enabled: req.query.bridge_enabled,
+                category_l1: req.query.category_l1,
+                keyword: req.query.keyword,
+            });
+            res.json({ success: true, message: 'Skills runtime view loaded.', data: view });
+        } catch (error) {
+            if (error.code === 'ENOENT') {
+                return res.status(404).json({ success: false, error: 'Skills registry not found.' });
+            }
+            if (error instanceof SyntaxError) {
+                return res.status(500).json({ success: false, error: 'Skills runtime config is invalid JSON.', details: error.message });
+            }
+            console.error('[AdminAPI] Error building skills runtime view:', error);
+            res.status(500).json({ success: false, error: 'Failed to build skills runtime view', details: error.message });
+        }
+    });
+
+    adminApiRouter.get('/skills/registry/item/:skillId', async (req, res) => {
+        try {
+            const registry = await loadSkillRegistryRaw();
+            const runtimeConfig = await loadRuntimeConfigRaw();
+            const skillId = String(req.params.skillId || '').trim();
+            const skill = (Array.isArray(registry.skills) ? registry.skills : []).find(item => item.skill_id === skillId || item.name === skillId);
+            if (!skill) {
+                return res.status(404).json({ success: false, error: `Skill not found: ${skillId}` });
+            }
+            const merged = mergeRuntimeIntoSkill(skill, runtimeConfig);
+            res.json({ success: true, data: sanitizeSkillRegistrySkill(merged, runtimeConfig.defaults) });
+        } catch (error) {
+            if (error.code === 'ENOENT') {
+                return res.status(404).json({ success: false, error: 'Skills registry not found.' });
+            }
+            if (error instanceof SyntaxError) {
+                return res.status(500).json({ success: false, error: 'Skills runtime config is invalid JSON.', details: error.message });
+            }
+            console.error('[AdminAPI] Error loading skill detail:', error);
+            res.status(500).json({ success: false, error: 'Failed to load skill detail', details: error.message });
+        }
+    });
+
+    adminApiRouter.get('/skills/runtime-config', async (req, res) => {
+        try {
+            const registry = await loadSkillRegistryRaw();
+            const runtimeConfig = await loadRuntimeConfigRaw();
+            const normalized = {
+                ...runtimeConfig,
+                summary: rebuildRuntimeSummary(runtimeConfig, registry),
+            };
+            res.json({ success: true, message: 'Skills runtime config loaded.', data: normalized });
+        } catch (error) {
+            if (error.code === 'ENOENT') {
+                return res.status(404).json({ success: false, error: 'Skills registry not found.' });
+            }
+            if (error instanceof SyntaxError) {
+                return res.status(500).json({ success: false, error: 'Skills runtime config is invalid JSON.', details: error.message });
+            }
+            console.error('[AdminAPI] Error reading skills runtime config:', error);
+            res.status(500).json({ success: false, error: 'Failed to read skills runtime config', details: error.message });
+        }
+    });
+
+    adminApiRouter.patch('/skills/runtime-config/batch', async (req, res) => {
+        try {
+            const registry = await loadSkillRegistryRaw();
+            const runtimeConfig = await loadRuntimeConfigRaw();
+            const filter = req.body && typeof req.body === 'object' ? req.body.filter || {} : {};
+            const changes = req.body && typeof req.body === 'object' ? req.body.changes || {} : {};
+            const matchedSkills = applyBatchRuntimePatch(runtimeConfig, registry, filter, changes);
+            if (matchedSkills.length === 0) {
+                return res.status(404).json({ success: false, error: 'No skills matched the provided filter.' });
+            }
+            const saved = await saveRuntimeConfig(runtimeConfig, registry);
+            const mergedSkills = matchedSkills.map(skill => mergeRuntimeIntoSkill(skill, saved));
+            res.json({
+                success: true,
+                message: `Batch runtime config updated for ${matchedSkills.length} skills.`,
+                data: {
+                    matched: matchedSkills.length,
+                    skills: mergedSkills.map(skill => sanitizeSkillRegistrySkill(skill, saved.defaults)),
+                    runtime: {
+                        version: saved.version,
+                        updatedAt: saved.updatedAt,
+                        summary: saved.summary,
+                    },
+                },
+            });
+        } catch (error) {
+            if (error.code === 'ENOENT') {
+                return res.status(404).json({ success: false, error: 'Skills registry not found.' });
+            }
+            if (error instanceof SyntaxError) {
+                return res.status(500).json({ success: false, error: 'Skills runtime config is invalid JSON.', details: error.message });
+            }
+            if (/Unsupported runtime field|must be|No valid runtime fields|reserved for future|require at least one filter condition/.test(error.message)) {
+                return res.status(400).json({ success: false, error: error.message });
+            }
+            console.error('[AdminAPI] Error batch updating skill runtime config:', error);
+            res.status(500).json({ success: false, error: 'Failed to batch update skill runtime config', details: error.message });
+        }
+    });
+
+    adminApiRouter.patch('/skills/runtime-config/:skillId', async (req, res) => {
+        try {
+            const registry = await loadSkillRegistryRaw();
+            const runtimeConfig = await loadRuntimeConfigRaw();
+            const requestedSkillId = String(req.params.skillId || '').trim();
+            const { targetSkill } = applyRuntimePatch(runtimeConfig, requestedSkillId, req.body, registry);
+            const saved = await saveRuntimeConfig(runtimeConfig, registry);
+            const merged = mergeRuntimeIntoSkill(targetSkill, saved);
+            res.json({ success: true, message: 'Skill runtime config updated.', data: sanitizeSkillRegistrySkill(merged, saved.defaults) });
+        } catch (error) {
+            if (error.code === 'ENOENT') {
+                return res.status(404).json({ success: false, error: 'Skills registry not found.' });
+            }
+            if (error.code === 'SKILL_NOT_FOUND') {
+                return res.status(404).json({ success: false, error: error.message });
+            }
+            if (error instanceof SyntaxError) {
+                return res.status(500).json({ success: false, error: 'Skills runtime config is invalid JSON.', details: error.message });
+            }
+            if (/Unsupported runtime field|must be|No valid runtime fields|reserved for future|require at least one filter condition/.test(error.message)) {
+                return res.status(400).json({ success: false, error: error.message });
+            }
+            console.error('[AdminAPI] Error updating skill runtime config:', error);
+            res.status(500).json({ success: false, error: 'Failed to update skill runtime config', details: error.message });
+        }
+    });
+    // --- End Skills Registry API ---
+
     return adminApiRouter;
 };

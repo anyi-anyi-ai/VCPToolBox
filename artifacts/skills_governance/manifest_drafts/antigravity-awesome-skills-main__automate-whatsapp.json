@@ -1,0 +1,35 @@
+{
+  "skill_id": "antigravity-awesome-skills-main::automate-whatsapp",
+  "name": "automate-whatsapp",
+  "title": "Automate WhatsApp",
+  "summary": "Build WhatsApp automations with Kapso workflows: configure WhatsApp triggers, edit workflow graphs, manage executions, deploy functions, and use databases/integrations for state. Use when automatin...",
+  "category": {
+    "l1": "D. 领域能力与专业模板",
+    "l2": "D1. 通用软件架构与后端",
+    "l3": "D1-1. 后端与语言专项模板"
+  },
+  "capability_type": "扩展能力",
+  "priority": "P2",
+  "integration_phase": "长期",
+  "asset_status": "可执行技能",
+  "language_hint": "en",
+  "source_origin": "antigravity-awesome-skills-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/automate-whatsapp/SKILL.md",
+  "duplicate_group": "",
+  "issue_flags": [],
+  "recommended_action": "列入后续扩展池，按需求接入",
+  "vcp_mapping": [
+    "PluginTemplates",
+    "DomainSkills"
+  ],
+  "status": "draft",
+  "version": "0.1.0-draft",
+  "tags": [
+    "antigravity-awesome-skills-main",
+    "P2",
+    "扩展能力",
+    "D. 领域能力与专业模板",
+    "D1. 通用软件架构与后端",
+    "lang:en"
+  ]
+}

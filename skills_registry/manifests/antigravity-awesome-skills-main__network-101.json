@@ -1,0 +1,49 @@
+{
+  "skill_id": "antigravity-awesome-skills-main::network-101",
+  "name": "network-101",
+  "title": "Network 101",
+  "summary": "This skill should be used when the user asks to \\\"set up a web server\\\", \\\"configure HTTP or HTTPS\\\", \\\"perform SNMP enumeration\\\", \\\"configure SMB shares\\\", \\\"test network services\\\", or ne...",
+  "category": {
+    "l1": "E. 平台配置与运行支撑",
+    "l2": "E1. 平台配置与安装",
+    "l3": "E1-1. 配置、部署与运行支撑"
+  },
+  "usage_category": {
+    "usage_method": "验证与审查",
+    "family": "测试审查类",
+    "domain": "测试验证与安全质量"
+  },
+  "capability_type": "支撑能力",
+  "priority": "P1",
+  "integration_phase": "中期",
+  "asset_status": "可执行技能",
+  "status": "registered",
+  "review_status": "ready",
+  "source_origin": "antigravity-awesome-skills-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/network-101/SKILL.md",
+  "language_hint": "unknown",
+  "vcp_mapping": [
+    "KnowledgeBase",
+    "PluginBridge"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": true,
+  "executable_level": "stub",
+  "duplicate_group": "",
+  "issue_flags": [],
+  "recommended_action": "纳入标准化台账并继续评估",
+  "tags": [
+    "E. 平台配置与运行支撑",
+    "E1. 平台配置与安装",
+    "P1",
+    "antigravity-awesome-skills-main",
+    "lang:unknown",
+    "taskflow:理解与归纳",
+    "支撑能力"
+  ],
+  "version": "0.1.0-draft",
+  "taskflow_category": "理解与归纳",
+  "canonical_group": "network-101",
+  "canonical_selection_reason": "无重复候选，直接保留",
+  "canonical": true
+}

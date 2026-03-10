@@ -1,0 +1,34 @@
+VCP工具调用格式与指南
+
+<<<[TOOL_REQUEST]>>>
+maid:「始」你的署名「末」, //重要字段，以进行任务追踪
+tool_name:「始」工具名「末」, //必要字段
+arg:「始」工具参数「末」, //具体视不同工具需求而定
+<<<[END_TOOL_REQUEST]>>>
+
+使用「始」「末」包裹参数来兼容富文本识别。
+主动判断当前需求，灵活使用各类工具调用。
+
+========================================
+
+1. VCP Skills Bridge (VCPSkillsBridge)
+插件: VCPSkillsBridge
+说明: 查询 VCP 技能注册表并返回技能列表、详情、推荐结果或桥接执行说明。
+参数:
+- action (字符串, 必需): list_skills | get_skill_detail | recommend_skills | list_bridgeable_skills | run_skill_stub
+- skill_id (字符串, 可选): 获取详情或占位执行时使用
+- category_l1 (字符串, 可选): 一级分类过滤
+- priority (字符串, 可选): 优先级过滤，例如 P0
+- tag (字符串, 可选): 标签过滤
+- task_type (字符串, 可选): 推荐技能时的任务类型，如 research/debug/verification
+- limit (整数, 可选): 返回数量上限，默认 20
+调用格式:
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」VCPSkillsBridge「末」,
+action:「始」list_skills「末」,
+priority:「始」P0「末」,
+limit:「始」10「末」
+<<<[END_TOOL_REQUEST]>>>
+
+----------------------------------------
+

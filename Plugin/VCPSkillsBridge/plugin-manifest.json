@@ -1,0 +1,25 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "VCPSkillsBridge",
+  "version": "1.0.0",
+  "displayName": "VCP Skills Bridge",
+  "description": "连接 VCP 技能注册表与插件生态，提供技能列表、详情、推荐与桥接执行说明。",
+  "author": "VCP",
+  "pluginType": "synchronous",
+  "entryPoint": {
+    "type": "nodejs",
+    "command": "node VCPSkillsBridge.js"
+  },
+  "communication": {
+    "protocol": "stdio",
+    "timeout": 60000
+  },
+  "capabilities": {
+    "invocationCommands": [
+      {
+        "commandIdentifier": "VCPSkillsBridge",
+        "description": "查询 VCP 技能注册表并返回技能列表、详情、推荐结果或桥接执行说明。\n参数:\n- action (字符串, 必需): list_skills | get_skill_detail | recommend_skills | list_bridgeable_skills | run_skill_stub\n- skill_id (字符串, 可选): 获取详情或占位执行时使用\n- category_l1 (字符串, 可选): 一级分类过滤\n- priority (字符串, 可选): 优先级过滤，例如 P0\n- tag (字符串, 可选): 标签过滤\n- task_type (字符串, 可选): 推荐技能时的任务类型，如 research/debug/verification\n- limit (整数, 可选): 返回数量上限，默认 20\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」VCPSkillsBridge「末」,\naction:「始」list_skills「末」,\npriority:「始」P0「末」,\nlimit:「始」10「末」\n<<<[END_TOOL_REQUEST]>>>"
+      }
+    ]
+  }
+}

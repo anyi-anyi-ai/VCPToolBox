@@ -1,0 +1,49 @@
+{
+  "skill_id": "biancheng::vercel-deploy",
+  "name": "vercel-deploy",
+  "title": "Vercel Deploy",
+  "summary": "Deploy applications and websites to Vercel. Use when the user requests deployment actions like \"deploy my app\", \"deploy and give me the link\", \"push this live\", or \"create a preview deployment\".",
+  "category": {
+    "l1": "E. 平台配置与运行支撑",
+    "l2": "E1. 平台配置与安装",
+    "l3": "E1-1. 配置、部署与运行支撑"
+  },
+  "usage_category": {
+    "usage_method": "理解与归纳",
+    "family": "阅读分析类",
+    "domain": "总结抽取与结构化"
+  },
+  "capability_type": "支撑能力",
+  "priority": "P1",
+  "integration_phase": "中期",
+  "asset_status": "可执行技能",
+  "status": "registered",
+  "review_status": "ready",
+  "source_origin": "biancheng",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/biancheng/skills-main/skills/.curated/vercel-deploy/SKILL.md",
+  "language_hint": "unknown",
+  "vcp_mapping": [
+    "PluginBridge",
+    "QualityGate"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": true,
+  "executable_level": "stub",
+  "duplicate_group": "",
+  "issue_flags": [],
+  "recommended_action": "纳入标准化台账并继续评估",
+  "tags": [
+    "E. 平台配置与运行支撑",
+    "E1. 平台配置与安装",
+    "P1",
+    "biancheng",
+    "lang:unknown",
+    "taskflow:验证与审查",
+    "支撑能力"
+  ],
+  "version": "0.1.0-draft",
+  "taskflow_category": "验证与审查",
+  "canonical_group": "vercel-deploy",
+  "canonical_selection_reason": "无重复候选，直接保留",
+  "canonical": true
+}

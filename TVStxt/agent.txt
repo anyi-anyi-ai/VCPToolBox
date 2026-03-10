@@ -1,0 +1,182 @@
+VCP工具调用格式与指南
+
+<<<[TOOL_REQUEST]>>>
+maid:「始」你的署名「末」, //重要字段，以进行任务追踪
+tool_name:「始」工具名「末」, //必要字段
+arg:「始」工具参数「末」, //具体视不同工具需求而定
+<<<[END_TOOL_REQUEST]>>>
+
+使用「始」「末」包裹参数来兼容富文本识别。
+主动判断当前需求，灵活使用各类工具调用。
+
+========================================
+
+1. 智能Agent创作工坊
+插件: AgentCreator
+该插件包含 12 个工具调用:
+
+  1.1 AgentCreator
+  说明: 功能: 基于AI提供的完整内容创建一个新的Agent文件，并自动注册到agent_map.json。
+  参数:
+  - agent_name (字符串, 必需): Agent的英文标识符，用作文件名和映射键。只允许字母、数字、下划线。
+  - content (字符串, 必需): Agent文件的完整文本内容。可包含所有VCP占位符语法。
+  - display_name (字符串, 可选): Agent的显示名称/别名。不提供则使用agent_name。
+  - file_ext (字符串, 可选, 默认'.txt'): 文件扩展名。
+  
+  调用示例:
+  <<<[TOOL_REQUEST]>>>
+  tool_name:「始」AgentCreator「末」,
+  command:「始」CreateAgent「末」,
+  agent_name:「始」MyHelper「末」,
+  display_name:「始」小助手「末」,
+  content:「始」你是小助手...
+  {{TarSysPrompt}}
+  {{VarDailyNoteGuide}}「末」
+  <<<[END_TOOL_REQUEST]>>>
+
+  1.2 AgentCreator
+  说明: 功能: 基于内置模板创建Agent。先用ListTemplates了解可用模板，然后选择模板并提供定制参数。
+  参数:
+  - template_name (字符串, 必需): 模板名称（从ListTemplates获取）。
+  - agent_name (字符串, 必需): Agent的英文标识符。
+  - display_name (字符串, 可选): Agent显示名称。
+  - params (字符串, 必需): JSON格式的模板参数。
+  - save (字符串, 可选, 默认'false'): 是否直接保存。为'false'时只返回渲染预览。
+  
+  调用示例:
+  <<<[TOOL_REQUEST]>>>
+  tool_name:「始」AgentCreator「末」,
+  command:「始」CreateFromTemplate「末」,
+  template_name:「始」角色扮演「末」,
+  agent_name:「始」Sakura「末」,
+  params:「始」{"character_name":"小樱","personality":"温柔坚强","background":"来自春之国"}「末」,
+  save:「始」true「末」
+  <<<[END_TOOL_REQUEST]>>>
+
+  1.3 AgentCreator
+  说明: 功能: 列出所有已存在的Agent文件及其在agent_map.json中的映射状态。
+  参数: 无。
+  
+  调用示例:
+  <<<[TOOL_REQUEST]>>>
+  tool_name:「始」AgentCreator「末」,
+  command:「始」ListAgents「末」
+  <<<[END_TOOL_REQUEST]>>>
+
+  1.4 AgentCreator
+  说明: 功能: 查看指定Agent的完整原始内容。
+  参数:
+  - agent_name (字符串, 必需): Agent名称（文件名不含扩展名，或agent_map.json中的别名）。
+  
+  调用示例:
+  <<<[TOOL_REQUEST]>>>
+  tool_name:「始」AgentCreator「末」,
+  command:「始」ViewAgent「末」,
+  agent_name:「始」Nova「末」
+  <<<[END_TOOL_REQUEST]>>>
+
+  1.5 AgentCreator
+  说明: 功能: 用新内容完全替换指定Agent文件。编辑前自动创建.bak备份。
+  参数:
+  - agent_name (字符串, 必需): 要编辑的Agent名称。
+  - content (字符串, 必需): 替换后的完整新内容。
+  
+  调用示例:
+  <<<[TOOL_REQUEST]>>>
+  tool_name:「始」AgentCreator「末」,
+  command:「始」EditAgent「末」,
+  agent_name:「始」Nova「末」,
+  content:「始」更新后的Agent完整内容...「末」
+  <<<[END_TOOL_REQUEST]>>>
+
+  1.6 AgentCreator
+  说明: 功能: 复制一个现有Agent为新Agent。复制文件并在agent_map.json中创建新映射。
+  参数:
+  - source_agent (字符串, 必需): 源Agent名称。
+  - new_agent_name (字符串, 必需): 新Agent的英文标识符。
+  - new_display_name (字符串, 可选): 新Agent的显示名称。
+  
+  调用示例:
+  <<<[TOOL_REQUEST]>>>
+  tool_name:「始」AgentCreator「末」,
+  command:「始」CopyAgent「末」,
+  source_agent:「始」Nova「末」,
+  new_agent_name:「始」NovaV2「末」,
+  new_display_name:「始」Nova二号「末」
+  <<<[END_TOOL_REQUEST]>>>
+
+  1.7 AgentCreator
+  说明: 功能: 删除指定的Agent文件并从agent_map.json中移除映射。操作不可逆。
+  参数:
+  - agent_name (字符串, 必需): 要删除的Agent名称。
+  - confirm (字符串, 必需): 必须传入'yes'以确认删除。
+  
+  调用示例:
+  <<<[TOOL_REQUEST]>>>
+  tool_name:「始」AgentCreator「末」,
+  command:「始」DeleteAgent「末」,
+  agent_name:「始」OldAgent「末」,
+  confirm:「始」yes「末」
+  <<<[END_TOOL_REQUEST]>>>
+
+  1.8 AgentCreator
+  说明: 功能: 预览Agent文件中占位符的展开效果。RAG日记引用会被标注而非实际检索。
+  参数:
+  - agent_name (字符串, 必需): 要预览的Agent名称。
+  - model (字符串, 可选): 模拟的模型名称，用于解析Sar*条件变量。
+  
+  调用示例:
+  <<<[TOOL_REQUEST]>>>
+  tool_name:「始」AgentCreator「末」,
+  command:「始」PreviewAgent「末」,
+  agent_name:「始」Nova「末」
+  <<<[END_TOOL_REQUEST]>>>
+
+  1.9 AgentCreator
+  说明: 功能: 列出所有可用的Agent创建模板，包含名称、描述、适用场景和所需参数。
+  参数: 无。
+  
+  调用示例:
+  <<<[TOOL_REQUEST]>>>
+  tool_name:「始」AgentCreator「末」,
+  command:「始」ListTemplates「末」
+  <<<[END_TOOL_REQUEST]>>>
+
+  1.10 AgentCreator
+  说明: 功能: 列出当前VCP系统中所有可用的资源：VCP插件占位符、Tar*变量、Var*变量、已知日记本。AI创建Agent时参考此列表选择合适的工具和变量。
+  参数:
+  - type (字符串, 可选): 筛选类型: 'plugins'|'tar'|'var'|'diaries'|'all'，默认'all'。
+  
+  调用示例:
+  <<<[TOOL_REQUEST]>>>
+  tool_name:「始」AgentCreator「末」,
+  command:「始」ListAvailableResources「末」,
+  type:「始」plugins「末」
+  <<<[END_TOOL_REQUEST]>>>
+
+  1.11 AgentCreator
+  说明: 功能: 分析指定Agent文件的结构和健康状况。检查占位符使用、关键组件缺失、未注册引用等。
+  参数:
+  - agent_name (字符串, 必需): 要分析的Agent名称。
+  
+  调用示例:
+  <<<[TOOL_REQUEST]>>>
+  tool_name:「始」AgentCreator「末」,
+  command:「始」AnalyzeAgent「末」,
+  agent_name:「始」Nova「末」
+  <<<[END_TOOL_REQUEST]>>>
+
+  1.12 AgentCreator
+  说明: 功能: 根据用户描述的Agent用途，智能推荐适合的VCP插件工具、系统变量、日记本配置和模板。
+  参数:
+  - description (字符串, 必需): 对要创建的Agent的自然语言描述。
+  
+  调用示例:
+  <<<[TOOL_REQUEST]>>>
+  tool_name:「始」AgentCreator「末」,
+  command:「始」SuggestTools「末」,
+  description:「始」我需要一个能搜索学术论文并记住研究课题的AI研究助手「末」
+  <<<[END_TOOL_REQUEST]>>>
+
+----------------------------------------
+

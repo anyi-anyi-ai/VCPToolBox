@@ -1,0 +1,49 @@
+{
+  "skill_id": "everything-claude-code-main::postgres-patterns",
+  "name": "postgres-patterns",
+  "title": "PostgreSQL Patterns",
+  "summary": "PostgreSQL database patterns for query optimization, schema design, indexing, and security. Based on Supabase best practices.",
+  "category": {
+    "l1": "B. 工程实现与质量保障",
+    "l2": "B3. 安全与稳定性",
+    "l3": "B3-1. 安全审查与问题定位"
+  },
+  "usage_category": {
+    "usage_method": "规划与拆解",
+    "family": "方案规划类",
+    "domain": "需求澄清与设计前置"
+  },
+  "capability_type": "通用能力",
+  "priority": "P1",
+  "integration_phase": "中期",
+  "asset_status": "可执行技能",
+  "status": "registered",
+  "review_status": "ready",
+  "source_origin": "everything-claude-code-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/skills/postgres-patterns/SKILL.md",
+  "language_hint": "en",
+  "vcp_mapping": [
+    "PluginBridge",
+    "WorkflowEngine"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": true,
+  "executable_level": "stub",
+  "duplicate_group": "",
+  "issue_flags": [],
+  "recommended_action": "纳入标准化台账并继续评估",
+  "tags": [
+    "B. 工程实现与质量保障",
+    "B3. 安全与稳定性",
+    "P1",
+    "everything-claude-code-main",
+    "lang:en",
+    "taskflow:执行与编排",
+    "通用能力"
+  ],
+  "version": "0.1.0-draft",
+  "taskflow_category": "执行与编排",
+  "canonical_group": "postgres-patterns",
+  "canonical_selection_reason": "无重复候选，直接保留",
+  "canonical": true
+}

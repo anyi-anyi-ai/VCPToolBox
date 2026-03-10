@@ -1,0 +1,51 @@
+{
+  "skill_id": "chiclaude-skills-main::contributing",
+  "name": "contributing",
+  "title": "Nuxt UI Development",
+  "summary": "Guide for contributing to Nuxt UI. Provides component structure patterns, Tailwind Variants theming, Vitest testing conventions, and MDC documentation guidelines. Use when creating new components, reviewing component PRs, modifying existing components, writing tests, or creating documentation in this codebase.",
+  "category": {
+    "l1": "B. 工程实现与质量保障",
+    "l2": "B2. 测试与验证",
+    "l3": "B2-1. 测试验证闭环"
+  },
+  "usage_category": {
+    "usage_method": "理解与归纳",
+    "family": "阅读分析类",
+    "domain": "总结抽取与结构化"
+  },
+  "capability_type": "通用能力",
+  "priority": "P1",
+  "integration_phase": "中期",
+  "asset_status": "参考资料",
+  "status": "registered",
+  "review_status": "ready",
+  "source_origin": "chiclaude-skills-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/nuxt-ui/.claude/skills/contributing/SKILL.md",
+  "language_hint": "en",
+  "vcp_mapping": [
+    "KnowledgeBase",
+    "PluginBridge"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": true,
+  "executable_level": "metadata_only",
+  "duplicate_group": "",
+  "issue_flags": [
+    "非标准技能文件"
+  ],
+  "recommended_action": "转入参考资料库，不直接接入运行时技能体系",
+  "tags": [
+    "B. 工程实现与质量保障",
+    "B2. 测试与验证",
+    "P1",
+    "chiclaude-skills-main",
+    "lang:en",
+    "taskflow:理解与归纳",
+    "通用能力"
+  ],
+  "version": "0.1.0-draft",
+  "taskflow_category": "理解与归纳",
+  "canonical_group": "contributing",
+  "canonical_selection_reason": "无重复候选，直接保留",
+  "canonical": true
+}

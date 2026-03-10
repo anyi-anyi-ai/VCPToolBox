@@ -1,0 +1,5 @@
+spacy>=3.7.0
+nltk>=3.8.1
+wordfreq>=3.0.3
+requests>=2.31.0
+eng_to_ipa>=0.0.2

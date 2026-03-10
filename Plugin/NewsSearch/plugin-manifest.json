@@ -1,0 +1,49 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "NewsSearch",
+  "version": "1.0.0",
+  "displayName": "新闻聚合搜索器",
+  "description": "日报工作流专用的多源新闻聚合插件。支持按预定义板块自动扫描全网新闻，也支持自定义搜索。",
+  "author": "Nova",
+  "pluginType": "synchronous",
+  "entryPoint": {
+    "type": "nodejs",
+    "command": "node NewsSearch.js"
+  },
+  "communication": {
+    "protocol": "stdio",
+    "timeout": 120000
+  },
+  "configSchema": {
+    "TAVILY_API_KEY": {
+      "type": "string",
+      "description": "Tavily搜索API密钥"
+    },
+    "DEFAULT_SEARCH_DEPTH": {
+      "type": "string",
+      "description": "默认搜索深度",
+      "default": "basic"
+    },
+    "MAX_CONCURRENT": {
+      "type": "number",
+      "description": "最大并发请求数",
+      "default": 3
+    }
+  },
+  "capabilities": {
+    "invocationCommands": [
+      {
+        "commandIdentifier": "daily_scan",
+        "description": "日报全板块自动扫描。根据news-sources.json预定义的信息源配置，自动搜索AI科技、财经、科学、游戏、国内热点等所有板块的最新新闻，返回结构化汇总报告。\n参数:\n- command (字符串, 必需): daily_scan\n- date (字符串, 可选): 指定扫描日期YYYY-MM-DD，默认今天\n- boards (字符串, 可选): 指定板块ID逗号分隔如ai_tech,finance。不填则扫描全部\n- include_extras (字符串, 可选): 是否包含每日金句和艺术素材，默认true"
+      },
+      {
+        "commandIdentifier": "search",
+        "description": "自定义单次搜索。使用Tavily API执行一次自定义新闻搜索。\n参数:\n- command (字符串, 必需): search\n- query (字符串, 必需): 搜索关键词\n- topic (字符串, 可选): 搜索主题general/news/finance/research，默认general\n- max_results (数字, 可选): 最大结果数默认5\n- search_depth (字符串, 可选): 搜索深度basic或advanced"
+      },
+      {
+        "commandIdentifier": "list_boards",
+        "description": "列出所有可用的信息源板块配置。\n参数:\n- command (字符串, 必需): list_boards"
+      }
+    ]
+  }
+}

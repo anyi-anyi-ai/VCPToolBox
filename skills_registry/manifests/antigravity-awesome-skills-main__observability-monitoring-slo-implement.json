@@ -1,0 +1,49 @@
+{
+  "skill_id": "antigravity-awesome-skills-main::observability-monitoring-slo-implement",
+  "name": "observability-monitoring-slo-implement",
+  "title": "SLO Implementation Guide",
+  "summary": "You are an SLO (Service Level Objective) expert specializing in implementing reliability standards and error budget-based practices. Design SLO frameworks, define SLIs, and build monitoring that ba...",
+  "category": {
+    "l1": "A. Agent工作流与任务编排",
+    "l2": "A1. 需求澄清与方案设计",
+    "l3": "A1-1. 需求澄清与设计前置"
+  },
+  "usage_category": {
+    "usage_method": "规划与拆解",
+    "family": "方案规划类",
+    "domain": "需求澄清与设计前置"
+  },
+  "capability_type": "通用能力",
+  "priority": "P1",
+  "integration_phase": "中期",
+  "asset_status": "可执行技能",
+  "status": "registered",
+  "review_status": "ready",
+  "source_origin": "antigravity-awesome-skills-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/observability-monitoring-slo-implement/SKILL.md",
+  "language_hint": "en",
+  "vcp_mapping": [
+    "PluginBridge",
+    "WorkflowEngine"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": true,
+  "executable_level": "stub",
+  "duplicate_group": "",
+  "issue_flags": [],
+  "recommended_action": "纳入标准化台账并继续评估",
+  "tags": [
+    "A. Agent工作流与任务编排",
+    "A1. 需求澄清与方案设计",
+    "P1",
+    "antigravity-awesome-skills-main",
+    "lang:en",
+    "taskflow:执行与编排",
+    "通用能力"
+  ],
+  "version": "0.1.0-draft",
+  "taskflow_category": "执行与编排",
+  "canonical_group": "observability-monitoring-slo-implement",
+  "canonical_selection_reason": "无重复候选，直接保留",
+  "canonical": true
+}

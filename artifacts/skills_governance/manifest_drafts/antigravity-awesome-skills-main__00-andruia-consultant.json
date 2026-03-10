@@ -1,0 +1,35 @@
+{
+  "skill_id": "antigravity-awesome-skills-main::00-andruia-consultant",
+  "name": "00-andruia-consultant",
+  "title": "🤖 Andru.ia Solutions Architect - Hybrid Engine (v2.0)",
+  "summary": "Arquitecto de Soluciones Principal y Consultor Tecnológico de Andru.ia. Diagnostica y traza la hoja de ruta óptima para proyectos de IA en español.",
+  "category": {
+    "l1": "A. Agent工作流与任务编排",
+    "l2": "A1. 需求澄清与方案设计",
+    "l3": "A1-1. 需求澄清与设计前置"
+  },
+  "capability_type": "通用能力",
+  "priority": "P1",
+  "integration_phase": "中期",
+  "asset_status": "可执行技能",
+  "language_hint": "es",
+  "source_origin": "antigravity-awesome-skills-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/00-andruia-consultant/SKILL.md",
+  "duplicate_group": "",
+  "issue_flags": [],
+  "recommended_action": "纳入标准化台账并继续评估",
+  "vcp_mapping": [
+    "AgentOrchestrator",
+    "WorkflowEngine"
+  ],
+  "status": "draft",
+  "version": "0.1.0-draft",
+  "tags": [
+    "antigravity-awesome-skills-main",
+    "P1",
+    "通用能力",
+    "A. Agent工作流与任务编排",
+    "A1. 需求澄清与方案设计",
+    "lang:es"
+  ]
+}

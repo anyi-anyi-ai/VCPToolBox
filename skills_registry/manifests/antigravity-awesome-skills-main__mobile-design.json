@@ -1,0 +1,49 @@
+{
+  "skill_id": "antigravity-awesome-skills-main::mobile-design",
+  "name": "mobile-design",
+  "title": "Mobile Design System",
+  "summary": "Mobile-first design and engineering doctrine for iOS and Android apps. Covers touch interaction, performance, platform conventions, offline behavior, and mobile-specific decision-making. Teaches pr...",
+  "category": {
+    "l1": "A. Agent工作流与任务编排",
+    "l2": "A1. 需求澄清与方案设计",
+    "l3": "A1-1. 需求澄清与设计前置"
+  },
+  "usage_category": {
+    "usage_method": "规划与拆解",
+    "family": "方案规划类",
+    "domain": "需求澄清与设计前置"
+  },
+  "capability_type": "通用能力",
+  "priority": "P1",
+  "integration_phase": "中期",
+  "asset_status": "可执行技能",
+  "status": "registered",
+  "review_status": "ready",
+  "source_origin": "antigravity-awesome-skills-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/mobile-design/SKILL.md",
+  "language_hint": "en",
+  "vcp_mapping": [
+    "AdminPanel",
+    "PluginBridge"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": true,
+  "executable_level": "stub",
+  "duplicate_group": "",
+  "issue_flags": [],
+  "recommended_action": "纳入标准化台账并继续评估",
+  "tags": [
+    "A. Agent工作流与任务编排",
+    "A1. 需求澄清与方案设计",
+    "P1",
+    "antigravity-awesome-skills-main",
+    "lang:en",
+    "taskflow:输出与交付",
+    "通用能力"
+  ],
+  "version": "0.1.0-draft",
+  "taskflow_category": "输出与交付",
+  "canonical_group": "mobile-design",
+  "canonical_selection_reason": "无重复候选，直接保留",
+  "canonical": true
+}

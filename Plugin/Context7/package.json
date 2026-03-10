@@ -1,0 +1,33 @@
+{
+    "name": "vcptoolbox-context7-plugin",
+    "version": "1.0.0",
+    "description": "Context7 integration plugin for VCPToolBox - provides real-time library documentation",
+    "main": "Context7.js",
+    "scripts": {
+        "test": "node Context7.js < test-input.json",
+        "start": "node Context7.js"
+    },
+    "keywords": [
+        "context7",
+        "documentation",
+        "vcp",
+        "ai",
+        "library-docs",
+        "real-time"
+    ],
+    "author": "VCP Community",
+    "license": "CC-BY-NC-SA-4.0",
+    "engines": {
+        "node": ">=14.0.0"
+    },
+    "dependencies": {},
+    "devDependencies": {},
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/lioensky/VCPToolBox"
+    },
+    "bugs": {
+        "url": "https://github.com/lioensky/VCPToolBox/issues"
+    },
+    "homepage": "https://github.com/lioensky/VCPToolBox#readme"
+}

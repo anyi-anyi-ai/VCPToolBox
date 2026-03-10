@@ -1,0 +1,46 @@
+{
+  "skill_id": "antigravity-awesome-skills-main::executing-plans",
+  "name": "executing-plans",
+  "title": "Executing Plans",
+  "summary": "Use when you have a written implementation plan to execute in a separate session with review checkpoints",
+  "category": {
+    "l1": "A. Agent工作流与任务编排",
+    "l2": "A2. 执行调度与协同开发",
+    "l3": "A2-1. 任务执行与协作流"
+  },
+  "usage_category": {
+    "usage_method": "理解与归纳",
+    "family": "阅读分析类",
+    "domain": "总结抽取与结构化"
+  },
+  "capability_type": "通用能力",
+  "priority": "P1",
+  "integration_phase": "中期",
+  "asset_status": "可执行技能",
+  "status": "registered",
+  "review_status": "ready",
+  "source_origin": "antigravity-awesome-skills-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/executing-plans/SKILL.md",
+  "language_hint": "en",
+  "vcp_mapping": [
+    "AgentOrchestrator",
+    "WorkflowEngine"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": false,
+  "executable_level": "catalog_only",
+  "duplicate_group": "workflow_planning_execution",
+  "issue_flags": [],
+  "recommended_action": "纳入重复组人工复核，必要时合并",
+  "tags": [
+    "antigravity-awesome-skills-main",
+    "P1",
+    "通用能力",
+    "A. Agent工作流与任务编排",
+    "A2. 执行调度与协同开发",
+    "lang:en",
+    "dup:workflow_planning_execution"
+  ],
+  "version": "0.1.0-draft",
+  "canonical": true
+}

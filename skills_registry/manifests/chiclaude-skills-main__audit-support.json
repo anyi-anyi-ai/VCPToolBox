@@ -1,0 +1,49 @@
+{
+  "skill_id": "chiclaude-skills-main::audit-support",
+  "name": "audit-support",
+  "title": "Audit Support",
+  "summary": "Support SOX 404 compliance with control testing methodology, sample selection, and documentation standards. Use when generating testing workpapers, selecting audit samples, classifying control deficiencies, or preparing for internal or external audits.",
+  "category": {
+    "l1": "B. 工程实现与质量保障",
+    "l2": "B2. 测试与验证",
+    "l3": "B2-1. 测试验证闭环"
+  },
+  "usage_category": {
+    "usage_method": "验证与审查",
+    "family": "测试审查类",
+    "domain": "测试验证与安全质量"
+  },
+  "capability_type": "通用能力",
+  "priority": "P1",
+  "integration_phase": "中期",
+  "asset_status": "可执行技能",
+  "status": "registered",
+  "review_status": "ready",
+  "source_origin": "chiclaude-skills-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/anthropics-knowledge-work-plugins/finance/skills/audit-support/SKILL.md",
+  "language_hint": "en",
+  "vcp_mapping": [
+    "PluginBridge",
+    "WorkflowEngine"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": true,
+  "executable_level": "stub",
+  "duplicate_group": "",
+  "issue_flags": [],
+  "recommended_action": "纳入标准化台账并继续评估",
+  "tags": [
+    "B. 工程实现与质量保障",
+    "B2. 测试与验证",
+    "P1",
+    "chiclaude-skills-main",
+    "lang:en",
+    "taskflow:执行与编排",
+    "通用能力"
+  ],
+  "version": "0.1.0-draft",
+  "taskflow_category": "执行与编排",
+  "canonical_group": "audit-support",
+  "canonical_selection_reason": "无重复候选，直接保留",
+  "canonical": true
+}

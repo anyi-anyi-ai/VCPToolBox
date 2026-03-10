@@ -1,0 +1,50 @@
+{
+  "skill_id": "everything-claude-code-main::search-first",
+  "name": "search-first",
+  "title": "/search-first — Research Before You Code",
+  "summary": "Research-before-coding workflow. Search for existing tools, libraries, and patterns before writing custom code. Invokes the researcher agent.",
+  "category": {
+    "l1": "C. 知识生产与持续学习",
+    "l2": "C3. 检索增强与研究",
+    "l3": "C3-1. 研究与检索增强"
+  },
+  "usage_category": {
+    "usage_method": "检索与发现",
+    "family": "研究检索类",
+    "domain": "通用知识检索"
+  },
+  "capability_type": "核心能力",
+  "priority": "P0",
+  "integration_phase": "短期",
+  "asset_status": "可执行技能",
+  "status": "active_candidate",
+  "review_status": "ready",
+  "source_origin": "everything-claude-code-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/skills/search-first/SKILL.md",
+  "language_hint": "en",
+  "vcp_mapping": [
+    "KnowledgeBase",
+    "PluginBridge"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": true,
+  "executable_level": "stub",
+  "duplicate_group": "research_retrieval",
+  "issue_flags": [],
+  "recommended_action": "纳入重复组人工复核，必要时合并",
+  "tags": [
+    "C. 知识生产与持续学习",
+    "C3. 检索增强与研究",
+    "P0",
+    "dup:research_retrieval",
+    "everything-claude-code-main",
+    "lang:en",
+    "taskflow:检索与发现",
+    "核心能力"
+  ],
+  "version": "0.1.0-draft",
+  "taskflow_category": "检索与发现",
+  "canonical_group": "search-first",
+  "canonical_selection_reason": "无重复候选，直接保留",
+  "canonical": true
+}

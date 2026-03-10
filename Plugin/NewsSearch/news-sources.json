@@ -1,0 +1,100 @@
+{
+  "version": "1.0.0",
+  "description": "Nova日报工作流信息源索引 - 定义各板块的搜索策略",
+  "daily_scan_profile": {
+    "name": "兽耳日报标准扫描",
+    "boards": [
+      {
+        "id": "ai_tech",
+        "label": "🤖 AI & 科技",
+        "queries": [
+          {
+            "query_template": "latest artificial intelligence technology news {date}",
+            "topic": "news",
+            "max_results": 8,
+            "priority": 1
+          },
+          {
+            "query_template": "major tech company announcements product launches {date}",
+            "topic": "news",
+            "max_results": 5,
+            "priority": 2
+          }
+        ]
+      },
+      {
+        "id": "finance",
+        "label": "💰 财经 & 商业",
+        "queries": [
+          {
+            "query_template": "important global finance stock market economy news {date}",
+            "topic": "finance",
+            "max_results": 6,
+            "priority": 1
+          },
+          {
+            "query_template": "major business mergers acquisitions deals {date}",
+            "topic": "news",
+            "max_results": 4,
+            "priority": 2
+          }
+        ]
+      },
+      {
+        "id": "science",
+        "label": "🚀 科学前沿",
+        "queries": [
+          {
+            "query_template": "scientific breakthroughs space exploration discoveries {date}",
+            "topic": "news",
+            "max_results": 6,
+            "priority": 1
+          },
+          {
+            "query_template": "biotechnology medical research breakthrough {date}",
+            "topic": "general",
+            "max_results": 4,
+            "priority": 2,
+            "fallback": true
+          }
+        ]
+      },
+      {
+        "id": "gaming",
+        "label": "🎮 游戏 & 娱乐",
+        "queries": [
+          {
+            "query_template": "video game industry news releases announcements {date}",
+            "topic": "news",
+            "max_results": 5,
+            "priority": 1
+          }
+        ]
+      },
+      {
+        "id": "china",
+        "label": "🇨🇳 国内热点",
+        "queries": [
+          {
+            "query_template": "中国 重大新闻 科技 社会 热点 {date}",
+            "topic": "news",
+            "max_results": 6,
+            "priority": 1
+          }
+        ]
+      }
+    ]
+  },
+  "extras": {
+    "daily_quote": {
+      "query_template": "inspiring classic poem quote about hope future perseverance",
+      "topic": "general",
+      "max_results": 3
+    },
+    "daily_art": {
+      "query_template": "famous painting high resolution wallpaper art masterpiece",
+      "topic": "general",
+      "max_results": 3
+    }
+  }
+}

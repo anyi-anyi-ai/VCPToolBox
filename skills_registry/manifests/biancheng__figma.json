@@ -1,0 +1,52 @@
+{
+  "skill_id": "biancheng::figma",
+  "name": "figma",
+  "title": "Figma MCP",
+  "summary": "Use the Figma MCP server to fetch design context, screenshots, variables, and assets from Figma, and to translate Figma nodes into production code. Trigger when a task involves Figma URLs, node IDs, design-to-code implementation, or Figma MCP setup and troubleshooting.",
+  "category": {
+    "l1": "Z. 待确认",
+    "l2": "Z1. 待补充分析",
+    "l3": "Z1-1. 未识别技能"
+  },
+  "usage_category": {
+    "usage_method": "检索与发现",
+    "family": "研究检索类",
+    "domain": "通用知识检索"
+  },
+  "capability_type": "通用能力",
+  "priority": "P1",
+  "integration_phase": "中期",
+  "asset_status": "可执行技能",
+  "status": "registered",
+  "review_status": "needs_review",
+  "source_origin": "biancheng",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/biancheng/skills-main/skills/.curated/figma/SKILL.md",
+  "language_hint": "en",
+  "vcp_mapping": [
+    "KnowledgeBase",
+    "PluginBridge"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": true,
+  "executable_level": "stub",
+  "duplicate_group": "",
+  "issue_flags": [
+    "多语言技能待增强分类",
+    "待确认分类"
+  ],
+  "recommended_action": "补充读取内容后再分类",
+  "tags": [
+    "P1",
+    "Z. 待确认",
+    "Z1. 待补充分析",
+    "biancheng",
+    "lang:en",
+    "taskflow:理解与归纳",
+    "通用能力"
+  ],
+  "version": "0.1.0-draft",
+  "taskflow_category": "理解与归纳",
+  "canonical_group": "figma",
+  "canonical_selection_reason": "无重复候选，直接保留",
+  "canonical": true
+}

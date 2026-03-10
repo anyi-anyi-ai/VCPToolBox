@@ -1,0 +1,313 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cosearch.local/schema/response.v1.2.json",
+  "title": "CoSearch stdout response v1.2",
+  "type": "object",
+  "required": [
+    "status",
+    "mode",
+    "meta"
+  ],
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": [
+        "success",
+        "error"
+      ]
+    },
+    "result": {
+      "type": "string",
+      "description": "L1 结论层（success 时返回）。"
+    },
+    "error": {
+      "type": "string",
+      "description": "错误信息（error 时返回）。"
+    },
+    "error_code": {
+      "type": "string",
+      "enum": [
+        "invalid_json",
+        "invalid_argument",
+        "config_error",
+        "upstream_error",
+        "internal_error"
+      ]
+    },
+    "mode": {
+      "type": "string",
+      "enum": [
+        "lite",
+        "standard",
+        "deep"
+      ]
+    },
+    "request_id": {
+      "type": "string"
+    },
+    "meta": {
+      "$ref": "#/$defs/meta"
+    },
+    "report": {
+      "$ref": "#/$defs/report"
+    },
+    "layers": {
+      "$ref": "#/$defs/layers"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "success"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "required": [
+          "result",
+          "report",
+          "layers"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "error"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "required": [
+          "error",
+          "error_code"
+        ]
+      }
+    }
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "meta": {
+      "type": "object",
+      "required": [
+        "duration_ms",
+        "keyword_count",
+        "success_count",
+        "failed_count",
+        "timestamp",
+        "protocol_version"
+      ],
+      "properties": {
+        "duration_ms": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "keyword_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "success_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "failed_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "protocol_version": {
+          "type": "string",
+          "pattern": "^cosearch-stdio/\\d+\\.\\d+$"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "run_id": {
+          "type": "string"
+        },
+        "artifact_dir": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "report": {
+      "type": "object",
+      "required": [
+        "title",
+        "topic",
+        "mode",
+        "rounds",
+        "items",
+        "stats",
+        "stopped_reason"
+      ],
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "topic": {
+          "type": "string"
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "lite",
+            "standard",
+            "deep"
+          ]
+        },
+        "rounds": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/reportItem"
+          }
+        },
+        "stats": {
+          "$ref": "#/$defs/reportStats"
+        },
+        "stopped_reason": {
+          "type": "string"
+        },
+        "round_md_files": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "report_md_file": {
+          "type": "string"
+        },
+        "report_json_file": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "reportItem": {
+      "type": "object",
+      "required": [
+        "keyword",
+        "summary",
+        "failed",
+        "used_round",
+        "signal_grade",
+        "f1_behavior_change",
+        "f2_72h_survival",
+        "f3_morphism"
+      ],
+      "properties": {
+        "keyword": {
+          "type": "string"
+        },
+        "summary": {
+          "type": "string"
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "failed": {
+          "type": "boolean"
+        },
+        "error": {
+          "type": "string"
+        },
+        "used_round": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "signal_grade": {
+          "type": "string",
+          "enum": [
+            "S1",
+            "S2",
+            "S3",
+            "N"
+          ]
+        },
+        "f1_behavior_change": {
+          "type": "boolean"
+        },
+        "f2_72h_survival": {
+          "type": "boolean"
+        },
+        "f3_morphism": {
+          "type": "boolean"
+        },
+        "why": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "reportStats": {
+      "type": "object",
+      "required": [
+        "s1",
+        "s2",
+        "s3",
+        "n"
+      ],
+      "properties": {
+        "s1": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "s2": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "s3": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "n": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "layers": {
+      "type": "object",
+      "required": [
+        "l1_conclusion"
+      ],
+      "properties": {
+        "l1_conclusion": {
+          "type": "string"
+        },
+        "l2_signals": {
+          "type": "string"
+        },
+        "l3_evidence": {
+          "type": "string"
+        },
+        "l4_trace": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "skill_id": "chiclaude-skills-main::expo-cicd-workflows",
+  "name": "expo-cicd-workflows",
+  "title": "EAS Workflows Skill",
+  "summary": "Helps understand and write EAS workflow YAML files for Expo projects. Use this skill when the user asks about CI/CD or workflows in an Expo or EAS context, mentions .eas/workflows/, or wants help with EAS build pipelines or deployment automation.",
+  "category": {
+    "l1": "E. 平台配置与运行支撑",
+    "l2": "E1. 平台配置与安装",
+    "l3": "E1-1. 配置、部署与运行支撑"
+  },
+  "usage_category": {
+    "usage_method": "理解与归纳",
+    "family": "阅读分析类",
+    "domain": "总结抽取与结构化"
+  },
+  "capability_type": "支撑能力",
+  "priority": "P1",
+  "integration_phase": "中期",
+  "asset_status": "可执行技能",
+  "status": "registered",
+  "review_status": "ready",
+  "source_origin": "chiclaude-skills-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills-original-backup/expo-cicd-workflows/SKILL.md",
+  "language_hint": "en",
+  "vcp_mapping": [
+    "HookSystem",
+    "PlatformConfig"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": false,
+  "executable_level": "catalog_only",
+  "duplicate_group": "",
+  "issue_flags": [],
+  "recommended_action": "纳入标准化台账并继续评估",
+  "tags": [
+    "chiclaude-skills-main",
+    "P1",
+    "支撑能力",
+    "E. 平台配置与运行支撑",
+    "E1. 平台配置与安装",
+    "lang:en"
+  ],
+  "version": "0.1.0-draft",
+  "canonical": true
+}

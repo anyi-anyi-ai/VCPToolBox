@@ -1,0 +1,48 @@
+{
+  "skill_id": "css-protips-master::zh-TW",
+  "name": "zh-TW",
+  "title": "CSS 專家密技 [![Awesome](https://cdn.rawgit.com/sindresorhus/awesome/d7305f38d29fed78fa85652e3a63e154dd8e8829/media/badge.svg)](https://github.com/sindresorhus/awesome)",
+  "summary": "",
+  "category": {
+    "l1": "D. 领域能力与专业模板",
+    "l2": "D2. 前端与体验设计",
+    "l3": "D2-1. 前端界面与体验表达"
+  },
+  "usage_category": {
+    "usage_method": "多模态与界面操作",
+    "family": "界面交互类",
+    "domain": "多模态与体验表达"
+  },
+  "capability_type": "扩展能力",
+  "priority": "P2",
+  "integration_phase": "长期",
+  "asset_status": "待确认技能说明",
+  "status": "registered",
+  "review_status": "ready",
+  "source_origin": "css-protips-master",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/css-protips-master/translations/zh-TW/README.md",
+  "language_hint": "unknown",
+  "vcp_mapping": [
+    "DomainSkills",
+    "PluginTemplates"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": false,
+  "executable_level": "metadata_only",
+  "duplicate_group": "",
+  "issue_flags": [
+    "缺少描述",
+    "非标准技能文件"
+  ],
+  "recommended_action": "列入后续扩展池，按需求接入",
+  "tags": [
+    "css-protips-master",
+    "P2",
+    "扩展能力",
+    "D. 领域能力与专业模板",
+    "D2. 前端与体验设计",
+    "lang:unknown"
+  ],
+  "version": "0.1.0-draft",
+  "canonical": true
+}

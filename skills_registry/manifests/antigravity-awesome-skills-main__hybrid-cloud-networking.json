@@ -1,0 +1,45 @@
+{
+  "skill_id": "antigravity-awesome-skills-main::hybrid-cloud-networking",
+  "name": "hybrid-cloud-networking",
+  "title": "Hybrid Cloud Networking",
+  "summary": "Configure secure, high-performance connectivity between on-premises infrastructure and cloud platforms using VPN and dedicated connections. Use when building hybrid cloud architectures, connecting ...",
+  "category": {
+    "l1": "E. 平台配置与运行支撑",
+    "l2": "E1. 平台配置与安装",
+    "l3": "E1-1. 配置、部署与运行支撑"
+  },
+  "usage_category": {
+    "usage_method": "规划与拆解",
+    "family": "方案规划类",
+    "domain": "需求澄清与设计前置"
+  },
+  "capability_type": "支撑能力",
+  "priority": "P1",
+  "integration_phase": "中期",
+  "asset_status": "可执行技能",
+  "status": "registered",
+  "review_status": "ready",
+  "source_origin": "antigravity-awesome-skills-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/hybrid-cloud-networking/SKILL.md",
+  "language_hint": "unknown",
+  "vcp_mapping": [
+    "HookSystem",
+    "PlatformConfig"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": true,
+  "executable_level": "stub",
+  "duplicate_group": "",
+  "issue_flags": [],
+  "recommended_action": "纳入标准化台账并继续评估",
+  "tags": [
+    "antigravity-awesome-skills-main",
+    "P1",
+    "支撑能力",
+    "E. 平台配置与运行支撑",
+    "E1. 平台配置与安装",
+    "lang:unknown"
+  ],
+  "version": "0.1.0-draft",
+  "canonical": true
+}

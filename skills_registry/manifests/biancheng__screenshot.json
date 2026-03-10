@@ -1,0 +1,51 @@
+{
+  "skill_id": "biancheng::screenshot",
+  "name": "screenshot",
+  "title": "Screenshot Capture",
+  "summary": "Use when the user explicitly asks for a desktop or system screenshot (full screen, specific app or window, or a pixel region), or when tool-specific capture capabilities are unavailable and an OS-level capture is needed.",
+  "category": {
+    "l1": "Z. 待确认",
+    "l2": "Z1. 待补充分析",
+    "l3": "Z1-1. 未识别技能"
+  },
+  "usage_category": {
+    "usage_method": "规划与拆解",
+    "family": "方案规划类",
+    "domain": "需求澄清与设计前置"
+  },
+  "capability_type": "通用能力",
+  "priority": "P1",
+  "integration_phase": "中期",
+  "asset_status": "可执行技能",
+  "status": "registered",
+  "review_status": "needs_review",
+  "source_origin": "biancheng",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/biancheng/skills-main/skills/.curated/screenshot/SKILL.md",
+  "language_hint": "unknown",
+  "vcp_mapping": [
+    "PluginBridge",
+    "WorkflowEngine"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": true,
+  "executable_level": "stub",
+  "duplicate_group": "",
+  "issue_flags": [
+    "待确认分类"
+  ],
+  "recommended_action": "补充读取内容后再分类",
+  "tags": [
+    "P1",
+    "Z. 待确认",
+    "Z1. 待补充分析",
+    "biancheng",
+    "lang:unknown",
+    "taskflow:执行与编排",
+    "通用能力"
+  ],
+  "version": "0.1.0-draft",
+  "taskflow_category": "执行与编排",
+  "canonical_group": "screenshot",
+  "canonical_selection_reason": "无重复候选，直接保留",
+  "canonical": true
+}

@@ -1,0 +1,49 @@
+{
+  "skill_id": "everything-claude-code-main::java-coding-standards",
+  "name": "java-coding-standards",
+  "title": "Java Coding Standards",
+  "summary": "Java coding standards for Spring Boot services: naming, immutability, Optional usage, streams, exceptions, generics, and project layout.",
+  "category": {
+    "l1": "B. 工程实现与质量保障",
+    "l2": "B1. 开发范式",
+    "l3": "B1-2. 编码规范"
+  },
+  "usage_category": {
+    "usage_method": "验证与审查",
+    "family": "测试审查类",
+    "domain": "工程质量保障"
+  },
+  "capability_type": "通用能力",
+  "priority": "P1",
+  "integration_phase": "中期",
+  "asset_status": "可执行技能",
+  "status": "registered",
+  "review_status": "ready",
+  "source_origin": "everything-claude-code-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/skills/java-coding-standards/SKILL.md",
+  "language_hint": "unknown",
+  "vcp_mapping": [
+    "KnowledgeBase",
+    "PluginBridge"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": true,
+  "executable_level": "stub",
+  "duplicate_group": "",
+  "issue_flags": [],
+  "recommended_action": "纳入标准化台账并继续评估",
+  "tags": [
+    "B. 工程实现与质量保障",
+    "B1. 开发范式",
+    "P1",
+    "everything-claude-code-main",
+    "lang:unknown",
+    "taskflow:理解与归纳",
+    "通用能力"
+  ],
+  "version": "0.1.0-draft",
+  "taskflow_category": "理解与归纳",
+  "canonical_group": "java-coding-standards",
+  "canonical_selection_reason": "无重复候选，直接保留",
+  "canonical": true
+}

@@ -1,0 +1,52 @@
+{
+  "skill_id": "chiclaude-skills-main::brainstorming",
+  "name": "brainstorming",
+  "title": "🔥 [No.013] 头脑风暴设计",
+  "summary": "",
+  "category": {
+    "l1": "A. Agent工作流与任务编排",
+    "l2": "A2. 执行调度与协同开发",
+    "l3": "A2-1. 任务执行与协作流"
+  },
+  "usage_category": {
+    "usage_method": "规划与拆解",
+    "family": "方案规划类",
+    "domain": "需求澄清与设计前置"
+  },
+  "capability_type": "核心能力",
+  "priority": "P0",
+  "integration_phase": "短期",
+  "asset_status": "可执行技能",
+  "status": "active_candidate",
+  "review_status": "ready",
+  "source_origin": "chiclaude-skills-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/obra-superpowers/skills/brainstorming/SKILL.md",
+  "language_hint": "zh",
+  "vcp_mapping": [
+    "PluginBridge",
+    "WorkflowEngine"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": true,
+  "executable_level": "stub",
+  "duplicate_group": "workflow_planning_execution",
+  "issue_flags": [
+    "缺少描述"
+  ],
+  "recommended_action": "纳入重复组人工复核，必要时合并",
+  "tags": [
+    "A. Agent工作流与任务编排",
+    "A2. 执行调度与协同开发",
+    "P0",
+    "chiclaude-skills-main",
+    "dup:workflow_planning_execution",
+    "lang:zh",
+    "taskflow:规划与拆解",
+    "核心能力"
+  ],
+  "version": "0.1.0-draft",
+  "taskflow_category": "规划与拆解",
+  "canonical_group": "brainstorming",
+  "canonical_selection_reason": "优先中文，其次高价值任务流分类，再保留更稳定的主 skill 路径",
+  "canonical": true
+}

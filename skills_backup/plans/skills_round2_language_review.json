@@ -1,0 +1,1763 @@
+[
+  {
+    "group": "ab-test-setup",
+    "recommended_primary": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/coreyhaines31-marketingskills/skills/ab-test-setup/SKILL.md",
+    "candidates": [
+      {
+        "skill_name": "ab-test-setup",
+        "normalized_group": "ab-test-setup",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/ab-test-setup/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "理解与归纳",
+        "vcp_modules": [
+          "KnowledgeBase",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      },
+      {
+        "skill_name": "ab-test-setup",
+        "normalized_group": "ab-test-setup",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/coreyhaines31-marketingskills/skills/ab-test-setup/SKILL.md",
+        "language_hint": "zh",
+        "taskflow_category": "理解与归纳",
+        "vcp_modules": [
+          "KnowledgeBase",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      }
+    ],
+    "reason": "中文主版本优先"
+  },
+  {
+    "group": "agent-tools",
+    "recommended_primary": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/inference-sh-0-skills/skills/agent-tools/SKILL.md",
+    "candidates": [
+      {
+        "skill_name": "agent-tools",
+        "normalized_group": "agent-tools",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/inference-sh-0-skills/skills/agent-tools/SKILL.md",
+        "language_hint": "zh",
+        "taskflow_category": "检索与发现",
+        "vcp_modules": [
+          "KnowledgeBase",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      },
+      {
+        "skill_name": "agent-tools",
+        "normalized_group": "agent-tools",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/inference-sh-1-skills/skills/agent-tools/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "检索与发现",
+        "vcp_modules": [
+          "KnowledgeBase",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      }
+    ],
+    "reason": "中文主版本优先"
+  },
+  {
+    "group": "ai-image-generation",
+    "recommended_primary": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/inference-sh-0-skills/skills/ai-image-generation/SKILL.md",
+    "candidates": [
+      {
+        "skill_name": "ai-image-generation",
+        "normalized_group": "ai-image-generation",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/inference-sh-0-skills/skills/ai-image-generation/SKILL.md",
+        "language_hint": "zh",
+        "taskflow_category": "验证与审查",
+        "vcp_modules": [
+          "QualityGate",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      },
+      {
+        "skill_name": "ai-image-generation",
+        "normalized_group": "ai-image-generation",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/inference-sh-1-skills/skills/ai-image-generation/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "验证与审查",
+        "vcp_modules": [
+          "QualityGate",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      }
+    ],
+    "reason": "中文主版本优先"
+  },
+  {
+    "group": "ai-video-generation",
+    "recommended_primary": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/inference-sh-0-skills/skills/ai-video-generation/SKILL.md",
+    "candidates": [
+      {
+        "skill_name": "ai-video-generation",
+        "normalized_group": "ai-video-generation",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/inference-sh-0-skills/skills/ai-video-generation/SKILL.md",
+        "language_hint": "zh",
+        "taskflow_category": "输出与交付",
+        "vcp_modules": [
+          "AdminPanel",
+          "PluginBridge"
+        ],
+        "bridgeability": "reference_or_bridgeable"
+      },
+      {
+        "skill_name": "ai-video-generation",
+        "normalized_group": "ai-video-generation",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/inference-sh-1-skills/skills/ai-video-generation/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "输出与交付",
+        "vcp_modules": [
+          "AdminPanel",
+          "PluginBridge"
+        ],
+        "bridgeability": "reference_or_bridgeable"
+      }
+    ],
+    "reason": "中文主版本优先"
+  },
+  {
+    "group": "algorithmic-art",
+    "recommended_primary": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/anthropics-skills/skills/algorithmic-art/SKILL.md",
+    "candidates": [
+      {
+        "skill_name": "algorithmic-art",
+        "normalized_group": "algorithmic-art",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/algorithmic-art/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "输出与交付",
+        "vcp_modules": [
+          "AdminPanel",
+          "PluginBridge"
+        ],
+        "bridgeability": "reference_or_bridgeable"
+      },
+      {
+        "skill_name": "algorithmic-art",
+        "normalized_group": "algorithmic-art",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/anthropics-skills/skills/algorithmic-art/SKILL.md",
+        "language_hint": "zh",
+        "taskflow_category": "输出与交付",
+        "vcp_modules": [
+          "AdminPanel",
+          "PluginBridge"
+        ],
+        "bridgeability": "reference_or_bridgeable"
+      },
+      {
+        "skill_name": "algorithmic-art",
+        "normalized_group": "algorithmic-art",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/renleixu/skills-main/skills/algorithmic-art/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "输出与交付",
+        "vcp_modules": [
+          "AdminPanel",
+          "PluginBridge"
+        ],
+        "bridgeability": "reference_or_bridgeable"
+      }
+    ],
+    "reason": "中文主版本优先"
+  },
+  {
+    "group": "api-design-principles",
+    "recommended_primary": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/wshobson-agents/plugins/backend-development/skills/api-design-principles/SKILL.md",
+    "candidates": [
+      {
+        "skill_name": "api-design-principles",
+        "normalized_group": "api-design-principles",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/api-design-principles/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "理解与归纳",
+        "vcp_modules": [
+          "KnowledgeBase",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      },
+      {
+        "skill_name": "api-design-principles",
+        "normalized_group": "api-design-principles",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/wshobson-agents/plugins/backend-development/skills/api-design-principles/SKILL.md",
+        "language_hint": "zh",
+        "taskflow_category": "输出与交付",
+        "vcp_modules": [
+          "AdminPanel",
+          "PluginBridge"
+        ],
+        "bridgeability": "reference_or_bridgeable"
+      }
+    ],
+    "reason": "中文主版本优先"
+  },
+  {
+    "group": "architecture-patterns",
+    "recommended_primary": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/wshobson-agents/plugins/backend-development/skills/architecture-patterns/SKILL.md",
+    "candidates": [
+      {
+        "skill_name": "architecture-patterns",
+        "normalized_group": "architecture-patterns",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/architecture-patterns/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "规划与拆解",
+        "vcp_modules": [
+          "WorkflowEngine",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      },
+      {
+        "skill_name": "architecture-patterns",
+        "normalized_group": "architecture-patterns",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/wshobson-agents/plugins/backend-development/skills/architecture-patterns/SKILL.md",
+        "language_hint": "zh",
+        "taskflow_category": "执行与编排",
+        "vcp_modules": [
+          "WorkflowEngine",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      }
+    ],
+    "reason": "中文主版本优先"
+  },
+  {
+    "group": "brainstorming",
+    "recommended_primary": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/obra-superpowers/skills/brainstorming/SKILL.md",
+    "candidates": [
+      {
+        "skill_name": "brainstorming",
+        "normalized_group": "brainstorming",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/brainstorming/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "理解与归纳",
+        "vcp_modules": [
+          "KnowledgeBase",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      },
+      {
+        "skill_name": "brainstorming",
+        "normalized_group": "brainstorming",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/obra-superpowers/skills/brainstorming/SKILL.md",
+        "language_hint": "zh",
+        "taskflow_category": "规划与拆解",
+        "vcp_modules": [
+          "WorkflowEngine",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      },
+      {
+        "skill_name": "brainstorming",
+        "normalized_group": "brainstorming",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/superpowers-main/skills/brainstorming/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "规划与拆解",
+        "vcp_modules": [
+          "WorkflowEngine",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      }
+    ],
+    "reason": "中文主版本优先"
+  },
+  {
+    "group": "brand-guidelines",
+    "recommended_primary": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/anthropics-skills/skills/brand-guidelines/SKILL.md",
+    "candidates": [
+      {
+        "skill_name": "brand-guidelines",
+        "normalized_group": "brand-guidelines",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/anthropics-skills/skills/brand-guidelines/SKILL.md",
+        "language_hint": "zh",
+        "taskflow_category": "输出与交付",
+        "vcp_modules": [
+          "AdminPanel",
+          "PluginBridge"
+        ],
+        "bridgeability": "reference_or_bridgeable"
+      },
+      {
+        "skill_name": "brand-guidelines",
+        "normalized_group": "brand-guidelines",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/renleixu/skills-main/skills/brand-guidelines/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "输出与交付",
+        "vcp_modules": [
+          "AdminPanel",
+          "PluginBridge"
+        ],
+        "bridgeability": "reference_or_bridgeable"
+      }
+    ],
+    "reason": "中文主版本优先"
+  },
+  {
+    "group": "canvas-design",
+    "recommended_primary": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/anthropics-skills/skills/canvas-design/SKILL.md",
+    "candidates": [
+      {
+        "skill_name": "canvas-design",
+        "normalized_group": "canvas-design",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/canvas-design/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "输出与交付",
+        "vcp_modules": [
+          "AdminPanel",
+          "PluginBridge"
+        ],
+        "bridgeability": "reference_or_bridgeable"
+      },
+      {
+        "skill_name": "canvas-design",
+        "normalized_group": "canvas-design",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/anthropics-skills/skills/canvas-design/SKILL.md",
+        "language_hint": "zh",
+        "taskflow_category": "输出与交付",
+        "vcp_modules": [
+          "AdminPanel",
+          "PluginBridge"
+        ],
+        "bridgeability": "reference_or_bridgeable"
+      },
+      {
+        "skill_name": "canvas-design",
+        "normalized_group": "canvas-design",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/renleixu/skills-main/skills/canvas-design/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "输出与交付",
+        "vcp_modules": [
+          "AdminPanel",
+          "PluginBridge"
+        ],
+        "bridgeability": "reference_or_bridgeable"
+      }
+    ],
+    "reason": "中文主版本优先"
+  },
+  {
+    "group": "code-review-excellence",
+    "recommended_primary": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/wshobson-agents/plugins/developer-essentials/skills/code-review-excellence/SKILL.md",
+    "candidates": [
+      {
+        "skill_name": "code-review-excellence",
+        "normalized_group": "code-review-excellence",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/code-review-excellence/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "理解与归纳",
+        "vcp_modules": [
+          "KnowledgeBase",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      },
+      {
+        "skill_name": "code-review-excellence",
+        "normalized_group": "code-review-excellence",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/wshobson-agents/plugins/developer-essentials/skills/code-review-excellence/SKILL.md",
+        "language_hint": "zh",
+        "taskflow_category": "执行与编排",
+        "vcp_modules": [
+          "WorkflowEngine",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      }
+    ],
+    "reason": "中文主版本优先"
+  },
+  {
+    "group": "competitor-alternatives",
+    "recommended_primary": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/coreyhaines31-marketingskills/skills/competitor-alternatives/SKILL.md",
+    "candidates": [
+      {
+        "skill_name": "competitor-alternatives",
+        "normalized_group": "competitor-alternatives",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/competitor-alternatives/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "检索与发现",
+        "vcp_modules": [
+          "KnowledgeBase",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      },
+      {
+        "skill_name": "competitor-alternatives",
+        "normalized_group": "competitor-alternatives",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/coreyhaines31-marketingskills/skills/competitor-alternatives/SKILL.md",
+        "language_hint": "zh",
+        "taskflow_category": "输出与交付",
+        "vcp_modules": [
+          "AdminPanel",
+          "PluginBridge"
+        ],
+        "bridgeability": "reference_or_bridgeable"
+      }
+    ],
+    "reason": "中文主版本优先"
+  },
+  {
+    "group": "copywriting",
+    "recommended_primary": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/coreyhaines31-marketingskills/skills/copywriting/SKILL.md",
+    "candidates": [
+      {
+        "skill_name": "copywriting",
+        "normalized_group": "copywriting",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/copywriting/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "理解与归纳",
+        "vcp_modules": [
+          "KnowledgeBase",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      },
+      {
+        "skill_name": "copywriting",
+        "normalized_group": "copywriting",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/coreyhaines31-marketingskills/skills/copywriting/SKILL.md",
+        "language_hint": "zh",
+        "taskflow_category": "输出与交付",
+        "vcp_modules": [
+          "AdminPanel",
+          "PluginBridge"
+        ],
+        "bridgeability": "reference_or_bridgeable"
+      }
+    ],
+    "reason": "中文主版本优先"
+  },
+  {
+    "group": "design-md",
+    "recommended_primary": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/google-labs-code-stitch-skills/skills/design-md/SKILL.md",
+    "candidates": [
+      {
+        "skill_name": "design-md",
+        "normalized_group": "design-md",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/design-md/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "检索与发现",
+        "vcp_modules": [
+          "KnowledgeBase",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      },
+      {
+        "skill_name": "design-md",
+        "normalized_group": "design-md",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/google-labs-code-stitch-skills/skills/design-md/SKILL.md",
+        "language_hint": "zh",
+        "taskflow_category": "输出与交付",
+        "vcp_modules": [
+          "AdminPanel",
+          "PluginBridge"
+        ],
+        "bridgeability": "reference_or_bridgeable"
+      }
+    ],
+    "reason": "中文主版本优先"
+  },
+  {
+    "group": "dispatching-parallel-agents",
+    "recommended_primary": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/obra-superpowers/skills/dispatching-parallel-agents/SKILL.md",
+    "candidates": [
+      {
+        "skill_name": "dispatching-parallel-agents",
+        "normalized_group": "dispatching-parallel-agents",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/dispatching-parallel-agents/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "执行与编排",
+        "vcp_modules": [
+          "WorkflowEngine",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      },
+      {
+        "skill_name": "dispatching-parallel-agents",
+        "normalized_group": "dispatching-parallel-agents",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/obra-superpowers/skills/dispatching-parallel-agents/SKILL.md",
+        "language_hint": "zh",
+        "taskflow_category": "规划与拆解",
+        "vcp_modules": [
+          "WorkflowEngine",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      },
+      {
+        "skill_name": "dispatching-parallel-agents",
+        "normalized_group": "dispatching-parallel-agents",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/superpowers-main/skills/dispatching-parallel-agents/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "执行与编排",
+        "vcp_modules": [
+          "WorkflowEngine",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      }
+    ],
+    "reason": "中文主版本优先"
+  },
+  {
+    "group": "docx",
+    "recommended_primary": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/anthropics-skills/skills/docx/SKILL.md",
+    "candidates": [
+      {
+        "skill_name": "docx",
+        "normalized_group": "docx",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/anthropics-skills/skills/docx/SKILL.md",
+        "language_hint": "zh",
+        "taskflow_category": "输出与交付",
+        "vcp_modules": [
+          "AdminPanel",
+          "PluginBridge"
+        ],
+        "bridgeability": "reference_or_bridgeable"
+      },
+      {
+        "skill_name": "docx",
+        "normalized_group": "docx",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/renleixu/skills-main/skills/docx/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "理解与归纳",
+        "vcp_modules": [
+          "KnowledgeBase",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      }
+    ],
+    "reason": "中文主版本优先"
+  },
+  {
+    "group": "e2e-testing-patterns",
+    "recommended_primary": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/wshobson-agents/plugins/developer-essentials/skills/e2e-testing-patterns/SKILL.md",
+    "candidates": [
+      {
+        "skill_name": "e2e-testing-patterns",
+        "normalized_group": "e2e-testing-patterns",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/e2e-testing-patterns/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "执行与编排",
+        "vcp_modules": [
+          "WorkflowEngine",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      },
+      {
+        "skill_name": "e2e-testing-patterns",
+        "normalized_group": "e2e-testing-patterns",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/wshobson-agents/plugins/developer-essentials/skills/e2e-testing-patterns/SKILL.md",
+        "language_hint": "zh",
+        "taskflow_category": "执行与编排",
+        "vcp_modules": [
+          "WorkflowEngine",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      }
+    ],
+    "reason": "中文主版本优先"
+  },
+  {
+    "group": "email-sequence",
+    "recommended_primary": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/coreyhaines31-marketingskills/skills/email-sequence/SKILL.md",
+    "candidates": [
+      {
+        "skill_name": "email-sequence",
+        "normalized_group": "email-sequence",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/email-sequence/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "执行与编排",
+        "vcp_modules": [
+          "WorkflowEngine",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      },
+      {
+        "skill_name": "email-sequence",
+        "normalized_group": "email-sequence",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/coreyhaines31-marketingskills/skills/email-sequence/SKILL.md",
+        "language_hint": "zh",
+        "taskflow_category": "验证与审查",
+        "vcp_modules": [
+          "QualityGate",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      }
+    ],
+    "reason": "中文主版本优先"
+  },
+  {
+    "group": "error-handling-patterns",
+    "recommended_primary": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/wshobson-agents/plugins/developer-essentials/skills/error-handling-patterns/SKILL.md",
+    "candidates": [
+      {
+        "skill_name": "error-handling-patterns",
+        "normalized_group": "error-handling-patterns",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/error-handling-patterns/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "验证与审查",
+        "vcp_modules": [
+          "QualityGate",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      },
+      {
+        "skill_name": "error-handling-patterns",
+        "normalized_group": "error-handling-patterns",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/wshobson-agents/plugins/developer-essentials/skills/error-handling-patterns/SKILL.md",
+        "language_hint": "zh",
+        "taskflow_category": "执行与编排",
+        "vcp_modules": [
+          "WorkflowEngine",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      }
+    ],
+    "reason": "中文主版本优先"
+  },
+  {
+    "group": "expo-deployment",
+    "recommended_primary": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/expo-skills/plugins/expo-deployment/SKILL.md",
+    "candidates": [
+      {
+        "skill_name": "expo-deployment",
+        "normalized_group": "expo-deployment",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/expo-deployment/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "理解与归纳",
+        "vcp_modules": [
+          "KnowledgeBase",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      },
+      {
+        "skill_name": "expo-deployment",
+        "normalized_group": "expo-deployment",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/expo-skills/plugins/expo-deployment/SKILL.md",
+        "language_hint": "zh",
+        "taskflow_category": "执行与编排",
+        "vcp_modules": [
+          "WorkflowEngine",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      }
+    ],
+    "reason": "中文主版本优先"
+  },
+  {
+    "group": "fastapi-templates",
+    "recommended_primary": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/wshobson-agents/plugins/api-scaffolding/skills/fastapi-templates/SKILL.md",
+    "candidates": [
+      {
+        "skill_name": "fastapi-templates",
+        "normalized_group": "fastapi-templates",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/fastapi-templates/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "理解与归纳",
+        "vcp_modules": [
+          "KnowledgeBase",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      },
+      {
+        "skill_name": "fastapi-templates",
+        "normalized_group": "fastapi-templates",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/wshobson-agents/plugins/api-scaffolding/skills/fastapi-templates/SKILL.md",
+        "language_hint": "zh",
+        "taskflow_category": "执行与编排",
+        "vcp_modules": [
+          "WorkflowEngine",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      }
+    ],
+    "reason": "中文主版本优先"
+  },
+  {
+    "group": "form-cro",
+    "recommended_primary": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/coreyhaines31-marketingskills/skills/form-cro/SKILL.md",
+    "candidates": [
+      {
+        "skill_name": "form-cro",
+        "normalized_group": "form-cro",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/form-cro/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "输出与交付",
+        "vcp_modules": [
+          "AdminPanel",
+          "PluginBridge"
+        ],
+        "bridgeability": "reference_or_bridgeable"
+      },
+      {
+        "skill_name": "form-cro",
+        "normalized_group": "form-cro",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/coreyhaines31-marketingskills/skills/form-cro/SKILL.md",
+        "language_hint": "zh",
+        "taskflow_category": "验证与审查",
+        "vcp_modules": [
+          "QualityGate",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      }
+    ],
+    "reason": "中文主版本优先"
+  },
+  {
+    "group": "free-tool-strategy",
+    "recommended_primary": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/coreyhaines31-marketingskills/skills/free-tool-strategy/SKILL.md",
+    "candidates": [
+      {
+        "skill_name": "free-tool-strategy",
+        "normalized_group": "free-tool-strategy",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/free-tool-strategy/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "规划与拆解",
+        "vcp_modules": [
+          "WorkflowEngine",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      },
+      {
+        "skill_name": "free-tool-strategy",
+        "normalized_group": "free-tool-strategy",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/coreyhaines31-marketingskills/skills/free-tool-strategy/SKILL.md",
+        "language_hint": "zh",
+        "taskflow_category": "输出与交付",
+        "vcp_modules": [
+          "AdminPanel",
+          "PluginBridge"
+        ],
+        "bridgeability": "reference_or_bridgeable"
+      }
+    ],
+    "reason": "中文主版本优先"
+  },
+  {
+    "group": "frontend-design",
+    "recommended_primary": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/anthropics-claude-plugins-official/plugins/frontend-design/SKILL.md",
+    "candidates": [
+      {
+        "skill_name": "frontend-design",
+        "normalized_group": "frontend-design",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/frontend-design/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "执行与编排",
+        "vcp_modules": [
+          "WorkflowEngine",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      },
+      {
+        "skill_name": "frontend-design",
+        "normalized_group": "frontend-design",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/anthropics-claude-plugins-official/plugins/frontend-design/SKILL.md",
+        "language_hint": "zh",
+        "taskflow_category": "输出与交付",
+        "vcp_modules": [
+          "AdminPanel",
+          "PluginBridge"
+        ],
+        "bridgeability": "reference_or_bridgeable"
+      },
+      {
+        "skill_name": "frontend-design",
+        "normalized_group": "frontend-design",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/anthropics-skills/skills/frontend-design/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "执行与编排",
+        "vcp_modules": [
+          "WorkflowEngine",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      },
+      {
+        "skill_name": "frontend-design",
+        "normalized_group": "frontend-design",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/renleixu/skills-main/skills/frontend-design/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "执行与编排",
+        "vcp_modules": [
+          "WorkflowEngine",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      }
+    ],
+    "reason": "中文主版本优先"
+  },
+  {
+    "group": "internal-comms",
+    "recommended_primary": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/anthropics-skills/skills/internal-comms/SKILL.md",
+    "candidates": [
+      {
+        "skill_name": "internal-comms",
+        "normalized_group": "internal-comms",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/anthropics-skills/skills/internal-comms/SKILL.md",
+        "language_hint": "zh",
+        "taskflow_category": "规划与拆解",
+        "vcp_modules": [
+          "WorkflowEngine",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      },
+      {
+        "skill_name": "internal-comms",
+        "normalized_group": "internal-comms",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/renleixu/skills-main/skills/internal-comms/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "规划与拆解",
+        "vcp_modules": [
+          "WorkflowEngine",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      }
+    ],
+    "reason": "中文主版本优先"
+  },
+  {
+    "group": "launch-strategy",
+    "recommended_primary": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/coreyhaines31-marketingskills/skills/launch-strategy/SKILL.md",
+    "candidates": [
+      {
+        "skill_name": "launch-strategy",
+        "normalized_group": "launch-strategy",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/launch-strategy/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "理解与归纳",
+        "vcp_modules": [
+          "KnowledgeBase",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      },
+      {
+        "skill_name": "launch-strategy",
+        "normalized_group": "launch-strategy",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/coreyhaines31-marketingskills/skills/launch-strategy/SKILL.md",
+        "language_hint": "zh",
+        "taskflow_category": "输出与交付",
+        "vcp_modules": [
+          "AdminPanel",
+          "PluginBridge"
+        ],
+        "bridgeability": "reference_or_bridgeable"
+      }
+    ],
+    "reason": "中文主版本优先"
+  },
+  {
+    "group": "nodejs-backend-patterns",
+    "recommended_primary": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/wshobson-agents/plugins/javascript-typescript/skills/nodejs-backend-patterns/SKILL.md",
+    "candidates": [
+      {
+        "skill_name": "nodejs-backend-patterns",
+        "normalized_group": "nodejs-backend-patterns",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/nodejs-backend-patterns/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "验证与审查",
+        "vcp_modules": [
+          "QualityGate",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      },
+      {
+        "skill_name": "nodejs-backend-patterns",
+        "normalized_group": "nodejs-backend-patterns",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/wshobson-agents/plugins/javascript-typescript/skills/nodejs-backend-patterns/SKILL.md",
+        "language_hint": "zh",
+        "taskflow_category": "输出与交付",
+        "vcp_modules": [
+          "AdminPanel",
+          "PluginBridge"
+        ],
+        "bridgeability": "reference_or_bridgeable"
+      }
+    ],
+    "reason": "中文主版本优先"
+  },
+  {
+    "group": "onboarding-cro",
+    "recommended_primary": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/coreyhaines31-marketingskills/skills/onboarding-cro/SKILL.md",
+    "candidates": [
+      {
+        "skill_name": "onboarding-cro",
+        "normalized_group": "onboarding-cro",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/onboarding-cro/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "理解与归纳",
+        "vcp_modules": [
+          "KnowledgeBase",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      },
+      {
+        "skill_name": "onboarding-cro",
+        "normalized_group": "onboarding-cro",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/coreyhaines31-marketingskills/skills/onboarding-cro/SKILL.md",
+        "language_hint": "zh",
+        "taskflow_category": "输出与交付",
+        "vcp_modules": [
+          "AdminPanel",
+          "PluginBridge"
+        ],
+        "bridgeability": "reference_or_bridgeable"
+      }
+    ],
+    "reason": "中文主版本优先"
+  },
+  {
+    "group": "paid-ads",
+    "recommended_primary": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/coreyhaines31-marketingskills/skills/paid-ads/SKILL.md",
+    "candidates": [
+      {
+        "skill_name": "paid-ads",
+        "normalized_group": "paid-ads",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/paid-ads/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "检索与发现",
+        "vcp_modules": [
+          "KnowledgeBase",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      },
+      {
+        "skill_name": "paid-ads",
+        "normalized_group": "paid-ads",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/coreyhaines31-marketingskills/skills/paid-ads/SKILL.md",
+        "language_hint": "zh",
+        "taskflow_category": "理解与归纳",
+        "vcp_modules": [
+          "KnowledgeBase",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      }
+    ],
+    "reason": "中文主版本优先"
+  },
+  {
+    "group": "paywall-upgrade-cro",
+    "recommended_primary": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/coreyhaines31-marketingskills/skills/paywall-upgrade-cro/SKILL.md",
+    "candidates": [
+      {
+        "skill_name": "paywall-upgrade-cro",
+        "normalized_group": "paywall-upgrade-cro",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/paywall-upgrade-cro/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "规划与拆解",
+        "vcp_modules": [
+          "WorkflowEngine",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      },
+      {
+        "skill_name": "paywall-upgrade-cro",
+        "normalized_group": "paywall-upgrade-cro",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/coreyhaines31-marketingskills/skills/paywall-upgrade-cro/SKILL.md",
+        "language_hint": "zh",
+        "taskflow_category": "验证与审查",
+        "vcp_modules": [
+          "QualityGate",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      }
+    ],
+    "reason": "中文主版本优先"
+  },
+  {
+    "group": "pdf",
+    "recommended_primary": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/anthropics-skills/skills/pdf/SKILL.md",
+    "candidates": [
+      {
+        "skill_name": "pdf",
+        "normalized_group": "pdf",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/biancheng/skills-main/skills/.curated/pdf/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "理解与归纳",
+        "vcp_modules": [
+          "KnowledgeBase",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      },
+      {
+        "skill_name": "pdf",
+        "normalized_group": "pdf",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/anthropics-skills/skills/pdf/SKILL.md",
+        "language_hint": "zh",
+        "taskflow_category": "理解与归纳",
+        "vcp_modules": [
+          "KnowledgeBase",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      },
+      {
+        "skill_name": "pdf",
+        "normalized_group": "pdf",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/renleixu/skills-main/skills/pdf/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "检索与发现",
+        "vcp_modules": [
+          "KnowledgeBase",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      }
+    ],
+    "reason": "中文主版本优先"
+  },
+  {
+    "group": "popup-cro",
+    "recommended_primary": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/coreyhaines31-marketingskills/skills/popup-cro/SKILL.md",
+    "candidates": [
+      {
+        "skill_name": "popup-cro",
+        "normalized_group": "popup-cro",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/popup-cro/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "输出与交付",
+        "vcp_modules": [
+          "AdminPanel",
+          "PluginBridge"
+        ],
+        "bridgeability": "reference_or_bridgeable"
+      },
+      {
+        "skill_name": "popup-cro",
+        "normalized_group": "popup-cro",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/coreyhaines31-marketingskills/skills/popup-cro/SKILL.md",
+        "language_hint": "zh",
+        "taskflow_category": "验证与审查",
+        "vcp_modules": [
+          "QualityGate",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      }
+    ],
+    "reason": "中文主版本优先"
+  },
+  {
+    "group": "pptx",
+    "recommended_primary": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/anthropics-skills/skills/pptx/SKILL.md",
+    "candidates": [
+      {
+        "skill_name": "pptx",
+        "normalized_group": "pptx",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/anthropics-skills/skills/pptx/SKILL.md",
+        "language_hint": "zh",
+        "taskflow_category": "输出与交付",
+        "vcp_modules": [
+          "AdminPanel",
+          "PluginBridge"
+        ],
+        "bridgeability": "reference_or_bridgeable"
+      },
+      {
+        "skill_name": "pptx",
+        "normalized_group": "pptx",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/renleixu/skills-main/skills/pptx/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "理解与归纳",
+        "vcp_modules": [
+          "KnowledgeBase",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      }
+    ],
+    "reason": "中文主版本优先"
+  },
+  {
+    "group": "prompt-engineering-patterns",
+    "recommended_primary": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/wshobson-agents/plugins/llm-application-dev/skills/prompt-engineering-patterns/SKILL.md",
+    "candidates": [
+      {
+        "skill_name": "prompt-engineering-patterns",
+        "normalized_group": "prompt-engineering-patterns",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/prompt-engineering-patterns/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "检索与发现",
+        "vcp_modules": [
+          "KnowledgeBase",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      },
+      {
+        "skill_name": "prompt-engineering-patterns",
+        "normalized_group": "prompt-engineering-patterns",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/wshobson-agents/plugins/llm-application-dev/skills/prompt-engineering-patterns/SKILL.md",
+        "language_hint": "zh",
+        "taskflow_category": "执行与编排",
+        "vcp_modules": [
+          "WorkflowEngine",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      }
+    ],
+    "reason": "中文主版本优先"
+  },
+  {
+    "group": "python-performance-optimization",
+    "recommended_primary": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/wshobson-agents/plugins/python-development/skills/python-performance-optimization/SKILL.md",
+    "candidates": [
+      {
+        "skill_name": "python-performance-optimization",
+        "normalized_group": "python-performance-optimization",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/python-performance-optimization/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "理解与归纳",
+        "vcp_modules": [
+          "KnowledgeBase",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      },
+      {
+        "skill_name": "python-performance-optimization",
+        "normalized_group": "python-performance-optimization",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/wshobson-agents/plugins/python-development/skills/python-performance-optimization/SKILL.md",
+        "language_hint": "zh",
+        "taskflow_category": "执行与编排",
+        "vcp_modules": [
+          "WorkflowEngine",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      }
+    ],
+    "reason": "中文主版本优先"
+  },
+  {
+    "group": "python-testing-patterns",
+    "recommended_primary": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/wshobson-agents/plugins/python-development/skills/python-testing-patterns/SKILL.md",
+    "candidates": [
+      {
+        "skill_name": "python-testing-patterns",
+        "normalized_group": "python-testing-patterns",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/python-testing-patterns/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "理解与归纳",
+        "vcp_modules": [
+          "KnowledgeBase",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      },
+      {
+        "skill_name": "python-testing-patterns",
+        "normalized_group": "python-testing-patterns",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/wshobson-agents/plugins/python-development/skills/python-testing-patterns/SKILL.md",
+        "language_hint": "zh",
+        "taskflow_category": "执行与编排",
+        "vcp_modules": [
+          "WorkflowEngine",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      }
+    ],
+    "reason": "中文主版本优先"
+  },
+  {
+    "group": "receiving-code-review",
+    "recommended_primary": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/obra-superpowers/skills/receiving-code-review/SKILL.md",
+    "candidates": [
+      {
+        "skill_name": "receiving-code-review",
+        "normalized_group": "receiving-code-review",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/receiving-code-review/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "验证与审查",
+        "vcp_modules": [
+          "QualityGate",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      },
+      {
+        "skill_name": "receiving-code-review",
+        "normalized_group": "receiving-code-review",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/obra-superpowers/skills/receiving-code-review/SKILL.md",
+        "language_hint": "zh",
+        "taskflow_category": "验证与审查",
+        "vcp_modules": [
+          "QualityGate",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      },
+      {
+        "skill_name": "receiving-code-review",
+        "normalized_group": "receiving-code-review",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/superpowers-main/skills/receiving-code-review/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "验证与审查",
+        "vcp_modules": [
+          "QualityGate",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      }
+    ],
+    "reason": "中文主版本优先"
+  },
+  {
+    "group": "referral-program",
+    "recommended_primary": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/coreyhaines31-marketingskills/skills/referral-program/SKILL.md",
+    "candidates": [
+      {
+        "skill_name": "referral-program",
+        "normalized_group": "referral-program",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/referral-program/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "理解与归纳",
+        "vcp_modules": [
+          "KnowledgeBase",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      },
+      {
+        "skill_name": "referral-program",
+        "normalized_group": "referral-program",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/coreyhaines31-marketingskills/skills/referral-program/SKILL.md",
+        "language_hint": "zh",
+        "taskflow_category": "验证与审查",
+        "vcp_modules": [
+          "QualityGate",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      }
+    ],
+    "reason": "中文主版本优先"
+  },
+  {
+    "group": "requesting-code-review",
+    "recommended_primary": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/obra-superpowers/skills/requesting-code-review/SKILL.md",
+    "candidates": [
+      {
+        "skill_name": "requesting-code-review",
+        "normalized_group": "requesting-code-review",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/requesting-code-review/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "理解与归纳",
+        "vcp_modules": [
+          "KnowledgeBase",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      },
+      {
+        "skill_name": "requesting-code-review",
+        "normalized_group": "requesting-code-review",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/obra-superpowers/skills/requesting-code-review/SKILL.md",
+        "language_hint": "zh",
+        "taskflow_category": "规划与拆解",
+        "vcp_modules": [
+          "WorkflowEngine",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      },
+      {
+        "skill_name": "requesting-code-review",
+        "normalized_group": "requesting-code-review",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/superpowers-main/skills/requesting-code-review/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "理解与归纳",
+        "vcp_modules": [
+          "KnowledgeBase",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      }
+    ],
+    "reason": "中文主版本优先"
+  },
+  {
+    "group": "signup-flow-cro",
+    "recommended_primary": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/coreyhaines31-marketingskills/skills/signup-flow-cro/SKILL.md",
+    "candidates": [
+      {
+        "skill_name": "signup-flow-cro",
+        "normalized_group": "signup-flow-cro",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/signup-flow-cro/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "输出与交付",
+        "vcp_modules": [
+          "AdminPanel",
+          "PluginBridge"
+        ],
+        "bridgeability": "reference_or_bridgeable"
+      },
+      {
+        "skill_name": "signup-flow-cro",
+        "normalized_group": "signup-flow-cro",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/coreyhaines31-marketingskills/skills/signup-flow-cro/SKILL.md",
+        "language_hint": "zh",
+        "taskflow_category": "验证与审查",
+        "vcp_modules": [
+          "QualityGate",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      }
+    ],
+    "reason": "中文主版本优先"
+  },
+  {
+    "group": "slack-gif-creator",
+    "recommended_primary": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/anthropics-skills/skills/slack-gif-creator/SKILL.md",
+    "candidates": [
+      {
+        "skill_name": "slack-gif-creator",
+        "normalized_group": "slack-gif-creator",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/slack-gif-creator/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "执行与编排",
+        "vcp_modules": [
+          "WorkflowEngine",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      },
+      {
+        "skill_name": "slack-gif-creator",
+        "normalized_group": "slack-gif-creator",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/anthropics-skills/skills/slack-gif-creator/SKILL.md",
+        "language_hint": "zh",
+        "taskflow_category": "输出与交付",
+        "vcp_modules": [
+          "AdminPanel",
+          "PluginBridge"
+        ],
+        "bridgeability": "reference_or_bridgeable"
+      },
+      {
+        "skill_name": "slack-gif-creator",
+        "normalized_group": "slack-gif-creator",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/renleixu/skills-main/skills/slack-gif-creator/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "执行与编排",
+        "vcp_modules": [
+          "WorkflowEngine",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      }
+    ],
+    "reason": "中文主版本优先"
+  },
+  {
+    "group": "tailwind-design-system",
+    "recommended_primary": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/wshobson-agents/plugins/frontend-mobile-development/skills/tailwind-design-system/SKILL.md",
+    "candidates": [
+      {
+        "skill_name": "tailwind-design-system",
+        "normalized_group": "tailwind-design-system",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/tailwind-design-system/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "验证与审查",
+        "vcp_modules": [
+          "QualityGate",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      },
+      {
+        "skill_name": "tailwind-design-system",
+        "normalized_group": "tailwind-design-system",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/wshobson-agents/plugins/frontend-mobile-development/skills/tailwind-design-system/SKILL.md",
+        "language_hint": "zh",
+        "taskflow_category": "执行与编排",
+        "vcp_modules": [
+          "WorkflowEngine",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      }
+    ],
+    "reason": "中文主版本优先"
+  },
+  {
+    "group": "test-driven-development",
+    "recommended_primary": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/obra-superpowers/skills/test-driven-development/SKILL.md",
+    "candidates": [
+      {
+        "skill_name": "test-driven-development",
+        "normalized_group": "test-driven-development",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/test-driven-development/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "验证与审查",
+        "vcp_modules": [
+          "QualityGate",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      },
+      {
+        "skill_name": "test-driven-development",
+        "normalized_group": "test-driven-development",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/obra-superpowers/skills/test-driven-development/SKILL.md",
+        "language_hint": "zh",
+        "taskflow_category": "验证与审查",
+        "vcp_modules": [
+          "QualityGate",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      },
+      {
+        "skill_name": "test-driven-development",
+        "normalized_group": "test-driven-development",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/superpowers-main/skills/test-driven-development/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "验证与审查",
+        "vcp_modules": [
+          "QualityGate",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      }
+    ],
+    "reason": "中文主版本优先"
+  },
+  {
+    "group": "theme-factory",
+    "recommended_primary": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/anthropics-skills/skills/theme-factory/SKILL.md",
+    "candidates": [
+      {
+        "skill_name": "theme-factory",
+        "normalized_group": "theme-factory",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/theme-factory/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "输出与交付",
+        "vcp_modules": [
+          "AdminPanel",
+          "PluginBridge"
+        ],
+        "bridgeability": "reference_or_bridgeable"
+      },
+      {
+        "skill_name": "theme-factory",
+        "normalized_group": "theme-factory",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/anthropics-skills/skills/theme-factory/SKILL.md",
+        "language_hint": "zh",
+        "taskflow_category": "输出与交付",
+        "vcp_modules": [
+          "AdminPanel",
+          "PluginBridge"
+        ],
+        "bridgeability": "reference_or_bridgeable"
+      },
+      {
+        "skill_name": "theme-factory",
+        "normalized_group": "theme-factory",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/renleixu/skills-main/skills/theme-factory/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "输出与交付",
+        "vcp_modules": [
+          "AdminPanel",
+          "PluginBridge"
+        ],
+        "bridgeability": "reference_or_bridgeable"
+      }
+    ],
+    "reason": "中文主版本优先"
+  },
+  {
+    "group": "typescript-advanced-types",
+    "recommended_primary": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/wshobson-agents/plugins/javascript-typescript/skills/typescript-advanced-types/SKILL.md",
+    "candidates": [
+      {
+        "skill_name": "typescript-advanced-types",
+        "normalized_group": "typescript-advanced-types",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/typescript-advanced-types/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "验证与审查",
+        "vcp_modules": [
+          "QualityGate",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      },
+      {
+        "skill_name": "typescript-advanced-types",
+        "normalized_group": "typescript-advanced-types",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/wshobson-agents/plugins/javascript-typescript/skills/typescript-advanced-types/SKILL.md",
+        "language_hint": "zh",
+        "taskflow_category": "理解与归纳",
+        "vcp_modules": [
+          "KnowledgeBase",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      }
+    ],
+    "reason": "中文主版本优先"
+  },
+  {
+    "group": "ui-ux-pro",
+    "recommended_primary": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/nextlevelbuilder-ui-ux-pro-max-skill/src/ui-ux-pro-max/SKILL.md",
+    "candidates": [
+      {
+        "skill_name": "ui-ux-pro-max",
+        "normalized_group": "ui-ux-pro",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/ui-ux-pro-max/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "检索与发现",
+        "vcp_modules": [
+          "KnowledgeBase",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      },
+      {
+        "skill_name": "ui-ux-pro-max",
+        "normalized_group": "ui-ux-pro",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/nextlevelbuilder-ui-ux-pro-max-skill/.claude/skills/ui-ux-pro-max/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "检索与发现",
+        "vcp_modules": [
+          "KnowledgeBase",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      },
+      {
+        "skill_name": "ui-ux-pro-max",
+        "normalized_group": "ui-ux-pro",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/nextlevelbuilder-ui-ux-pro-max-skill/src/ui-ux-pro-max/SKILL.md",
+        "language_hint": "zh",
+        "taskflow_category": "检索与发现",
+        "vcp_modules": [
+          "KnowledgeBase",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      }
+    ],
+    "reason": "中文主版本优先"
+  },
+  {
+    "group": "upgrading-expo",
+    "recommended_primary": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/expo-skills/plugins/upgrading-expo/SKILL.md",
+    "candidates": [
+      {
+        "skill_name": "upgrading-expo",
+        "normalized_group": "upgrading-expo",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/upgrading-expo/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "规划与拆解",
+        "vcp_modules": [
+          "WorkflowEngine",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      },
+      {
+        "skill_name": "upgrading-expo",
+        "normalized_group": "upgrading-expo",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/expo-skills/plugins/upgrading-expo/SKILL.md",
+        "language_hint": "zh",
+        "taskflow_category": "执行与编排",
+        "vcp_modules": [
+          "WorkflowEngine",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      }
+    ],
+    "reason": "中文主版本优先"
+  },
+  {
+    "group": "web-artifacts-builder",
+    "recommended_primary": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/anthropics-skills/skills/web-artifacts-builder/SKILL.md",
+    "candidates": [
+      {
+        "skill_name": "web-artifacts-builder",
+        "normalized_group": "web-artifacts-builder",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/web-artifacts-builder/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "验证与审查",
+        "vcp_modules": [
+          "QualityGate",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      },
+      {
+        "skill_name": "web-artifacts-builder",
+        "normalized_group": "web-artifacts-builder",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/anthropics-skills/skills/web-artifacts-builder/SKILL.md",
+        "language_hint": "zh",
+        "taskflow_category": "输出与交付",
+        "vcp_modules": [
+          "AdminPanel",
+          "PluginBridge"
+        ],
+        "bridgeability": "reference_or_bridgeable"
+      },
+      {
+        "skill_name": "web-artifacts-builder",
+        "normalized_group": "web-artifacts-builder",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/renleixu/skills-main/skills/web-artifacts-builder/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "验证与审查",
+        "vcp_modules": [
+          "QualityGate",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      }
+    ],
+    "reason": "中文主版本优先"
+  },
+  {
+    "group": "web-design-guidelines",
+    "recommended_primary": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/vercel-labs-agent-skills/skills/web-design-guidelines/SKILL.md",
+    "candidates": [
+      {
+        "skill_name": "web-design-guidelines",
+        "normalized_group": "web-design-guidelines",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/web-design-guidelines/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "执行与编排",
+        "vcp_modules": [
+          "WorkflowEngine",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      },
+      {
+        "skill_name": "web-design-guidelines",
+        "normalized_group": "web-design-guidelines",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/vercel-labs-agent-skills/skills/web-design-guidelines/SKILL.md",
+        "language_hint": "zh",
+        "taskflow_category": "验证与审查",
+        "vcp_modules": [
+          "QualityGate",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      }
+    ],
+    "reason": "中文主版本优先"
+  },
+  {
+    "group": "webapp-testing",
+    "recommended_primary": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/anthropics-skills/skills/webapp-testing/SKILL.md",
+    "candidates": [
+      {
+        "skill_name": "webapp-testing",
+        "normalized_group": "webapp-testing",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/webapp-testing/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "检索与发现",
+        "vcp_modules": [
+          "KnowledgeBase",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      },
+      {
+        "skill_name": "webapp-testing",
+        "normalized_group": "webapp-testing",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/anthropics-skills/skills/webapp-testing/SKILL.md",
+        "language_hint": "zh",
+        "taskflow_category": "执行与编排",
+        "vcp_modules": [
+          "WorkflowEngine",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      },
+      {
+        "skill_name": "webapp-testing",
+        "normalized_group": "webapp-testing",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/renleixu/skills-main/skills/webapp-testing/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "检索与发现",
+        "vcp_modules": [
+          "KnowledgeBase",
+          "PluginBridge"
+        ],
+        "bridgeability": "bridgeable"
+      }
+    ],
+    "reason": "中文主版本优先"
+  },
+  {
+    "group": "xlsx",
+    "recommended_primary": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/anthropics-skills/skills/xlsx/SKILL.md",
+    "candidates": [
+      {
+        "skill_name": "xlsx",
+        "normalized_group": "xlsx",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/anthropics-skills/skills/xlsx/SKILL.md",
+        "language_hint": "zh",
+        "taskflow_category": "输出与交付",
+        "vcp_modules": [
+          "AdminPanel",
+          "PluginBridge"
+        ],
+        "bridgeability": "reference_or_bridgeable"
+      },
+      {
+        "skill_name": "xlsx",
+        "normalized_group": "xlsx",
+        "path": "H:/VCP/VCPzhangduan/VCPziliao/skills/renleixu/skills-main/skills/xlsx/SKILL.md",
+        "language_hint": "en",
+        "taskflow_category": "输出与交付",
+        "vcp_modules": [
+          "AdminPanel",
+          "PluginBridge"
+        ],
+        "bridgeability": "reference_or_bridgeable"
+      }
+    ],
+    "reason": "中文主版本优先"
+  }
+]

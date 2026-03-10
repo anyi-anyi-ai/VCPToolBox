@@ -1,0 +1,177 @@
+{
+  "root": "H:/VCP/VCPzhangduan/VCPziliao/skills",
+  "repo_total": 6,
+  "overall_counts": {
+    "primary_skills": 1612,
+    "mirror_webapp": 906,
+    "docs_variant": 83,
+    "backup": 89
+  },
+  "repos": {
+    "antigravity-awesome-skills-main": {
+      "total": 1861,
+      "counts": {
+        "primary_skills": 955,
+        "mirror_webapp": 906
+      },
+      "examples": {
+        "primary_skills": [
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/00-andruia-consultant/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/10-andruia-skill-smith/SKILL.MD",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/20-andruia-niche-intelligence/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/3d-web-experience/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/ab-test-setup/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/accessibility-compliance-accessibility-audit/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/active-directory-attacks/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/activecampaign-automation/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/address-github-comments/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/agent-evaluation/SKILL.md"
+        ],
+        "mirror_webapp": [
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/web-app/public/skills/00-andruia-consultant/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/web-app/public/skills/10-andruia-skill-smith/SKILL.MD",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/web-app/public/skills/20-andruia-niche-intelligence/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/web-app/public/skills/3d-web-experience/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/web-app/public/skills/ab-test-setup/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/web-app/public/skills/accessibility-compliance-accessibility-audit/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/web-app/public/skills/active-directory-attacks/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/web-app/public/skills/activecampaign-automation/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/web-app/public/skills/address-github-comments/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/web-app/public/skills/agent-evaluation/SKILL.md"
+        ]
+      }
+    },
+    "biancheng": {
+      "total": 32,
+      "counts": {
+        "primary_skills": 32
+      },
+      "examples": {
+        "primary_skills": [
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/biancheng/skills-main/skills/.curated/cloudflare-deploy/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/biancheng/skills-main/skills/.curated/develop-web-game/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/biancheng/skills-main/skills/.curated/doc/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/biancheng/skills-main/skills/.curated/figma/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/biancheng/skills-main/skills/.curated/figma-implement-design/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/biancheng/skills-main/skills/.curated/gh-address-comments/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/biancheng/skills-main/skills/.curated/gh-fix-ci/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/biancheng/skills-main/skills/.curated/imagegen/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/biancheng/skills-main/skills/.curated/jupyter-notebook/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/biancheng/skills-main/skills/.curated/linear/SKILL.md"
+        ]
+      }
+    },
+    "chiclaude-skills-main": {
+      "total": 608,
+      "counts": {
+        "primary_skills": 516,
+        "docs_variant": 3,
+        "backup": 89
+      },
+      "examples": {
+        "primary_skills": [
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/analogjs-angular-skills/skills/angular-component/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/analogjs-angular-skills/skills/angular-di/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/analogjs-angular-skills/skills/angular-directives/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/analogjs-angular-skills/skills/angular-forms/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/analogjs-angular-skills/skills/angular-http/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/analogjs-angular-skills/skills/angular-routing/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/analogjs-angular-skills/skills/angular-signals/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/analogjs-angular-skills/skills/angular-ssr/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/analogjs-angular-skills/skills/angular-testing/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/analogjs-angular-skills/skills/angular-tooling/SKILL.md"
+        ],
+        "docs_variant": [
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/nuxt-ui/docs/public/assets/templates/nuxt/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/nuxt-ui/docs/public/assets/templates/vue/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/nuxt-ui/docs/server/api/github/SKILL.md"
+        ],
+        "backup": [
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills-original-backup/ab-test-setup/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills-original-backup/agent-browser/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills-original-backup/agent-tools/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills-original-backup/ai-image-generation/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills-original-backup/ai-video-generation/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills-original-backup/algorithmic-art/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills-original-backup/api-design-principles/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills-original-backup/architecture-patterns/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills-original-backup/audit-website/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills-original-backup/better-auth/best-practices/SKILL.md"
+        ]
+      }
+    },
+    "everything-claude-code-main": {
+      "total": 158,
+      "counts": {
+        "primary_skills": 78,
+        "docs_variant": 80
+      },
+      "examples": {
+        "primary_skills": [
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/.agents/skills/api-design/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/.agents/skills/article-writing/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/.agents/skills/backend-patterns/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/.agents/skills/coding-standards/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/.agents/skills/content-engine/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/.agents/skills/e2e-testing/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/.agents/skills/eval-harness/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/.agents/skills/frontend-patterns/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/.agents/skills/frontend-slides/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/.agents/skills/investor-materials/SKILL.md"
+        ],
+        "docs_variant": [
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/docs/ja-JP/skills/backend-patterns/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/docs/ja-JP/skills/clickhouse-io/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/docs/ja-JP/skills/coding-standards/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/docs/ja-JP/skills/configure-ecc/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/docs/ja-JP/skills/continuous-learning/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/docs/ja-JP/skills/continuous-learning-v2/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/docs/ja-JP/skills/cpp-testing/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/docs/ja-JP/skills/django-patterns/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/docs/ja-JP/skills/django-security/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/docs/ja-JP/skills/django-tdd/SKILL.md"
+        ]
+      }
+    },
+    "renleixu": {
+      "total": 17,
+      "counts": {
+        "primary_skills": 17
+      },
+      "examples": {
+        "primary_skills": [
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/renleixu/skills-main/skills/algorithmic-art/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/renleixu/skills-main/skills/brand-guidelines/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/renleixu/skills-main/skills/canvas-design/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/renleixu/skills-main/skills/doc-coauthoring/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/renleixu/skills-main/skills/docx/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/renleixu/skills-main/skills/frontend-design/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/renleixu/skills-main/skills/internal-comms/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/renleixu/skills-main/skills/mcp-builder/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/renleixu/skills-main/skills/pdf/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/renleixu/skills-main/skills/pptx/SKILL.md"
+        ]
+      }
+    },
+    "superpowers-main": {
+      "total": 14,
+      "counts": {
+        "primary_skills": 14
+      },
+      "examples": {
+        "primary_skills": [
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/superpowers-main/skills/brainstorming/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/superpowers-main/skills/dispatching-parallel-agents/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/superpowers-main/skills/executing-plans/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/superpowers-main/skills/finishing-a-development-branch/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/superpowers-main/skills/receiving-code-review/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/superpowers-main/skills/requesting-code-review/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/superpowers-main/skills/subagent-driven-development/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/superpowers-main/skills/systematic-debugging/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/superpowers-main/skills/test-driven-development/SKILL.md",
+          "H:/VCP/VCPzhangduan/VCPziliao/skills/superpowers-main/skills/using-git-worktrees/SKILL.md"
+        ]
+      }
+    }
+  }
+}

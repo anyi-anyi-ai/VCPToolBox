@@ -1,0 +1,46 @@
+{
+  "skill_id": "antigravity-awesome-skills-main::tdd-workflow",
+  "name": "tdd-workflow",
+  "title": "TDD Workflow",
+  "summary": "Test-Driven Development workflow principles. RED-GREEN-REFACTOR cycle.",
+  "category": {
+    "l1": "B. 工程实现与质量保障",
+    "l2": "B2. 测试与验证",
+    "l3": "B2-1. 测试验证闭环"
+  },
+  "usage_category": {
+    "usage_method": "执行与编排",
+    "family": "执行编排类",
+    "domain": "工作流与协同执行"
+  },
+  "capability_type": "核心能力",
+  "priority": "P0",
+  "integration_phase": "短期",
+  "asset_status": "可执行技能",
+  "status": "active_candidate",
+  "review_status": "ready",
+  "source_origin": "antigravity-awesome-skills-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/tdd-workflow/SKILL.md",
+  "language_hint": "en",
+  "vcp_mapping": [
+    "DebugMode",
+    "QualityGate"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": true,
+  "executable_level": "stub",
+  "duplicate_group": "testing_tdd",
+  "issue_flags": [],
+  "recommended_action": "纳入重复组人工复核，必要时合并",
+  "tags": [
+    "antigravity-awesome-skills-main",
+    "P0",
+    "核心能力",
+    "B. 工程实现与质量保障",
+    "B2. 测试与验证",
+    "lang:en",
+    "dup:testing_tdd"
+  ],
+  "version": "0.1.0-draft",
+  "canonical": true
+}

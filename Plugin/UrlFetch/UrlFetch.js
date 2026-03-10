@@ -22,7 +22,7 @@ const MIME_MAP = {
 const PROJECT_BASE_PATH = process.env.PROJECT_BASE_PATH;
 const SERVER_PORT = process.env.SERVER_PORT;
 const IMAGESERVER_IMAGE_KEY = process.env.IMAGESERVER_IMAGE_KEY;
-const VAR_HTTP_URL = process.env.VarHttpUrl; // Read VarHttpUrl from env
+const VAR_HTTP_URL = process.env.VarHttpUrl;
 
 puppeteer.use(StealthPlugin());
 puppeteer.use(AnonymizeUAPlugin());
@@ -35,21 +35,17 @@ const AD_SELECTORS = [
     '[aria-hidden="true"]'
 ];
 
-// A more robust auto-scroll function to handle lazy-loading content
 async function autoScroll(page, mode = 'text') {
     let lastHeight = await page.evaluate('document.body.scrollHeight');
-    // 根据模式设置滚动次数：截图模式3次，文字模式5次
     const maxScrolls = mode === 'snapshot' ? 3 : 5;
     let scrolls = 0;
 
     while (scrolls < maxScrolls) {
         await page.evaluate('window.scrollTo(0, document.body.scrollHeight)');
-        // Wait for content to load
         await new Promise(resolve => setTimeout(resolve, 1000));
 
         let newHeight = await page.evaluate('document.body.scrollHeight');
         if (newHeight === lastHeight) {
-            // If height hasn't changed, wait a little longer to be sure, then break.
             await new Promise(resolve => setTimeout(resolve, 1000));
             newHeight = await page.evaluate('document.body.scrollHeight');
             if (newHeight === lastHeight) {
@@ -61,24 +57,30 @@ async function autoScroll(page, mode = 'text') {
     }
 }
 
-// --- 本地文件读取 ---
 async function handleLocalFile(fileUrl) {
-    // 解析 file:/// URL 为本地路径
     let localPath;
     try {
-        // 使用 URL API 正确解析 file:// URL
         const fileUrlObj = new URL(fileUrl);
         localPath = decodeURIComponent(fileUrlObj.pathname);
-        // Windows 路径修正：移除开头的 / (e.g., /C:/... → C:/...)
-        if (/^\/[A-Za-z]:/.test(localPath)) {
+
+        if (fileUrlObj.hostname) {
+            localPath = `//${fileUrlObj.hostname}${localPath}`;
+        } else if (/^\/[A-Za-z]:/.test(localPath)) {
             localPath = localPath.substring(1);
         }
     } catch {
-        // 回退：手动解析，兼容 file:/// 和 file://
-        localPath = decodeURIComponent(fileUrl.replace(/^file:\/\/\/?\/?(\w)/, '$1'));
+        const decoded = decodeURIComponent(String(fileUrl || '').replace(/^file:\/\//i, ''));
+        if (/^[A-Za-z]:/.test(decoded)) {
+            localPath = decoded;
+        } else if (/^\/[A-Za-z]:/.test(decoded)) {
+            localPath = decoded.substring(1);
+        } else if (/^\/\//.test(decoded)) {
+            localPath = decoded;
+        } else {
+            localPath = `//${decoded.replace(/^\/+/, '')}`;
+        }
     }
 
-    // 检查文件是否存在
     try {
         await fs.access(localPath);
     } catch {
@@ -88,7 +90,6 @@ async function handleLocalFile(fileUrl) {
     const ext = path.extname(localPath).toLowerCase();
 
     if (IMAGE_EXTENSIONS.includes(ext)) {
-        // 本地图片 → 读取并返回 base64
         const buffer = await fs.readFile(localPath);
         const mime = MIME_MAP[ext] || 'application/octet-stream';
         const base64 = buffer.toString('base64');
@@ -101,14 +102,12 @@ async function handleLocalFile(fileUrl) {
             ]
         };
     } else {
-        // 本地文本文件 → 读取并返回内容
         const textContent = await fs.readFile(localPath, 'utf-8');
         const fileName = path.basename(localPath);
         return { content: [{ type: 'text', text: `文件: ${fileName}\n路径: ${localPath}\n\n${textContent}` }] };
     }
 }
 
-// --- 判断 URL 是否指向图片 ---
 function isImageUrl(url) {
     try {
         const urlObj = new URL(url);
@@ -133,15 +132,11 @@ async function fetchWithPuppeteer(url, mode = 'text', proxyPort = null) {
 
         browser = await puppeteer.launch(launchOptions);
         const page = await browser.newPage();
-
-        // We no longer need to set UserAgent manually, AnonymizeUAPlugin handles it.
         await page.setViewport({ width: 1280, height: 800 });
 
-        // 设置 Cookies（支持三种格式）
         const urlObj = new URL(url);
         let cookiesToSet = [];
 
-        // 辅助函数：解析原始 cookie 字符串
         const parseRawCookies = (cookieString, targetUrl) => {
             const cookiePairs = cookieString.split(';').map(pair => pair.trim()).filter(pair => pair);
             return cookiePairs.map(pair => {
@@ -160,12 +155,10 @@ async function fetchWithPuppeteer(url, mode = 'text', proxyPort = null) {
             }).filter(cookie => cookie !== null);
         };
 
-        // 方式1：多站点原始格式 (FETCH_COOKIES_RAW_MULTI) - 优先级最高
         const fetchCookiesRawMulti = process.env.FETCH_COOKIES_RAW_MULTI;
         if (fetchCookiesRawMulti && fetchCookiesRawMulti.trim()) {
             try {
                 const cookiesMap = JSON.parse(fetchCookiesRawMulti);
-                // 遍历所有域名配置，找到匹配当前访问 URL 的
                 for (const [domain, cookieString] of Object.entries(cookiesMap)) {
                     if (urlObj.hostname.includes(domain)) {
                         cookiesToSet = parseRawCookies(cookieString, urlObj);
@@ -177,7 +170,6 @@ async function fetchWithPuppeteer(url, mode = 'text', proxyPort = null) {
             }
         }
 
-        // 方式2：单站点原始格式 (FETCH_COOKIES_RAW)
         if (cookiesToSet.length === 0) {
             const fetchCookiesRaw = process.env.FETCH_COOKIES_RAW;
             if (fetchCookiesRaw && fetchCookiesRaw.trim()) {
@@ -189,14 +181,12 @@ async function fetchWithPuppeteer(url, mode = 'text', proxyPort = null) {
             }
         }
 
-        // 方式3：JSON 数组格式 (FETCH_COOKIES)
         if (cookiesToSet.length === 0) {
             const fetchCookies = process.env.FETCH_COOKIES;
             if (fetchCookies && fetchCookies.trim()) {
                 try {
                     const cookies = JSON.parse(fetchCookies);
                     if (Array.isArray(cookies) && cookies.length > 0) {
-                        // 确保每个 cookie 都有 url 字段（Puppeteer 要求）
                         cookiesToSet = cookies.map(cookie => ({
                             ...cookie,
                             url: cookie.url || `${urlObj.protocol}//${cookie.domain || urlObj.hostname}`
@@ -208,7 +198,6 @@ async function fetchWithPuppeteer(url, mode = 'text', proxyPort = null) {
             }
         }
 
-        // 应用 cookies
         if (cookiesToSet.length > 0) {
             try {
                 await page.setCookie(...cookiesToSet);
@@ -217,12 +206,10 @@ async function fetchWithPuppeteer(url, mode = 'text', proxyPort = null) {
             }
         }
 
-        // image 模式：直接下载图片，不需要先导航到页面
         if (mode === 'image') {
             const response = await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
             const buffer = await response.buffer();
             const contentType = response.headers()['content-type'] || 'image/png';
-            // 提取纯 MIME 类型（去除 charset 等参数）
             const mime = contentType.split(';')[0].trim();
             const base64 = buffer.toString('base64');
 
@@ -237,18 +224,13 @@ async function fetchWithPuppeteer(url, mode = 'text', proxyPort = null) {
         await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
 
         if (mode === 'snapshot') {
-            // Check for essential environment variables for saving image
             if (!PROJECT_BASE_PATH || !SERVER_PORT || !IMAGESERVER_IMAGE_KEY || !VAR_HTTP_URL) {
                 throw new Error("UrlFetch Plugin Snapshot Error: Required environment variables for saving image are not set (PROJECT_BASE_PATH, SERVER_PORT, IMAGESERVER_IMAGE_KEY, VarHttpUrl).");
             }
 
-            // Use the robust auto-scroll function
             await autoScroll(page, mode);
-
-            // 网页快照模式
             const imageBuffer = await page.screenshot({ fullPage: true, type: 'png' });
 
-            // Save the image
             const generatedFileName = `${uuidv4()}.png`;
             const urlFetchImageDir = path.join(PROJECT_BASE_PATH, 'image', 'urlfetch');
             const localImageServerPath = path.join(urlFetchImageDir, generatedFileName);
@@ -256,11 +238,9 @@ async function fetchWithPuppeteer(url, mode = 'text', proxyPort = null) {
             await fs.mkdir(urlFetchImageDir, { recursive: true });
             await fs.writeFile(localImageServerPath, imageBuffer);
 
-            // Construct accessible URL
             const relativeServerPathForUrl = path.join('urlfetch', generatedFileName).replace(/\\/g, '/');
             const accessibleImageUrl = `${VAR_HTTP_URL}:${SERVER_PORT}/pw=${IMAGESERVER_IMAGE_KEY}/images/${relativeServerPathForUrl}`;
 
-            // Prepare response for AI
             const base64Image = imageBuffer.toString('base64');
             const imageMimeType = 'image/png';
             const pageTitle = await page.title();
@@ -289,16 +269,13 @@ async function fetchWithPuppeteer(url, mode = 'text', proxyPort = null) {
                 }
             };
         } else {
-            // 默认的文本提取模式
-            await autoScroll(page, mode); // Scroll page to load all lazy-loaded content
+            await autoScroll(page, mode);
 
-            // === 特定站点提取增强 ===
             const isGithub = urlObj.hostname.includes('github.com');
             if (isGithub) {
                 const githubData = await page.evaluate(() => {
                     let md = '';
 
-                    // 1. 获取 Repository 名称和简述
                     const repoNameEl = document.querySelector('strong[itemprop="name"] a') || document.querySelector('[itemprop="name"]');
                     if (repoNameEl) {
                         md += `# GitHub Repository: ${repoNameEl.textContent.trim()}\n\n`;
@@ -308,7 +285,6 @@ async function fetchWithPuppeteer(url, mode = 'text', proxyPort = null) {
                         md += `> ${aboutEl.textContent.trim()}\n\n`;
                     }
 
-                    // 2. 获取文件和目录列表
                     const fileRows = Array.from(document.querySelectorAll('tr.react-directory-row, div.react-directory-row'));
                     if (fileRows.length > 0) {
                         md += `## 文件列表\n`;
@@ -334,13 +310,11 @@ async function fetchWithPuppeteer(url, mode = 'text', proxyPort = null) {
                         }
                     }
 
-                    // 3. 获取 README 内容
                     const readmeArticle = document.querySelector('article.markdown-body');
                     if (readmeArticle) {
                         md += `## README\n\n${readmeArticle.innerText}\n`;
                     }
 
-                    // 4. Issue 或 PR 的内容支持
                     const issueTitle = document.querySelector('.gh-header-title');
                     if (issueTitle) {
                         md += `# ${issueTitle.textContent.trim()}\n\n`;
@@ -354,17 +328,14 @@ async function fetchWithPuppeteer(url, mode = 'text', proxyPort = null) {
                         });
                     }
 
-                    // 5. Blob 文件（具体代码文件）内容支持
                     const blobTextArea = document.querySelector('textarea#read-only-cursor-text-area');
                     if (blobTextArea && blobTextArea.value) {
                         const fileNameEl = document.querySelector('[data-testid="breadcrumbs-filename"]') || document.querySelector('#blob-path');
                         const fileName = fileNameEl ? fileNameEl.textContent.trim() : 'Code File';
                         md += `## 文件内容: ${fileName}\n\n\`\`\`\n${blobTextArea.value}\n\`\`\`\n`;
                     } else {
-                        // 回退尝试获取旧版或不同结构的纯文本
                         const rawContentEl = document.querySelector('[data-testid="raw-button"]');
                         if (rawContentEl && window.location.href.includes('/blob/')) {
-                            // Blob 页面但没找到 textarea，可能是其他类型或者渲染不同，尝试抓取内容区
                             const codeArea = document.querySelector('.js-file-line-container') || document.querySelector('table[data-paste-markdown-skip]');
                             if (codeArea) {
                                 md += `## 文件代码\n\n\`\`\`\n${codeArea.innerText}\n\`\`\`\n`;
@@ -379,18 +350,13 @@ async function fetchWithPuppeteer(url, mode = 'text', proxyPort = null) {
                     return githubData;
                 }
             }
-            // === 特定站点提取增强结束 ===
 
-            // 优先尝试作为聚合页提取有分类的链接
             const groupedLinks = await page.evaluate(() => {
-                // 根据用户反馈，新闻源标题的特征是 'span.text-xl.font-bold'
                 const titleElements = Array.from(document.querySelectorAll('span.text-xl.font-bold'));
                 const results = [];
 
                 for (const titleEl of titleElements) {
                     const category = titleEl.textContent.trim();
-                    // 寻找包裹该分类和其链接的最近的 "卡片" 容器
-                    // 这是一个基于典型卡片式布局的推断，对特定网站有效
                     const container = titleEl.closest('div[class*="rounded"]');
                     if (!container) continue;
 
@@ -403,10 +369,9 @@ async function fetchWithPuppeteer(url, mode = 'text', proxyPort = null) {
                         link.url &&
                         link.url.startsWith('http') &&
                         !link.url.startsWith('javascript:') &&
-                        link.title.length > 5 // 过滤掉短的导航链接
+                        link.title.length > 5
                     );
 
-                    // 对分类内部的链接进行去重
                     const uniqueLinks = [];
                     const seenUrls = new Set();
                     for (const link of linkData) {
@@ -423,7 +388,6 @@ async function fetchWithPuppeteer(url, mode = 'text', proxyPort = null) {
                 return results;
             });
 
-            // 如果找到了带分组的链接，格式化为带标题的Markdown列表
             if (groupedLinks && groupedLinks.length > 0) {
                 const pageTitle = await page.title();
                 let markdownOutput = `页面标题: ${pageTitle}\n\n`;
@@ -435,18 +399,14 @@ async function fetchWithPuppeteer(url, mode = 'text', proxyPort = null) {
                 return markdownOutput.trim();
             }
 
-            // 如果链接提取失败或链接很少，则回退到使用Readability提取文章正文
             const pageContent = await page.content();
             const doc = new JSDOM(pageContent, { url });
             const reader = new Readability(doc.window.document);
             const article = reader.parse();
 
             if (article && article.textContent) {
-                // Format the output with title and content
-                const result = `标题: ${article.title}\n\n${article.textContent.trim()}`;
-                return result;
+                return `标题: ${article.title}\n\n${article.textContent.trim()}`;
             } else {
-                // Fallback if Readability fails to extract content
                 return "成功获取网页，但无法提取主要内容或链接列表。";
             }
         }
@@ -474,7 +434,7 @@ async function main() {
 
             const data = JSON.parse(inputData);
             const url = data.url;
-            let mode = data.mode || 'text'; // 'text', 'snapshot', or 'image'
+            let mode = data.mode || 'text';
 
             if (!url) {
                 throw new Error("缺少必需的参数: url");
@@ -486,18 +446,14 @@ async function main() {
 
             let fetchedData;
 
-            // === 本地文件处理 ===
             if (url.startsWith('file://')) {
                 fetchedData = await handleLocalFile(url);
-                // 根据返回类型设置 output
                 if (typeof fetchedData === 'object' && fetchedData.content) {
                     output = { status: "success", result: fetchedData };
                 } else {
                     output = { status: "success", result: { content: [{ type: 'text', text: typeof fetchedData === 'string' ? fetchedData : JSON.stringify(fetchedData) }] } };
                 }
             } else {
-                // === 网络 URL 处理 ===
-                // 智能检测：如果 URL 指向图片且未指定模式，自动切换为 image 模式
                 if (mode === 'text' && isImageUrl(url)) {
                     mode = 'image';
                 }

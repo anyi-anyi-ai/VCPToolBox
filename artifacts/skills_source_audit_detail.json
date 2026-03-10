@@ -1,0 +1,800 @@
+{
+  "summary": {
+    "candidate_total": 75,
+    "duplicate_group_total": 23,
+    "duplicate_row_total": 66,
+    "by_label": {
+      "primary_skills": 30,
+      "mirror_webapp": 8,
+      "language_unknown": 26,
+      "non_zh_when_zh_exists": 20,
+      "backup": 7,
+      "docs_variant": 21
+    },
+    "by_language": {
+      "en": 29,
+      "unknown": 26,
+      "zh": 11
+    }
+  },
+  "duplicate_groups": [
+    {
+      "skill_id": "antigravity-awesome-skills-main::brainstorming",
+      "count": 2,
+      "rows": [
+        {
+          "language_hint": "en",
+          "title": "Brainstorming Ideas Into Designs",
+          "source_origin": "antigravity-awesome-skills-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/brainstorming/SKILL.md",
+          "labels": [
+            "primary_skills"
+          ]
+        },
+        {
+          "language_hint": "en",
+          "title": "Brainstorming Ideas Into Designs",
+          "source_origin": "antigravity-awesome-skills-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/web-app/public/skills/brainstorming/SKILL.md",
+          "labels": [
+            "mirror_webapp"
+          ]
+        }
+      ]
+    },
+    {
+      "skill_id": "antigravity-awesome-skills-main::subagent-driven-development",
+      "count": 2,
+      "rows": [
+        {
+          "language_hint": "en",
+          "title": "Subagent-Driven Development",
+          "source_origin": "antigravity-awesome-skills-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/subagent-driven-development/SKILL.md",
+          "labels": [
+            "primary_skills"
+          ]
+        },
+        {
+          "language_hint": "en",
+          "title": "Subagent-Driven Development",
+          "source_origin": "antigravity-awesome-skills-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/web-app/public/skills/subagent-driven-development/SKILL.md",
+          "labels": [
+            "mirror_webapp"
+          ]
+        }
+      ]
+    },
+    {
+      "skill_id": "antigravity-awesome-skills-main::systematic-debugging",
+      "count": 2,
+      "rows": [
+        {
+          "language_hint": "unknown",
+          "title": "Systematic Debugging",
+          "source_origin": "antigravity-awesome-skills-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/systematic-debugging/SKILL.md",
+          "labels": [
+            "primary_skills",
+            "language_unknown"
+          ]
+        },
+        {
+          "language_hint": "unknown",
+          "title": "Systematic Debugging",
+          "source_origin": "antigravity-awesome-skills-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/web-app/public/skills/systematic-debugging/SKILL.md",
+          "labels": [
+            "mirror_webapp",
+            "language_unknown"
+          ]
+        }
+      ]
+    },
+    {
+      "skill_id": "antigravity-awesome-skills-main::tdd-workflow",
+      "count": 2,
+      "rows": [
+        {
+          "language_hint": "en",
+          "title": "TDD Workflow",
+          "source_origin": "antigravity-awesome-skills-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/tdd-workflow/SKILL.md",
+          "labels": [
+            "primary_skills"
+          ]
+        },
+        {
+          "language_hint": "en",
+          "title": "TDD Workflow",
+          "source_origin": "antigravity-awesome-skills-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/web-app/public/skills/tdd-workflow/SKILL.md",
+          "labels": [
+            "mirror_webapp"
+          ]
+        }
+      ]
+    },
+    {
+      "skill_id": "antigravity-awesome-skills-main::test-driven-development",
+      "count": 2,
+      "rows": [
+        {
+          "language_hint": "en",
+          "title": "Test-Driven Development (TDD)",
+          "source_origin": "antigravity-awesome-skills-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/test-driven-development/SKILL.md",
+          "labels": [
+            "primary_skills"
+          ]
+        },
+        {
+          "language_hint": "en",
+          "title": "Test-Driven Development (TDD)",
+          "source_origin": "antigravity-awesome-skills-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/web-app/public/skills/test-driven-development/SKILL.md",
+          "labels": [
+            "mirror_webapp"
+          ]
+        }
+      ]
+    },
+    {
+      "skill_id": "antigravity-awesome-skills-main::verification-before-completion",
+      "count": 2,
+      "rows": [
+        {
+          "language_hint": "unknown",
+          "title": "Verification Before Completion",
+          "source_origin": "antigravity-awesome-skills-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/verification-before-completion/SKILL.md",
+          "labels": [
+            "primary_skills",
+            "language_unknown"
+          ]
+        },
+        {
+          "language_hint": "unknown",
+          "title": "Verification Before Completion",
+          "source_origin": "antigravity-awesome-skills-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/web-app/public/skills/verification-before-completion/SKILL.md",
+          "labels": [
+            "mirror_webapp",
+            "language_unknown"
+          ]
+        }
+      ]
+    },
+    {
+      "skill_id": "antigravity-awesome-skills-main::writing-plans",
+      "count": 2,
+      "rows": [
+        {
+          "language_hint": "unknown",
+          "title": "Writing Plans",
+          "source_origin": "antigravity-awesome-skills-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/writing-plans/SKILL.md",
+          "labels": [
+            "primary_skills",
+            "language_unknown"
+          ]
+        },
+        {
+          "language_hint": "unknown",
+          "title": "Writing Plans",
+          "source_origin": "antigravity-awesome-skills-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/web-app/public/skills/writing-plans/SKILL.md",
+          "labels": [
+            "mirror_webapp",
+            "language_unknown"
+          ]
+        }
+      ]
+    },
+    {
+      "skill_id": "antigravity-awesome-skills-main::writing-skills",
+      "count": 2,
+      "rows": [
+        {
+          "language_hint": "en",
+          "title": "Writing Skills (Excellence)",
+          "source_origin": "antigravity-awesome-skills-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/writing-skills/SKILL.md",
+          "labels": [
+            "primary_skills"
+          ]
+        },
+        {
+          "language_hint": "en",
+          "title": "Writing Skills (Excellence)",
+          "source_origin": "antigravity-awesome-skills-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/web-app/public/skills/writing-skills/SKILL.md",
+          "labels": [
+            "mirror_webapp"
+          ]
+        }
+      ]
+    },
+    {
+      "skill_id": "chiclaude-skills-main::brainstorming",
+      "count": 3,
+      "rows": [
+        {
+          "language_hint": "zh",
+          "title": "🔥 [No.013] 头脑风暴设计",
+          "source_origin": "chiclaude-skills-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/obra-superpowers/skills/brainstorming/SKILL.md",
+          "labels": [
+            "primary_skills"
+          ]
+        },
+        {
+          "language_hint": "en",
+          "title": "Brainstorming Ideas Into Designs",
+          "source_origin": "chiclaude-skills-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/yanghao-SKILL/SKILL.md",
+          "labels": [
+            "primary_skills",
+            "non_zh_when_zh_exists"
+          ]
+        },
+        {
+          "language_hint": "en",
+          "title": "Brainstorming Ideas Into Designs",
+          "source_origin": "chiclaude-skills-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills-original-backup/brainstorming/SKILL.md",
+          "labels": [
+            "backup",
+            "non_zh_when_zh_exists"
+          ]
+        }
+      ]
+    },
+    {
+      "skill_id": "chiclaude-skills-main::subagent-driven-development",
+      "count": 2,
+      "rows": [
+        {
+          "language_hint": "en",
+          "title": "Subagent-Driven Development",
+          "source_origin": "chiclaude-skills-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/obra-superpowers/skills/subagent-driven-development/SKILL.md",
+          "labels": [
+            "primary_skills"
+          ]
+        },
+        {
+          "language_hint": "en",
+          "title": "Subagent-Driven Development",
+          "source_origin": "chiclaude-skills-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills-original-backup/subagent-driven-development/SKILL.md",
+          "labels": [
+            "backup"
+          ]
+        }
+      ]
+    },
+    {
+      "skill_id": "chiclaude-skills-main::systematic-debugging",
+      "count": 2,
+      "rows": [
+        {
+          "language_hint": "unknown",
+          "title": "Systematic Debugging",
+          "source_origin": "chiclaude-skills-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/obra-superpowers/skills/systematic-debugging/SKILL.md",
+          "labels": [
+            "primary_skills",
+            "non_zh_when_zh_exists",
+            "language_unknown"
+          ]
+        },
+        {
+          "language_hint": "zh",
+          "title": "系统化调试",
+          "source_origin": "chiclaude-skills-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills-original-backup/systematic-debugging/SKILL.md",
+          "labels": [
+            "backup"
+          ]
+        }
+      ]
+    },
+    {
+      "skill_id": "chiclaude-skills-main::test-driven-development",
+      "count": 2,
+      "rows": [
+        {
+          "language_hint": "zh",
+          "title": "Test-Driven Development - 测试驱动开发",
+          "source_origin": "chiclaude-skills-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/obra-superpowers/skills/test-driven-development/SKILL.md",
+          "labels": [
+            "primary_skills"
+          ]
+        },
+        {
+          "language_hint": "en",
+          "title": "Test-Driven Development (TDD)",
+          "source_origin": "chiclaude-skills-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills-original-backup/test-driven-development/SKILL.md",
+          "labels": [
+            "backup",
+            "non_zh_when_zh_exists"
+          ]
+        }
+      ]
+    },
+    {
+      "skill_id": "chiclaude-skills-main::verification-before-completion",
+      "count": 2,
+      "rows": [
+        {
+          "language_hint": "unknown",
+          "title": "Verification Before Completion",
+          "source_origin": "chiclaude-skills-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/obra-superpowers/skills/verification-before-completion/SKILL.md",
+          "labels": [
+            "primary_skills",
+            "language_unknown"
+          ]
+        },
+        {
+          "language_hint": "unknown",
+          "title": "Verification Before Completion",
+          "source_origin": "chiclaude-skills-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills-original-backup/verification-before-completion/SKILL.md",
+          "labels": [
+            "backup",
+            "language_unknown"
+          ]
+        }
+      ]
+    },
+    {
+      "skill_id": "chiclaude-skills-main::writing-plans",
+      "count": 2,
+      "rows": [
+        {
+          "language_hint": "unknown",
+          "title": "Writing Plans",
+          "source_origin": "chiclaude-skills-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/obra-superpowers/skills/writing-plans/SKILL.md",
+          "labels": [
+            "primary_skills",
+            "language_unknown"
+          ]
+        },
+        {
+          "language_hint": "unknown",
+          "title": "Writing Plans",
+          "source_origin": "chiclaude-skills-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills-original-backup/writing-plans/SKILL.md",
+          "labels": [
+            "backup",
+            "language_unknown"
+          ]
+        }
+      ]
+    },
+    {
+      "skill_id": "chiclaude-skills-main::writing-skills",
+      "count": 2,
+      "rows": [
+        {
+          "language_hint": "unknown",
+          "title": "Writing Skills",
+          "source_origin": "chiclaude-skills-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/obra-superpowers/skills/writing-skills/SKILL.md",
+          "labels": [
+            "primary_skills",
+            "language_unknown"
+          ]
+        },
+        {
+          "language_hint": "unknown",
+          "title": "Writing Skills",
+          "source_origin": "chiclaude-skills-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills-original-backup/writing-skills/SKILL.md",
+          "labels": [
+            "backup",
+            "language_unknown"
+          ]
+        }
+      ]
+    },
+    {
+      "skill_id": "everything-claude-code-main::api-design",
+      "count": 2,
+      "rows": [
+        {
+          "language_hint": "en",
+          "title": "API Design Patterns",
+          "source_origin": "everything-claude-code-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/.agents/skills/api-design/SKILL.md",
+          "labels": [
+            "primary_skills"
+          ]
+        },
+        {
+          "language_hint": "en",
+          "title": "API Design Patterns",
+          "source_origin": "everything-claude-code-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/skills/api-design/SKILL.md",
+          "labels": [
+            "primary_skills"
+          ]
+        }
+      ]
+    },
+    {
+      "skill_id": "everything-claude-code-main::backend-patterns",
+      "count": 5,
+      "rows": [
+        {
+          "language_hint": "en",
+          "title": "Backend Development Patterns",
+          "source_origin": "everything-claude-code-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/.agents/skills/backend-patterns/SKILL.md",
+          "labels": [
+            "primary_skills",
+            "non_zh_when_zh_exists"
+          ]
+        },
+        {
+          "language_hint": "en",
+          "title": "バックエンド開発パターン",
+          "source_origin": "everything-claude-code-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/docs/ja-JP/skills/backend-patterns/SKILL.md",
+          "labels": [
+            "docs_variant",
+            "non_zh_when_zh_exists"
+          ]
+        },
+        {
+          "language_hint": "zh",
+          "title": "后端开发模式",
+          "source_origin": "everything-claude-code-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/docs/zh-CN/skills/backend-patterns/SKILL.md",
+          "labels": [
+            "docs_variant"
+          ]
+        },
+        {
+          "language_hint": "en",
+          "title": "後端開發模式",
+          "source_origin": "everything-claude-code-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/docs/zh-TW/skills/backend-patterns/SKILL.md",
+          "labels": [
+            "docs_variant",
+            "non_zh_when_zh_exists"
+          ]
+        },
+        {
+          "language_hint": "en",
+          "title": "Backend Development Patterns",
+          "source_origin": "everything-claude-code-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/skills/backend-patterns/SKILL.md",
+          "labels": [
+            "primary_skills",
+            "non_zh_when_zh_exists"
+          ]
+        }
+      ]
+    },
+    {
+      "skill_id": "everything-claude-code-main::continuous-learning-v2",
+      "count": 4,
+      "rows": [
+        {
+          "language_hint": "unknown",
+          "title": "Continuous Learning v2 - インスティンクトベースアーキテクチャ",
+          "source_origin": "everything-claude-code-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/docs/ja-JP/skills/continuous-learning-v2/SKILL.md",
+          "labels": [
+            "docs_variant",
+            "non_zh_when_zh_exists",
+            "language_unknown"
+          ]
+        },
+        {
+          "language_hint": "zh",
+          "title": "持续学习 v2 - 基于本能的架构",
+          "source_origin": "everything-claude-code-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/docs/zh-CN/skills/continuous-learning-v2/SKILL.md",
+          "labels": [
+            "docs_variant"
+          ]
+        },
+        {
+          "language_hint": "en",
+          "title": "持續學習 v2 - 基於本能的架構",
+          "source_origin": "everything-claude-code-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/docs/zh-TW/skills/continuous-learning-v2/SKILL.md",
+          "labels": [
+            "docs_variant",
+            "non_zh_when_zh_exists"
+          ]
+        },
+        {
+          "language_hint": "en",
+          "title": "Continuous Learning v2 - Instinct-Based Architecture",
+          "source_origin": "everything-claude-code-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/skills/continuous-learning-v2/SKILL.md",
+          "labels": [
+            "primary_skills",
+            "non_zh_when_zh_exists"
+          ]
+        }
+      ]
+    },
+    {
+      "skill_id": "everything-claude-code-main::frontend-patterns",
+      "count": 5,
+      "rows": [
+        {
+          "language_hint": "unknown",
+          "title": "Frontend Development Patterns",
+          "source_origin": "everything-claude-code-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/.agents/skills/frontend-patterns/SKILL.md",
+          "labels": [
+            "primary_skills",
+            "language_unknown"
+          ]
+        },
+        {
+          "language_hint": "unknown",
+          "title": "フロントエンド開発パターン",
+          "source_origin": "everything-claude-code-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/docs/ja-JP/skills/frontend-patterns/SKILL.md",
+          "labels": [
+            "docs_variant",
+            "language_unknown"
+          ]
+        },
+        {
+          "language_hint": "unknown",
+          "title": "前端开发模式",
+          "source_origin": "everything-claude-code-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/docs/zh-CN/skills/frontend-patterns/SKILL.md",
+          "labels": [
+            "docs_variant",
+            "language_unknown"
+          ]
+        },
+        {
+          "language_hint": "unknown",
+          "title": "前端開發模式",
+          "source_origin": "everything-claude-code-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/docs/zh-TW/skills/frontend-patterns/SKILL.md",
+          "labels": [
+            "docs_variant",
+            "language_unknown"
+          ]
+        },
+        {
+          "language_hint": "unknown",
+          "title": "Frontend Development Patterns",
+          "source_origin": "everything-claude-code-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/skills/frontend-patterns/SKILL.md",
+          "labels": [
+            "primary_skills",
+            "language_unknown"
+          ]
+        }
+      ]
+    },
+    {
+      "skill_id": "everything-claude-code-main::iterative-retrieval",
+      "count": 4,
+      "rows": [
+        {
+          "language_hint": "unknown",
+          "title": "反復検索パターン",
+          "source_origin": "everything-claude-code-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/docs/ja-JP/skills/iterative-retrieval/SKILL.md",
+          "labels": [
+            "docs_variant",
+            "language_unknown"
+          ]
+        },
+        {
+          "language_hint": "unknown",
+          "title": "迭代检索模式",
+          "source_origin": "everything-claude-code-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/docs/zh-CN/skills/iterative-retrieval/SKILL.md",
+          "labels": [
+            "docs_variant",
+            "language_unknown"
+          ]
+        },
+        {
+          "language_hint": "en",
+          "title": "迭代檢索模式",
+          "source_origin": "everything-claude-code-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/docs/zh-TW/skills/iterative-retrieval/SKILL.md",
+          "labels": [
+            "docs_variant"
+          ]
+        },
+        {
+          "language_hint": "en",
+          "title": "Iterative Retrieval Pattern",
+          "source_origin": "everything-claude-code-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/skills/iterative-retrieval/SKILL.md",
+          "labels": [
+            "primary_skills"
+          ]
+        }
+      ]
+    },
+    {
+      "skill_id": "everything-claude-code-main::security-review",
+      "count": 5,
+      "rows": [
+        {
+          "language_hint": "en",
+          "title": "Security Review Skill",
+          "source_origin": "everything-claude-code-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/.agents/skills/security-review/SKILL.md",
+          "labels": [
+            "primary_skills",
+            "non_zh_when_zh_exists"
+          ]
+        },
+        {
+          "language_hint": "unknown",
+          "title": "セキュリティレビュースキル",
+          "source_origin": "everything-claude-code-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/docs/ja-JP/skills/security-review/SKILL.md",
+          "labels": [
+            "docs_variant",
+            "non_zh_when_zh_exists",
+            "language_unknown"
+          ]
+        },
+        {
+          "language_hint": "zh",
+          "title": "安全审查技能",
+          "source_origin": "everything-claude-code-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/docs/zh-CN/skills/security-review/SKILL.md",
+          "labels": [
+            "docs_variant"
+          ]
+        },
+        {
+          "language_hint": "zh",
+          "title": "安全性審查技能",
+          "source_origin": "everything-claude-code-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/docs/zh-TW/skills/security-review/SKILL.md",
+          "labels": [
+            "docs_variant"
+          ]
+        },
+        {
+          "language_hint": "en",
+          "title": "Security Review Skill",
+          "source_origin": "everything-claude-code-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/skills/security-review/SKILL.md",
+          "labels": [
+            "primary_skills",
+            "non_zh_when_zh_exists"
+          ]
+        }
+      ]
+    },
+    {
+      "skill_id": "everything-claude-code-main::tdd-workflow",
+      "count": 5,
+      "rows": [
+        {
+          "language_hint": "en",
+          "title": "Test-Driven Development Workflow",
+          "source_origin": "everything-claude-code-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/.agents/skills/tdd-workflow/SKILL.md",
+          "labels": [
+            "primary_skills",
+            "non_zh_when_zh_exists"
+          ]
+        },
+        {
+          "language_hint": "unknown",
+          "title": "テスト駆動開発ワークフロー",
+          "source_origin": "everything-claude-code-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/docs/ja-JP/skills/tdd-workflow/SKILL.md",
+          "labels": [
+            "docs_variant",
+            "non_zh_when_zh_exists",
+            "language_unknown"
+          ]
+        },
+        {
+          "language_hint": "zh",
+          "title": "测试驱动开发工作流",
+          "source_origin": "everything-claude-code-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/docs/zh-CN/skills/tdd-workflow/SKILL.md",
+          "labels": [
+            "docs_variant"
+          ]
+        },
+        {
+          "language_hint": "zh",
+          "title": "測試驅動開發工作流程",
+          "source_origin": "everything-claude-code-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/docs/zh-TW/skills/tdd-workflow/SKILL.md",
+          "labels": [
+            "docs_variant"
+          ]
+        },
+        {
+          "language_hint": "en",
+          "title": "Test-Driven Development Workflow",
+          "source_origin": "everything-claude-code-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/skills/tdd-workflow/SKILL.md",
+          "labels": [
+            "primary_skills",
+            "non_zh_when_zh_exists"
+          ]
+        }
+      ]
+    },
+    {
+      "skill_id": "everything-claude-code-main::verification-loop",
+      "count": 5,
+      "rows": [
+        {
+          "language_hint": "unknown",
+          "title": "Verification Loop Skill",
+          "source_origin": "everything-claude-code-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/.agents/skills/verification-loop/SKILL.md",
+          "labels": [
+            "primary_skills",
+            "non_zh_when_zh_exists",
+            "language_unknown"
+          ]
+        },
+        {
+          "language_hint": "unknown",
+          "title": "検証ループスキル",
+          "source_origin": "everything-claude-code-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/docs/ja-JP/skills/verification-loop/SKILL.md",
+          "labels": [
+            "docs_variant",
+            "non_zh_when_zh_exists",
+            "language_unknown"
+          ]
+        },
+        {
+          "language_hint": "zh",
+          "title": "验证循环技能",
+          "source_origin": "everything-claude-code-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/docs/zh-CN/skills/verification-loop/SKILL.md",
+          "labels": [
+            "docs_variant"
+          ]
+        },
+        {
+          "language_hint": "zh",
+          "title": "驗證循環技能",
+          "source_origin": "everything-claude-code-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/docs/zh-TW/skills/verification-loop/SKILL.md",
+          "labels": [
+            "docs_variant"
+          ]
+        },
+        {
+          "language_hint": "unknown",
+          "title": "Verification Loop Skill",
+          "source_origin": "everything-claude-code-main",
+          "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/skills/verification-loop/SKILL.md",
+          "labels": [
+            "primary_skills",
+            "non_zh_when_zh_exists",
+            "language_unknown"
+          ]
+        }
+      ]
+    }
+  ]
+}

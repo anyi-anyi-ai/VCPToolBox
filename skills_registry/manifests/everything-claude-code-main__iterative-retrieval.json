@@ -1,0 +1,50 @@
+{
+  "skill_id": "everything-claude-code-main::iterative-retrieval",
+  "name": "iterative-retrieval",
+  "title": "Iterative Retrieval Pattern",
+  "summary": "Pattern for progressively refining context retrieval to solve the subagent context problem",
+  "category": {
+    "l1": "A. Agent工作流与任务编排",
+    "l2": "A2. 执行调度与协同开发",
+    "l3": "A2-1. 任务执行与协作流"
+  },
+  "usage_category": {
+    "usage_method": "检索与发现",
+    "family": "研究检索类",
+    "domain": "通用知识检索"
+  },
+  "capability_type": "核心能力",
+  "priority": "P0",
+  "integration_phase": "短期",
+  "asset_status": "可执行技能",
+  "status": "active_candidate",
+  "review_status": "ready",
+  "source_origin": "everything-claude-code-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/skills/iterative-retrieval/SKILL.md",
+  "language_hint": "en",
+  "vcp_mapping": [
+    "KnowledgeBase",
+    "PluginBridge"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": true,
+  "executable_level": "stub",
+  "duplicate_group": "verification_loop",
+  "issue_flags": [],
+  "recommended_action": "纳入重复组人工复核，必要时合并",
+  "tags": [
+    "A. Agent工作流与任务编排",
+    "A2. 执行调度与协同开发",
+    "P0",
+    "dup:verification_loop",
+    "everything-claude-code-main",
+    "lang:en",
+    "taskflow:检索与发现",
+    "核心能力"
+  ],
+  "version": "0.1.0-draft",
+  "taskflow_category": "检索与发现",
+  "canonical_group": "iterative-retrieval",
+  "canonical_selection_reason": "无重复候选，直接保留",
+  "canonical": true
+}

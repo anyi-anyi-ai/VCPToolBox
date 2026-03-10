@@ -1,0 +1,49 @@
+{
+  "skill_id": "antigravity-awesome-skills-main::cc-skill-coding-standards",
+  "name": "cc-skill-coding-standards",
+  "title": "Coding Standards & Best Practices",
+  "summary": "Universal coding standards, best practices, and patterns for TypeScript, JavaScript, React, and Node.js development.",
+  "category": {
+    "l1": "B. 工程实现与质量保障",
+    "l2": "B1. 开发范式",
+    "l3": "B1-2. 编码规范"
+  },
+  "usage_category": {
+    "usage_method": "知识治理与持续学习",
+    "family": "知识治理类",
+    "domain": "技能治理与持续学习"
+  },
+  "capability_type": "通用能力",
+  "priority": "P1",
+  "integration_phase": "中期",
+  "asset_status": "可执行技能",
+  "status": "registered",
+  "review_status": "ready",
+  "source_origin": "antigravity-awesome-skills-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/cc-skill-coding-standards/SKILL.md",
+  "language_hint": "unknown",
+  "vcp_mapping": [
+    "KnowledgeBase",
+    "PluginBridge"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": true,
+  "executable_level": "stub",
+  "duplicate_group": "",
+  "issue_flags": [],
+  "recommended_action": "纳入标准化台账并继续评估",
+  "tags": [
+    "B. 工程实现与质量保障",
+    "B1. 开发范式",
+    "P1",
+    "antigravity-awesome-skills-main",
+    "lang:unknown",
+    "taskflow:检索与发现",
+    "通用能力"
+  ],
+  "version": "0.1.0-draft",
+  "taskflow_category": "检索与发现",
+  "canonical_group": "cc-skill-coding-standards",
+  "canonical_selection_reason": "无重复候选，直接保留",
+  "canonical": true
+}

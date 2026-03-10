@@ -1,0 +1,45 @@
+{
+    "manifestVersion": "1.0.0",
+    "name": "Context7",
+    "version": "1.0.0",
+    "displayName": "Context7文档查询器",
+    "description": "集成Context7平台，为AI提供实时的、版本特定的代码库文档和示例，支持最新的库文档查询，避免AI依赖过时的训练数据。",
+    "author": "VCP Community",
+    "pluginType": "synchronous",
+    "entryPoint": {
+        "type": "nodejs",
+        "command": "node Context7.js"
+    },
+    "communication": {
+        "protocol": "stdio",
+        "timeout": 15000
+    },
+    "configSchema": {
+        "CONTEXT7_BASE_URL": {
+            "type": "string",
+            "description": "Context7 API的基础URL",
+            "default": "https://context7.com"
+        },
+        "CONTEXT7_TIMEOUT": {
+            "type": "number",
+            "description": "API请求超时时间（毫秒）",
+            "default": 10000
+        }
+    },
+    "capabilities": {
+        "invocationCommands": [
+            {
+                "commandIdentifier": "GetLibraryDocs",
+                "description": "调用此工具可以获取指定代码库的最新文档和代码示例。Context7提供来自官方源的实时、版本特定的文档，确保代码建议的准确性。\n\n参数:\n- library (字符串, 必需): 要查询的库名称，格式通常为 'owner/repo' 或简单的库名，如 'react', 'next.js', 'tailwindcss', 'upstash/redis' 等\n- query (字符串, 可选): 具体的查询内容，如 'hooks', 'routing', 'authentication' 等，用于过滤相关文档\n- language (字符串, 可选): 编程语言，如 'javascript', 'typescript', 'python' 等\n\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」Context7「末」,\nlibrary:「始」react「末」,\nquery:「始」hooks「末」\n<<<[END_TOOL_REQUEST]>>>\n\n返回内容包括:\n- 库的基本信息和版本\n- 相关的文档内容\n- 代码示例和用法说明\n- 官方文档链接",
+                "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」Context7「末」,\nlibrary:「始」next.js「末」,\nquery:「始」app router「末」,\nlanguage:「始」typescript「末」\n<<<[END_TOOL_REQUEST]>>>"
+            },
+            {
+                "commandIdentifier": "SearchLibraries",
+                "description": "搜索可用的代码库。当不确定具体库名称时，可以使用此命令搜索相关的库。\n\n参数:\n- searchTerm (字符串, 必需): 搜索关键词，如 'react ui', 'database orm', 'authentication' 等\n- category (字符串, 可选): 库的分类，如 'frontend', 'backend', 'database', 'ui' 等\n\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」Context7「末」,\ncommand:「始」SearchLibraries「末」,\nsearchTerm:「始」react ui components「末」\n<<<[END_TOOL_REQUEST]>>>"
+            }
+        ]
+    },
+    "webSocketPush": {
+        "enabled": false
+    }
+}

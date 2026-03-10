@@ -1,0 +1,38 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "TimelineInjector",
+  "version": "1.0.0",
+  "displayName": "时间线注入器",
+  "description": "扫描timeline/目录的JSON文件，为每个角色生成时间线摘要，并在dailynote/下创建时间线日记本文件夹（如文枢时间线），可通过{{文枢时间线日记本}}等占位符注入。自动发现所有timeline文件，无需手动配置。",
+  "author": "System",
+  "pluginType": "static",
+  "entryPoint": {
+    "type": "nodejs",
+    "command": "node timeline-injector.js"
+  },
+  "communication": {
+    "protocol": "stdio"
+  },
+  "capabilities": {
+    "systemPromptPlaceholders": [],
+    "invocationCommands": []
+  },
+  "configSchema": {
+    "debugMode": {
+      "type": "boolean",
+      "default": false,
+      "description": "启用调试模式"
+    },
+    "maxEntries": {
+      "type": "integer",
+      "default": 10,
+      "description": "每个时间线显示的最大条目数"
+    },
+    "dateFormat": {
+      "type": "string",
+      "default": "YYYY-MM-DD",
+      "description": "日期显示格式"
+    }
+  },
+  "refreshIntervalCron": "0 */1 * * *"
+}

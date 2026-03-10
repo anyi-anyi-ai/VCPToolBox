@@ -1,0 +1,56 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "NeteaseMusic",
+  "displayName": "网易云音乐点歌",
+  "version": "1.0.0",
+  "description": "网易云音乐点歌插件，支持搜索歌曲、获取最高音质播放链接和获取歌词。需要网易云VIP账号。",
+  "author": "User",
+  "pluginType": "synchronous",
+  "entryPoint": {
+    "type": "nodejs",
+    "command": "node NeteaseMusic.mjs"
+  },
+  "communication": {
+    "protocol": "stdio",
+    "timeout": 30000
+  },
+  "configSchema": {
+    "NETEASE_MUSIC_U": "string",
+    "NETEASE_PHONE": "string",
+    "NETEASE_PASSWORD": "string"
+  },
+  "capabilities": {
+    "invocationCommands": [
+      {
+        "commandIdentifier": "send_captcha",
+        "description": "发送短信验证码到指定手机号，用于网易云音乐验证码登录。调用后请提示用户查看短信并提供验证码，然后调用 captcha_login 完成登录。\n参数:\n- command (字符串, 必需): 'send_captcha'\n- phone (字符串, 可选): 手机号，不填则使用 config.env 中的 NETEASE_PHONE\n\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NeteaseMusic「末」,\ncommand:「始」send_captcha「末」,\nphone:「始」手机号「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NeteaseMusic「末」,\ncommand:「始」send_captcha「末」,\nphone:「始」18711840129「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "captcha_login",
+        "description": "使用短信验证码完成网易云音乐登录。需先调用 send_captcha 发送验证码。登录成功后 cookie 自动缓存，后续搜歌/拿链接/拿歌词无需重复登录。\n参数:\n- command (字符串, 必需): 'captcha_login'\n- phone (字符串, 可选): 手机号，不填则使用 config.env 中的 NETEASE_PHONE\n- captcha (字符串, 必需): 用户收到的短信验证码\n\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NeteaseMusic「末」,\ncommand:「始」captcha_login「末」,\nphone:「始」手机号「末」,\ncaptcha:「始」验证码「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NeteaseMusic「末」,\ncommand:「始」captcha_login「末」,\nphone:「始」18711840129「末」,\ncaptcha:「始」1234「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "qr_login",
+        "description": "二维码登录网易云音乐（推荐，不会被风控拦截）。分两步使用：\n\n第一步 - 生成二维码：调用时传 action:\"generate\"，返回二维码图片(base64)和key。将二维码图片展示给用户，让用户用网易云App扫码。\n第二步 - 轮询状态：调用时传 action:\"poll\" 和第一步返回的 key，检查扫码状态。状态码：801=等待扫码，802=已扫码待确认，803=登录成功，800=二维码过期需重新生成。\n\n参数:\n- command (字符串, 必需): 'qr_login'\n- action (字符串, 必需): 'generate' 或 'poll'\n- key (字符串, action为poll时必需): generate 步骤返回的 key\n\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NeteaseMusic「末」,\ncommand:「始」qr_login「末」,\naction:「始」generate「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NeteaseMusic「末」,\ncommand:「始」qr_login「末」,\naction:「始」generate「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "search_song",
+        "description": "搜索网易云音乐歌曲。返回匹配的歌曲列表（包含歌曲ID、名称、歌手、专辑、时长、付费类型），你可以根据列表选择合适的歌曲，再使用 get_song_url 获取播放链接。\n参数:\n- command (字符串, 必需): 'search_song'\n- keywords (字符串, 必需): 搜索关键词（歌曲名、歌手名等）\n- limit (数字, 可选): 返回结果数量，默认10，最大30\n\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NeteaseMusic「末」,\ncommand:「始」search_song「末」,\nkeywords:「始」搜索关键词「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NeteaseMusic「末」,\ncommand:「始」search_song「末」,\nkeywords:「始」周杰伦 晴天「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "get_song_url",
+        "description": "通过歌曲ID获取网易云音乐最高音质播放链接、歌曲详情和歌词。返回结果包含：\n1. html 字段：一个带封面、播放/暂停控制、进度条和实时滚动歌词的音乐播放器页面，会自动开始播放。请将 html 字段的完整内容用代码块（三个反引号）包裹后原样输出给用户，不要修改HTML。\n2. songInfo 字段：歌曲基本信息（歌名、歌手、专辑、音质等），你可以阅读。\n3. lyrics 字段：纯文本歌词内容，你可以阅读并与用户讨论歌曲。\n4. lyricsTranslation 字段：翻译歌词（如有）。\n\n参数:\n- command (字符串, 必需): 'get_song_url'\n- id (数字/字符串, 必需): 歌曲ID（从搜索结果中获取）\n\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NeteaseMusic「末」,\ncommand:「始」get_song_url「末」,\nid:「始」歌曲ID「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NeteaseMusic「末」,\ncommand:「始」get_song_url「末」,\nid:「始」186016「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "get_lyrics",
+        "description": "通过歌曲ID获取歌词（包含原文歌词和翻译歌词）。\n参数:\n- command (字符串, 必需): 'get_lyrics'\n- id (数字/字符串, 必需): 歌曲ID（从搜索结果中获取）\n\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NeteaseMusic「末」,\ncommand:「始」get_lyrics「末」,\nid:「始」歌曲ID「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NeteaseMusic「末」,\ncommand:「始」get_lyrics「末」,\nid:「始」186016「末」\n<<<[END_TOOL_REQUEST]>>>"
+      }
+    ]
+  }
+}
