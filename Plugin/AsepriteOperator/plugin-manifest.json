@@ -1,0 +1,71 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "AsepriteOperator",
+  "version": "1.1.0",
+  "displayName": "Aseprite 圖形操作器",
+  "description": "以 Aseprite 執行腳本的同步工具集，涵蓋建立畫布、圖層與影格管理、像素與基本幾何繪製。增強特性：批量串行（commandX 後綴）、可選 save_as 另存、ExportSprite 匯出、建議使用絕對路徑、支援 file://（本地缺失時返回結構化錯誤 FILE_NOT_FOUND_LOCALLY）。",
+  "author": "Your Team",
+  "pluginType": "synchronous",
+  "entryPoint": {
+    "type": "python",
+    "command": "python AsepriteOperator.py"
+  },
+  "communication": {
+    "protocol": "stdio",
+    "timeout": 120000
+  },
+  "configSchema": {
+    "ASEPRITE_PATH": {
+      "type": "string",
+      "description": "Aseprite 可執行檔完整路徑（Windows 範例：D:\\\\steam\\\\steamapps\\\\common\\\\Aseprite\\\\Aseprite.exe）"
+    }
+  },
+  "capabilities": {
+    "invocationCommands": [
+      {
+        "command": "CreateCanvas",
+        "description": "建立新畫布。參數: width(int)、height(int)、filename(str，建議絕對路徑；建立時請使用 C:\\\\Project\\\\VCPToolBox\\\\image\\\\Aseprite)。示例:\\n<<<[TOOL_REQUEST]>>>\\ntool_name:「始」AsepriteOperator「末」,\\ncommand:「始」CreateCanvas「末」,\\nwidth:「始」64「末」,\\nheight:「始」64「末」,\\nfilename:「始」C:/Project/VCPToolBox/image/Aseprite/scene1.aseprite「末」\\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "AddLayer",
+        "description": "在指定檔案中新增圖層。參數: filename(str)、layer_name(str)、save_as(str, 可選；另存新檔以避免覆寫)。建議使用絕對路徑。"
+      },
+      {
+        "command": "AddFrame",
+        "description": "在指定檔案中新增影格。參數: filename(str)、save_as(str, 可選；另存新檔)。建議使用絕對路徑。"
+      },
+      {
+        "command": "DrawPixels",
+        "description": "批量繪製像素。參數: filename(str)、pixels(list of {x:int,y:int,color:str(hex)}，必須是原生 JSON 陣列，非字串)、save_as(str, 可選)。示例（單指令）：\\n<<<[TOOL_REQUEST]>>>\\ntool_name:「始」AsepriteOperator「末」,\\ncommand:「始」DrawPixels「末」,\\nfilename:「始」C:/Project/VCPToolBox/image/Aseprite/scene1.aseprite「末」,\\npixels:「始」[{\"x\":13,\"y\":12,\"color\":\"#FFFFFF\"}]「末」\\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "DrawLine",
+        "description": "繪製直線。參數: filename(str)、x_start(int)、y_start(int)、x_end(int)、y_end(int)、color(str, 預設#000000)、thickness(int, 預設1)、save_as(str, 可選)。亦兼容 x1/y1/x2/y2。"
+      },
+      {
+        "command": "DrawRectangle",
+        "description": "繪製矩形。參數: filename(str)、x(int)、y(int)、width(int)、height(int)、color(str, 可選)、fill(bool, 預設 false)、save_as(str, 可選)。"
+      },
+      {
+        "command": "FillArea",
+        "description": "油漆桶填色。參數: filename(str)、x(int)、y(int)、color(str, 可選)、save_as(str, 可選)。"
+      },
+      {
+        "command": "DrawCircle",
+        "description": "繪製圓形。參數: filename(str)、center_x(int)、center_y(int)、radius(int)、color(str, 可選)、fill(bool, 預設 false)、save_as(str, 可選)。"
+      },
+      {
+        "command": "SaveAs",
+        "description": "另存新檔。參數: filename(str)、save_as(str)。用途：對既有 .aseprite 另存為新路徑。示例:\\n<<<[TOOL_REQUEST]>>>\\ntool_name:「始」AsepriteOperator「末」,\\ncommand:「始」SaveAs「末」,\\nfilename:「始」C:/Project/VCPToolBox/image/Aseprite/scene1.aseprite「末」,\\nsave_as:「始」C:/Project/VCPToolBox/image/Aseprite/scene1_copy.aseprite「末」\\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "ExportSprite",
+        "description": "匯出為靜態或動畫格式。參數: filename(str)、output_filename(str；若無副檔名會依 format 自動補上)、format(str, 可選：png/gif/jpg...)。示例：\\n<<<[TOOL_REQUEST]>>>\\ntool_name:「始」AsepriteOperator「末」,\\ncommand:「始」ExportSprite「末」,\\nfilename:「始」C:/Project/VCPToolBox/image/Aseprite/scene1.aseprite「末」,\\noutput_filename:「始」C:/Project/VCPToolBox/image/Aseprite/scene1.png「末」\\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "Batch",
+        "description": "一次性串行執行多個指令。請以 command1/command2… 與對應參數後綴 1/2… 提供；陣列（如 pixelsX）必須為原生 JSON 陣列，非字串。示例：\\n<<<[TOOL_REQUEST]>>>\\ntool_name:「始」AsepriteOperator「末」,\\ncommand:「始」Batch「末」,\\ncommand1:「始」CreateCanvas「末」,\\nwidth1:「始」64「末」,\\nheight1:「始」64「末」,\\nfilename1:「始」C:/Project/VCPToolBox/image/Aseprite/batch.aseprite「末」,\\ncommand2:「始」DrawLine「末」,\\nfilename2:「始」C:/Project/VCPToolBox/image/Aseprite/batch.aseprite「末」,\\nx_start2:「始」0「末」,\\ny_start2:「始」0「末」,\\nx_end2:「始」63「末」,\\ny_end2:「始」63「末」,\\ncolor2:「始」#FF0000「末」,\\ncommand3:「始」DrawPixels「末」,\\nfilename3:「始」C:/Project/VCPToolBox/image/Aseprite/batch.aseprite「末」,\\npixels3:「始」[{\"x\":13,\"y\":12,\"color\":\"#FFFFFF\"}]「末」\\n<<<[END_TOOL_REQUEST]>>>"
+      }
+    ]
+  }
+}

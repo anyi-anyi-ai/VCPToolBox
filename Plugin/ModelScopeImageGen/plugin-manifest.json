@@ -1,0 +1,58 @@
+{
+  "name": "ModelScopeImageGen",
+  "displayName": "ModelScope Image Generation",
+  "version": "0.1.0",
+  "description": "Use ModelScope API-Inference (AIGC) to generate images from text prompts (async task + polling).",
+  "author": "VCPToolBox",
+  "pluginType": "synchronous",
+  "entry": "ModelScopeImageGen.mjs",
+  "outputType": "markdown",
+  "tags": ["image", "aigc", "modelscope", "text2image"],
+  "parameters": {
+    "prompt": {
+      "type": "string",
+      "required": true,
+      "description": "Positive prompt"
+    },
+    "negative_prompt": {
+      "type": "string",
+      "required": false,
+      "description": "Negative prompt"
+    },
+    "model": {
+      "type": "string",
+      "required": false,
+      "description": "ModelScope model id, e.g. Qwen/Qwen-Image"
+    },
+    "size": {
+      "type": "string",
+      "required": false,
+      "description": "Image size, e.g. 1024x1024"
+    },
+    "steps": {
+      "type": "number",
+      "required": false,
+      "description": "Sampling steps"
+    },
+    "seed": {
+      "type": "number",
+      "required": false,
+      "description": "Random seed"
+    },
+    "guidance": {
+      "type": "number",
+      "required": false,
+      "description": "Guidance scale"
+    },
+    "timeout_sec": {
+      "type": "number",
+      "required": false,
+      "description": "Overall timeout seconds for polling"
+    },
+    "poll_interval_sec": {
+      "type": "number",
+      "required": false,
+      "description": "Polling interval seconds"
+    }
+  }
+}
