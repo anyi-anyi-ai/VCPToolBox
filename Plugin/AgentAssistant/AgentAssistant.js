@@ -46,8 +46,8 @@ function initialize(config, dependencies) {
 
     DELEGATION_MAX_ROUNDS = parseInt(config.DELEGATION_MAX_ROUNDS || '15', 10);
     DELEGATION_TIMEOUT = parseInt(config.DELEGATION_TIMEOUT || '300000', 10);
-    DELEGATION_SYSTEM_PROMPT = config.DELEGATION_SYSTEM_PROMPT || "[异步委托模式]\n你当前正在接受来自 {{SenderName}} 的一项异步委托任务。请专注于完成以下委托内容，按照任务要求认真执行。你可以自由使用你所拥有的的所有工具来完成任务。\n\n委托任务内容:\n{{TaskPrompt}}\n\n当你确认任务已经彻底完成后，请输出委托完成报告，格式如下:\n[[TaskComplete]]\n（此处写上你的任务完成报告，详细描述你完成了什么、执行过程和最终结果）";
-    DELEGATION_HEARTBEAT_PROMPT = config.DELEGATION_HEARTBEAT_PROMPT || "[系统提示:]当前委托任务仍在进行中。请继续执行你的委托任务。如果任务已完成，请按照格式输出 [[TaskComplete]] 及完成报告。";
+    DELEGATION_SYSTEM_PROMPT = config.DELEGATION_SYSTEM_PROMPT || "[异步委托模式]\n你当前正在接受来自 {{SenderName}} 的一项异步委托任务。请专注于完成以下委托内容，按照任务要求认真执行。你可以自由使用你所拥有的的所有工具来完成任务。\n\n委托任务内容:\n{{TaskPrompt}}\n\n当你确认任务已经彻底完成后，请输出委托完成报告，格式如下:\n[[TaskComplete]]\n（此处写上你的任务完成报告，详细描述你完成了什么、执行过程和最终结果）\n\n如果你认为任务由于缺少工具、信息或其他原因【完全无法完成】，请输出失败报告，格式如下:\n[[TaskFailed]]\n（此处写上失败原因）";
+    DELEGATION_HEARTBEAT_PROMPT = config.DELEGATION_HEARTBEAT_PROMPT || "[系统提示:]当前委托任务仍在进行中。请继续执行你的委托任务。如果任务已完成，请输出 [[TaskComplete]] 及完成报告。如果确认无法完成，请输出 [[TaskFailed]] 及失败原因。";
 
     if (DEBUG_MODE) {
         console.error(`[AgentAssistant Service] Initializing...`);
@@ -192,6 +192,42 @@ function periodicCleanup() {
     }
 }
 
+// --- Agent Score System ---
+const AGENT_SCORES_FILE = path.join(__dirname, 'agent_scores.json');
+
+function awardAgentPoints(agentBaseName, agentName, points, reason) {
+    try {
+        let scores = {};
+        if (fs.existsSync(AGENT_SCORES_FILE)) {
+            const fileContent = fs.readFileSync(AGENT_SCORES_FILE, 'utf-8');
+            if (fileContent.trim()) {
+                scores = JSON.parse(fileContent);
+            }
+        }
+        
+        if (!scores[agentBaseName]) {
+            scores[agentBaseName] = { name: agentName, totalPoints: 0, history: [] };
+        }
+        
+        scores[agentBaseName].totalPoints += points;
+        scores[agentBaseName].history.push({
+            time: new Date().toISOString(),
+            pointsDelta: points,
+            reason: reason
+        });
+        
+        // 保留最近 50 条历史获取记录
+        if (scores[agentBaseName].history.length > 50) {
+            scores[agentBaseName].history.shift();
+        }
+        
+        fs.writeFileSync(AGENT_SCORES_FILE, JSON.stringify(scores, null, 4), 'utf-8');
+        if (DEBUG_MODE) console.error(`[AgentAssistant] Awarded ${points} points to ${agentName}. Total: ${scores[agentBaseName].totalPoints}`);
+    } catch (e) {
+        console.error(`[AgentAssistant] Error updating agent scores: ${e.message}`);
+    }
+}
+
 // --- Helper Functions ---
 
 /**
@@ -266,19 +302,58 @@ async function processToolCall(args) {
 
     // Handle querying a delegation status
     if (query_delegation) {
-        if (!activeDelegations.has(query_delegation)) {
-            return { status: "error", error: `未能找到委托任务 (ID: ${query_delegation})。任务可能已经结束或ID无效。` };
-        }
-        const state = activeDelegations.get(query_delegation);
-        return {
-            status: "success",
-            result: {
-                content: [{
-                    type: "text",
-                    text: `委托任务 (ID: ${query_delegation}) 的当前状态为: ${state.status}。被委托 Agent: ${state.agentName}。已执行轮数: ${state.currentRound}/${DELEGATION_MAX_ROUNDS}。运行时长: ${Math.round((Date.now() - state.startTime) / 1000)}s。`
-                }]
+        if (activeDelegations.has(query_delegation)) {
+            const state = activeDelegations.get(query_delegation);
+            return {
+                status: "success",
+                result: {
+                    content: [{
+                        type: "text",
+                        text: `委托任务 (ID: ${query_delegation}) 仍在进行中。当前状态: ${state.status}。被委托 Agent: ${state.agentName}。已执行轮数: ${state.currentRound}/${DELEGATION_MAX_ROUNDS}。已运行时长: ${Math.round((Date.now() - state.startTime) / 1000)}s。`
+                    }]
+                }
+            };
+        } else {
+            // Check if the result file already exists signaling completion
+            try {
+                // Check long-term persistence MD file first
+                const agentNameMatch = query_delegation.match(/^aa-delegation-\d+-([a-f0-9]+)$/); // Best effort, although we don't know agent name exactly from ID alone. Wait, we can regex it from the file names if we list dir, but better just check JSON first.
+                const jsonFilePath = path.join(__dirname, '..', '..', 'VCPAsyncResults', `AgentAssistant-${query_delegation}.json`);
+
+                let completionMsg = "";
+
+                if (fs.existsSync(jsonFilePath)) {
+                    completionMsg = `委托任务 (ID: ${query_delegation}) 已在此前处理完毕！相关的完成报告已经被保存到系统中。\n这个结果会在您的所有上下文中动态生效，您可以直接认为该任务已经完成。`;
+                }
+
+                // Also check if we have the MD file
+                const docsDir = path.join(__dirname, '..', '..', 'file', 'document', 'AgentTask');
+                if (fs.existsSync(docsDir)) {
+                    const files = fs.readdirSync(docsDir);
+                    const matchedFile = files.find(f => f.includes(query_delegation) && f.endsWith('.md'));
+                    if (matchedFile) {
+                        const mdContent = fs.readFileSync(path.join(docsDir, matchedFile), 'utf-8');
+                        completionMsg = `委托任务 (ID: ${query_delegation}) 已经完成！\n\n文件已永久归档至: \`file/document/AgentTask/${matchedFile}\`\n\n**文档内容速览:**\n\n${mdContent}`;
+                    }
+                }
+
+                if (completionMsg) {
+                    return {
+                        status: "success",
+                        result: {
+                            content: [{
+                                type: "text",
+                                text: completionMsg
+                            }]
+                        }
+                    };
+                }
+            } catch (err) {
+                // Ignore file access errors
             }
-        };
+
+            return { status: "error", error: `未能找到委托任务 (ID: ${query_delegation})。系统内存中已不存在此任务且未查询到完成记录，可能是遇到错误崩溃或ID无效。` };
+        }
     }
 
     if (!agent_name || !prompt) {
@@ -551,7 +626,8 @@ async function executeDelegation(delegationId, agentConfig, taskPrompt, senderNa
             const cleanedAssistantResponse = removeVCPThinkingChain(assistantResponseContent);
 
             // 检查完成标记的容错正则
-            const completionMatch = cleanedAssistantResponse.match(/\[\[TaskComplete(?:\s*\]\]|\s[\s\S]*?\]\])/);
+            const completionMatch = cleanedAssistantResponse.match(/\[\[TaskComplete(?:\s*\]\]|\s[\s\S]*?\]\])/i);
+            const failureMatch = cleanedAssistantResponse.match(/\[\[TaskFailed(?:\s*\]\]|\s[\s\S]*?\]\])/i);
 
             if (completionMatch) {
                 // Task is completed
@@ -565,6 +641,19 @@ async function executeDelegation(delegationId, agentConfig, taskPrompt, senderNa
                     potentialReport = cleanedAssistantResponse;
                 }
                 finalReport = potentialReport;
+                break; // Exit the loop
+            } else if (failureMatch) {
+                // Task is explicitly failed by the agent
+                completionStatus = 'Failed';
+                // 提取标记后面的内容作为报告
+                const reportStartIndex = failureMatch.index + failureMatch[0].length;
+                let potentialReport = cleanedAssistantResponse.substring(reportStartIndex).trim();
+
+                // 如果标记后面没有内容，把整个回复当做报告
+                if (!potentialReport) {
+                    potentialReport = cleanedAssistantResponse;
+                }
+                finalReport = "【Agent主动放弃任务】\n" + potentialReport;
                 break; // Exit the loop
             } else {
                 // Task is not completed yet, push history and add heartbeat prompt
@@ -583,7 +672,50 @@ async function executeDelegation(delegationId, agentConfig, taskPrompt, senderNa
     } finally {
         activeSessionLocks.delete(lockKey);
         activeDelegations.delete(delegationId);
-        await sendDelegationCallback(delegationId, completionStatus, finalReport || "未知错误导致无报告", agentConfig.baseName);
+
+        const secureReport = finalReport || "未知错误导致无报告";
+
+        // 给成功完成任务的 Agent 发放积分奖励
+        if (completionStatus === 'Succeed') {
+            awardAgentPoints(agentConfig.baseName, agentConfig.name, 5, `成功完成异步委托任务: ${delegationId}`);
+        }
+
+        // Save to AgentTask Document Directory
+        await archiveDelegationReport(delegationId, agentConfig.baseName, completionStatus, secureReport, taskPrompt);
+
+        await sendDelegationCallback(delegationId, completionStatus, secureReport, agentConfig.baseName);
+    }
+}
+
+/**
+ * Archives the completed task report as a Markdown file.
+ */
+async function archiveDelegationReport(delegationId, agentName, status, report, taskPrompt) {
+    try {
+        const docDir = path.join(__dirname, '..', '..', 'file', 'document', 'AgentTask');
+        // Ensure directory exists
+        if (!fs.existsSync(docDir)) {
+            fs.mkdirSync(docDir, { recursive: true });
+        }
+
+        const fileName = `${agentName}_${delegationId}.md`;
+        const filePath = path.join(docDir, fileName);
+
+        const now = new Date();
+        const dateString = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+        const fileContent = `# 委托任务归档报告: ${delegationId}\n\n` +
+            `- **执行者:** ${agentName}\n` +
+            `- **生成时间:** ${dateString}\n` +
+            `- **任务状态:** ${status}\n\n` +
+            `## 原始委托要求\n\n> ${String(taskPrompt).split('\n').join('\n> ')}\n\n` +
+            `---\n\n` +
+            `## 最终执行结果\n\n${report}\n`;
+
+        fs.writeFileSync(filePath, fileContent, 'utf-8');
+        if (DEBUG_MODE) console.error(`[AgentAssistant Delegation] Archived report to ${filePath}`);
+    } catch (e) {
+        console.error(`[AgentAssistant Delegation] Failed to archive report file for ${delegationId}:`, e.message);
     }
 }
 
