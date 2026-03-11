@@ -5,9 +5,7 @@
 - name: CrossRefDailyPapers
 - displayName: CrossRef Daily Papers
 - pluginType: static
-- protocol: stdio
-- refreshIntervalCron: "*/30 * * * *"（每30分钟自动执行）
-- 注意：static类型插件由定时器触发，AI无法直接调用
+- command: 无（自动触发）
 
 二、核心能力
 - Fetches daily research papers from the CrossRef API and provides them as a placeholder.
