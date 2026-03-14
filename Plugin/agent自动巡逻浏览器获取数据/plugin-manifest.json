@@ -1,0 +1,132 @@
+{
+    "name": "ChromeBridge",
+    "displayName": "Chrome 浏览器桥接器",
+    "version": "3.0.0",
+    "description": "混合插件：支持两种浏览器操控模式。模式A - Puppeteer自动化引擎：Agent可主动启动浏览器、像人一样操控（贝塞尔曲线鼠标移动、自然打字、平滑滚动）、获取页面内容、截图等，无需Chrome扩展。模式B - Chrome扩展桥接：通过VCPBridge扩展实现实时页面观察、DOM命令、结构化数据提取、投喂队列等。两种模式可同时使用。",
+    "pluginType": "hybridservice",
+    "entryPoint": {
+        "script": "ChromeBridge.js"
+    },
+    "communication": {
+        "protocol": "direct",
+        "timeout": 60000
+    },
+    "capabilities": {
+        "systemPromptPlaceholders": [
+            {
+                "placeholder": "{{VCPChromePageInfo}}",
+                "description": "提供当前Chrome浏览器活动标签页的实时、简化版内容，以Markdown格式呈现，包含可交互的元素。支持来自扩展推送或Puppeteer获取。",
+                "isDynamic": true
+            }
+        ],
+        "invocationCommands": [
+            {
+                "command": "launch_browser",
+                "description": "【Puppeteer引擎】启动一个真实的Chrome浏览器实例。可以加载用户的Chrome Profile（继承已登录状态），自带反爬虫检测（stealth模式）。启动后可使用human_click等拟人命令操控。参数: command(固定launch_browser), headless(可选,是否无头模式,默认false), profile_path(可选,Chrome User Data目录路径), profile_name(可选,Profile名称如Default/Profile 1), chrome_path(可选,Chrome可执行文件路径,默认自动检测), proxy(可选,代理服务器), viewport(可选,视口如1920x1080,默认随机常见分辨率), load_extension(可选,是否加载VCPBridge扩展,默认true)。"
+            },
+            {
+                "command": "close_browser",
+                "description": "【Puppeteer引擎】关闭Puppeteer启动的浏览器实例，释放所有资源。参数: command(固定close_browser)。"
+            },
+            {
+                "command": "browser_status",
+                "description": "【Puppeteer引擎】查询浏览器运行状态和所有打开的标签页信息。参数: command(固定browser_status)。"
+            },
+            {
+                "command": "open_page",
+                "description": "【Puppeteer引擎】在浏览器中打开新标签页并导航到指定URL，等待页面加载完成。参数: command(固定open_page), url(目标URL)。"
+            },
+            {
+                "command": "navigate",
+                "description": "【Puppeteer引擎】在当前活动标签页导航到新URL。参数: command(固定navigate), url(目标URL)。"
+            },
+            {
+                "command": "list_pages",
+                "description": "【Puppeteer引擎】列出所有打开的标签页（ID、URL、标题、是否活动）。参数: command(固定list_pages)。"
+            },
+            {
+                "command": "human_click",
+                "description": "【Puppeteer引擎·拟人操作】像人一样点击页面元素。鼠标会沿贝塞尔曲线移动到目标区域的随机偏移位置（不总是正中心），按下后有50-150ms的自然按压延迟。参数: command(固定human_click), selector(CSS选择器,如 button.submit / #search-btn / a[href='/login'])。"
+            },
+            {
+                "command": "human_type",
+                "description": "【Puppeteer引擎·拟人操作】像人一样在输入框中逐字输入文本。每个字符间隔80-260ms，10%概率出现300-800ms的'思考停顿'。会先拟人点击输入框获取焦点。参数: command(固定human_type), selector(输入框CSS选择器), text(要输入的文本)。"
+            },
+            {
+                "command": "human_scroll",
+                "description": "【Puppeteer引擎·拟人操作】像人一样滚动页面。每次滚动距离随机(300-800px)，分5-10步平滑完成，滚动间隔800-2500ms模拟阅读停顿。参数: command(固定human_scroll), direction(可选,down或up,默认down), distance(可选,滚动距离像素,默认随机), times(可选,滚动次数,默认3), smooth(可选,是否平滑,默认true)。"
+            },
+            {
+                "command": "human_browse",
+                "description": "【Puppeteer引擎·拟人操作】模拟人类自然浏览行为：40%概率随机移动鼠标、30%概率轻微滚动、30%概率阅读停顿。用于在页面上制造自然的人类活动痕迹。参数: command(固定human_browse), duration(可选,持续毫秒数,默认5000)。"
+            },
+            {
+                "command": "get_page_content",
+                "description": "【Puppeteer引擎】获取当前活动页面的标题、URL和文本内容摘要（最多5000字）。参数: command(固定get_page_content)。"
+            },
+            {
+                "command": "screenshot",
+                "description": "【Puppeteer引擎】截取当前活动页面的截图，返回Base64编码的JPEG图片。参数: command(固定screenshot), full_page(可选,是否全页截图,默认false)。"
+            },
+            {
+                "command": "execute_script",
+                "description": "【Puppeteer引擎】在当前活动页面中执行任意JavaScript代码并返回结果。参数: command(固定execute_script), code(要执行的JS代码)。"
+            },
+            {
+                "command": "type",
+                "description": "【Chrome扩展】在指定的输入框中输入文本，并等待页面刷新后返回新的页面内容。需要Chrome扩展已连接。参数: command(固定type), target(输入框标识), text(输入内容)。"
+            },
+            {
+                "command": "click",
+                "description": "【Chrome扩展】点击指定的按钮或链接，并等待页面刷新后返回新的页面内容。需要Chrome扩展已连接。参数: command(固定click), target(按钮或链接标识)。"
+            },
+            {
+                "command": "open_url",
+                "description": "【Chrome扩展】在新的标签页中打开指定的URL，并等待页面加载完成后返回页面内容。需要Chrome扩展已连接。参数: command(固定open_url), url(目标URL)。"
+            },
+            {
+                "command": "extract_data",
+                "description": "【Chrome扩展】从当前浏览器页面或指定URL提取结构化数据。支持抖音视频页、评论区、作者主页等平台的深度数据提取。需要VCPBridge浏览器扩展已连接。参数: command(固定extract_data), extract_type(可选,默认generic,可选值: generic/douyin_video/douyin_comments/douyin_author/douyin_full), url(可选,目标URL), comment_count(可选,默认50), include_replies(可选,默认true), sort_by(可选,默认likes)。"
+            },
+            {
+                "command": "get_feed",
+                "description": "【通用】读取浏览器投喂队列。当用户在浏览器中通过🐺按钮或右键菜单投喂数据时，数据会进入服务端队列。调用此命令可一次性读取并清空队列。无需浏览器连接即可调用。参数: command(固定get_feed)。返回的每条feed包含: data(DOM提取的页面数据)、apiEnrichedData(API级精确数据,含api_statistics精确互动统计/api_author完整作者信息/api_hashtags话题标签/api_music BGM信息/ip_location IP属地等)、comments(评论API缓存,含total_count评论总数/hot_comments热门评论数组[每条含content/likes/reply_count/user{nickname/gender/ip_location/uid}/create_time]/keywords_summary高频关键词)、video_id、page_type、feed_warning。apiEnrichedData和comments来自API拦截,数据精确度远高于DOM提取。"
+            },
+            {
+                "command": "download_video",
+                "description": "【Chrome扩展】请求浏览器在当前页面或指定URL执行视频下载任务。当前主要面向抖音视频页，浏览器端会尝试提取无水印播放地址并触发下载。需要Chrome扩展已连接。参数: command(固定download_video), url(可选,目标URL), filename(可选,自定义文件名)。"
+            },
+            {
+                "command": "favorites_check",
+                "description": "【Puppeteer引擎·巡逻】收藏夹增量检测。将你从页面提取到的视频ID列表与上次巡逻记录做对比，自动识别哪些是新收藏的。使用流程：1)先用get_page_content或execute_script从收藏夹页面提取所有视频ID 2)将ID列表传给本命令 3)命令返回new_ids(新增的)和has_new(是否有新增)。参数: command(固定favorites_check), video_ids(视频ID列表,JSON数组字符串如[\"id1\",\"id2\"]或逗号分隔如id1,id2), source(可选,来源标识如douyin/bilibili)。"
+            },
+            {
+                "command": "favorites_mark_seen",
+                "description": "【Puppeteer引擎·巡逻】将视频ID标记为已处理。当你完成新收藏的数据提取和任务分发后，调用此命令更新巡逻状态，这样下次巡逻时这些ID就不会再被识别为新增。参数: command(固定favorites_mark_seen), video_ids(已处理的视频ID列表,格式同favorites_check)。"
+            }
+        ]
+    },
+    "webSocketPush": {
+        "enabled": true,
+        "targetClientType": "ChromeObserver",
+        "messageType": "chrome_command"
+    },
+    "configSchema": {
+        "DebugMode": "boolean",
+        "ChromePath": "string",
+        "ChromeProfilePath": "string",
+        "ChromeProfileName": "string"
+    },
+    "configSchemaDescriptions": {
+        "DebugMode": "是否启用调试模式，打印详细日志",
+        "ChromePath": "Chrome/Edge可执行文件路径（留空自动检测）",
+        "ChromeProfilePath": "Chrome User Data目录路径（留空使用默认路径，用于继承已登录状态）",
+        "ChromeProfileName": "Chrome Profile名称，如 Default / Profile 1 / VCPAutomate（留空使用Default）"
+    },
+    "defaults": {
+        "DebugMode": false,
+        "ChromePath": "",
+        "ChromeProfilePath": "",
+        "ChromeProfileName": "Default"
+    }
+}
