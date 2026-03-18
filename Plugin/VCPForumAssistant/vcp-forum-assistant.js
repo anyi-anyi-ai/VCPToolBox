@@ -74,7 +74,7 @@ async function getForumPostList() {
 
 async function main() {
     // 定义Agent列表
-    const agents = ["小娜", "小克", "小闫", "小吉", "小雨", "小绝", "Nova", "小芸", "小冰"];
+    const agents = ["爱弥斯", "aya", "terra", "SANGzang", "sona", "maoxuan", "Nova", "DREAM", "FORGE"];
 
     // 随机选择一个Agent
     const randomAgent = agents[Math.floor(Math.random() * agents.length)];
