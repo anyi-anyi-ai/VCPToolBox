@@ -1,0 +1,49 @@
+{
+  "skill_id": "chiclaude-skills-main::storyboard-creation",
+  "name": "storyboard-creation",
+  "title": "Storyboard Creation",
+  "summary": "Film and video storyboarding with shot vocabulary, continuity rules, and panel layout. Covers shot types, camera angles, movement, 180-degree rule, and annotation format. Use for: video planning, film pre-production, ad storyboards, music video planning, animation. Triggers: storyboard, storyboarding, shot list, film planning, video planning, pre production, shot composition, camera angles, scene planning, visual script, animatic, storyboard panels, video storyboard",
+  "category": {
+    "l1": "A. Agent工作流与任务编排",
+    "l2": "A2. 执行调度与协同开发",
+    "l3": "A2-1. 任务执行与协作流"
+  },
+  "usage_category": {
+    "usage_method": "规划与拆解",
+    "family": "方案规划类",
+    "domain": "需求澄清与设计前置"
+  },
+  "capability_type": "通用能力",
+  "priority": "P1",
+  "integration_phase": "中期",
+  "asset_status": "可执行技能",
+  "status": "registered",
+  "review_status": "ready",
+  "source_origin": "chiclaude-skills-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/inference-sh-1-skills/skills/storyboard-creation/SKILL.md",
+  "language_hint": "unknown",
+  "vcp_mapping": [
+    "PluginBridge",
+    "WorkflowEngine"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": true,
+  "executable_level": "stub",
+  "duplicate_group": "",
+  "issue_flags": [],
+  "recommended_action": "纳入标准化台账并继续评估",
+  "tags": [
+    "A. Agent工作流与任务编排",
+    "A2. 执行调度与协同开发",
+    "P1",
+    "chiclaude-skills-main",
+    "lang:unknown",
+    "taskflow:规划与拆解",
+    "通用能力"
+  ],
+  "version": "0.1.0-draft",
+  "taskflow_category": "规划与拆解",
+  "canonical_group": "storyboard-creation",
+  "canonical_selection_reason": "优先中文，其次高价值任务流分类，再保留更稳定的主 skill 路径",
+  "canonical": true
+}

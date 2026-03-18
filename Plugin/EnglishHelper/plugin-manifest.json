@@ -1,0 +1,45 @@
+{
+    "manifestVersion": "1.0.0",
+    "name": "EnglishHelper",
+    "displayName": "英语学习助手",
+    "version": "1.0.0",
+    "description": "英语学习增强插件（纯Python基础层 + optional增强层）。支持深度语法解析、动态句型识别、错题本分析推荐、复习调度、查词、资源状态检查。结构化接口支持 Lookup/ReadingAid/ParseTree/SchemaProbe。基于 spaCy 和 NLTK。",
+    "author": "Nova",
+    "pluginType": "synchronous",
+    "entryPoint": {
+        "type": "python",
+        "command": "python EnglishHelper.py"
+    },
+    "communication": {
+        "protocol": "stdio",
+        "timeout": 60000
+    },
+    "configSchema": {
+        "REQUEST_TIMEOUT": "number",
+        "ONLINE_DICT_ENABLED": "boolean",
+        "ONLINE_DICT_TIMEOUT": "number",
+        "ONLINE_CACHE_TTL_SEC": "number",
+        "OBSERVABILITY_LOG_PATH": "string",
+        "GRAMMAR_DB_PATH": "string",
+        "FULL_DB_ENABLED": "boolean",
+        "FULL_DB_SQLITE_TIMEOUT": "number",
+        "STRUCTURED_DEFAULT_COMPACT": "boolean",
+        "READING_AID_COMPACT_TOKENS_DEFAULT": "boolean",
+        "PARSE_TREE_INCLUDE_MERMAID_DEFAULT": "boolean",
+        "SCHEMA_PROBE_ENABLED": "boolean"
+    },
+    "capabilities": {
+        "invocationCommands": [
+            {
+                "commandIdentifier": "EnglishHelperCore",
+                "description": "英语学习主入口。通过 command 指定子功能。\\n\\n参数:\\n- command (字符串, 必需): 功能指令。\\n- text/sentence (字符串, 可选): 句子输入。\\n- word (字符串, 可选): 单词输入。\\n- grammar (字符串, 可选): 指定语法点。\\n- 其他参数按具体 command 传入。\\n\\n支持的 command:\\nanalyze_sentence, sentence_split, lookup_word, grammar_explain, phrase_pattern, rewrite_sentence, quiz_generate, wrongbook_add, review_due_list, review_submit, health_check, reading_aid_v2。\\n\\n调用示例:\\ntool_name=EnglishHelper, command=grammar_explain, grammar=present perfect\\ntool_name=EnglishHelper, command=review_submit, item_id=apple, result=记住\\ntool_name=EnglishHelper, command=reading_aid_v2, text=She is running in the park every morning., target_level=B2",
+                "example": "tool_name=EnglishHelper, command=grammar_explain, grammar=past perfect"
+            },
+            {
+                "commandIdentifier": "EnglishHelperLookup",
+                "description": "查词与消歧。支持本地词典+在线并联查询。\\n\\n参数:\\n- command (字符串, 必需): lookup_word\\n- word (字符串, 必需): 要查询的词\\n\\n调用示例:\\ntool_name=EnglishHelper, command=lookup_word, word=compromise",
+                "example": "tool_name=EnglishHelper, command=lookup_word, word=study"
+            }
+        ]
+    }
+}

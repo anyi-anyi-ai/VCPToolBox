@@ -1,0 +1,49 @@
+{
+  "skill_id": "antigravity-awesome-skills-main::architecture",
+  "name": "architecture",
+  "title": "Architecture Decision Framework",
+  "summary": "Architectural decision-making framework. Requirements analysis, trade-off evaluation, ADR documentation. Use when making architecture decisions or analyzing system design.",
+  "category": {
+    "l1": "D. 领域能力与专业模板",
+    "l2": "D3. 行业化/专项场景",
+    "l3": "D3-1. 专项业务与内容场景"
+  },
+  "usage_category": {
+    "usage_method": "理解与归纳",
+    "family": "阅读分析类",
+    "domain": "总结抽取与结构化"
+  },
+  "capability_type": "扩展能力",
+  "priority": "P2",
+  "integration_phase": "长期",
+  "asset_status": "可执行技能",
+  "status": "registered",
+  "review_status": "ready",
+  "source_origin": "antigravity-awesome-skills-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/architecture/SKILL.md",
+  "language_hint": "en",
+  "vcp_mapping": [
+    "KnowledgeBase",
+    "PluginBridge"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": true,
+  "executable_level": "stub",
+  "duplicate_group": "",
+  "issue_flags": [],
+  "recommended_action": "列入后续扩展池，按需求接入",
+  "tags": [
+    "D. 领域能力与专业模板",
+    "D3. 行业化/专项场景",
+    "P2",
+    "antigravity-awesome-skills-main",
+    "lang:en",
+    "taskflow:检索与发现",
+    "扩展能力"
+  ],
+  "version": "0.1.0-draft",
+  "taskflow_category": "检索与发现",
+  "canonical_group": "architecture",
+  "canonical_selection_reason": "无重复候选，直接保留",
+  "canonical": true
+}

@@ -1,0 +1,49 @@
+{
+  "skill_id": "chiclaude-skills-main::social-media-carousel",
+  "name": "social-media-carousel",
+  "title": "Social Media Carousel",
+  "summary": "Multi-slide carousel design for Instagram, LinkedIn, and Twitter/X with layout rules and hooks. Covers slide structure, text hierarchy, swipe psychology, and platform-specific specs. Use for: carousel posts, Instagram carousels, LinkedIn carousels, slide posts, educational content. Triggers: carousel, instagram carousel, linkedin carousel, slide post, carousel design, swipe post, multi-image post, carousel template, educational carousel, carousel content, instagram slides, linkedin slides",
+  "category": {
+    "l1": "D. 领域能力与专业模板",
+    "l2": "D2. 前端与体验设计",
+    "l3": "D2-1. 前端界面与体验表达"
+  },
+  "usage_category": {
+    "usage_method": "规划与拆解",
+    "family": "方案规划类",
+    "domain": "需求澄清与设计前置"
+  },
+  "capability_type": "扩展能力",
+  "priority": "P2",
+  "integration_phase": "长期",
+  "asset_status": "可执行技能",
+  "status": "registered",
+  "review_status": "ready",
+  "source_origin": "chiclaude-skills-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/inference-sh-1-skills/skills/social-media-carousel/SKILL.md",
+  "language_hint": "en",
+  "vcp_mapping": [
+    "KnowledgeBase",
+    "PluginBridge"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": true,
+  "executable_level": "stub",
+  "duplicate_group": "",
+  "issue_flags": [],
+  "recommended_action": "列入后续扩展池，按需求接入",
+  "tags": [
+    "D. 领域能力与专业模板",
+    "D2. 前端与体验设计",
+    "P2",
+    "chiclaude-skills-main",
+    "lang:en",
+    "taskflow:理解与归纳",
+    "扩展能力"
+  ],
+  "version": "0.1.0-draft",
+  "taskflow_category": "理解与归纳",
+  "canonical_group": "social-media-carousel",
+  "canonical_selection_reason": "优先中文，其次高价值任务流分类，再保留更稳定的主 skill 路径",
+  "canonical": true
+}

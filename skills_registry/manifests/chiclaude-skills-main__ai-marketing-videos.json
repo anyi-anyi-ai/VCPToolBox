@@ -1,0 +1,49 @@
+{
+  "skill_id": "chiclaude-skills-main::ai-marketing-videos",
+  "name": "ai-marketing-videos",
+  "title": "AI Marketing Videos",
+  "summary": "Create AI marketing videos for ads, promos, product launches, and brand content. Models: Veo, Seedance, Wan, FLUX for visuals, Kokoro for voiceover. Types: product demos, testimonials, explainers, social ads, brand videos. Use for: Facebook ads, YouTube ads, product launches, brand awareness. Triggers: marketing video, ad video, promo video, commercial, brand video, product video, explainer video, ad creative, video ad, facebook ad video, youtube ad, instagram ad, tiktok ad, promotional video, launch video",
+  "category": {
+    "l1": "D. 领域能力与专业模板",
+    "l2": "D3. 行业化/专项场景",
+    "l3": "D3-1. 专项业务与内容场景"
+  },
+  "usage_category": {
+    "usage_method": "验证与审查",
+    "family": "测试审查类",
+    "domain": "测试验证与安全质量"
+  },
+  "capability_type": "扩展能力",
+  "priority": "P2",
+  "integration_phase": "长期",
+  "asset_status": "可执行技能",
+  "status": "registered",
+  "review_status": "ready",
+  "source_origin": "chiclaude-skills-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/inference-sh-1-skills/skills/ai-marketing-videos/SKILL.md",
+  "language_hint": "unknown",
+  "vcp_mapping": [
+    "PluginBridge",
+    "QualityGate"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": true,
+  "executable_level": "stub",
+  "duplicate_group": "",
+  "issue_flags": [],
+  "recommended_action": "列入后续扩展池，按需求接入",
+  "tags": [
+    "D. 领域能力与专业模板",
+    "D3. 行业化/专项场景",
+    "P2",
+    "chiclaude-skills-main",
+    "lang:unknown",
+    "taskflow:验证与审查",
+    "扩展能力"
+  ],
+  "version": "0.1.0-draft",
+  "taskflow_category": "验证与审查",
+  "canonical_group": "ai-marketing-videos",
+  "canonical_selection_reason": "优先中文，其次高价值任务流分类，再保留更稳定的主 skill 路径",
+  "canonical": true
+}

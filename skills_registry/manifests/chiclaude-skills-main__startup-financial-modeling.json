@@ -1,0 +1,49 @@
+{
+  "skill_id": "chiclaude-skills-main::startup-financial-modeling",
+  "name": "startup-financial-modeling",
+  "title": "Startup Financial Modeling",
+  "summary": "This skill should be used when the user asks to \"create financial projections\", \"build a financial model\", \"forecast revenue\", \"calculate burn rate\", \"estimate runway\", \"model cash flow\", or requests 3-5 year financial planning for a startup.",
+  "category": {
+    "l1": "A. Agent工作流与任务编排",
+    "l2": "A2. 执行调度与协同开发",
+    "l3": "A2-1. 任务执行与协作流"
+  },
+  "usage_category": {
+    "usage_method": "规划与拆解",
+    "family": "方案规划类",
+    "domain": "需求澄清与设计前置"
+  },
+  "capability_type": "通用能力",
+  "priority": "P1",
+  "integration_phase": "中期",
+  "asset_status": "可执行技能",
+  "status": "registered",
+  "review_status": "ready",
+  "source_origin": "chiclaude-skills-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/wshobson-agents/plugins/startup-business-analyst/skills/startup-financial-modeling/SKILL.md",
+  "language_hint": "unknown",
+  "vcp_mapping": [
+    "KnowledgeBase",
+    "PluginBridge"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": true,
+  "executable_level": "stub",
+  "duplicate_group": "",
+  "issue_flags": [],
+  "recommended_action": "纳入标准化台账并继续评估",
+  "tags": [
+    "A. Agent工作流与任务编排",
+    "A2. 执行调度与协同开发",
+    "P1",
+    "chiclaude-skills-main",
+    "lang:unknown",
+    "taskflow:检索与发现",
+    "通用能力"
+  ],
+  "version": "0.1.0-draft",
+  "taskflow_category": "检索与发现",
+  "canonical_group": "startup-financial-modeling",
+  "canonical_selection_reason": "优先中文，其次高价值任务流分类，再保留更稳定的主 skill 路径",
+  "canonical": true
+}

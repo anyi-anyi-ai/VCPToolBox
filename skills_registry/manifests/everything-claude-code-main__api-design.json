@@ -1,0 +1,49 @@
+{
+  "skill_id": "everything-claude-code-main::api-design",
+  "name": "api-design",
+  "title": "API Design Patterns",
+  "summary": "REST API design patterns including resource naming, status codes, pagination, filtering, error responses, versioning, and rate limiting for production APIs.",
+  "category": {
+    "l1": "D. 领域能力与专业模板",
+    "l2": "D1. 通用软件架构与后端",
+    "l3": "D1-1. 后端与语言专项模板"
+  },
+  "usage_category": {
+    "usage_method": "规划与拆解",
+    "family": "方案规划类",
+    "domain": "需求澄清与设计前置"
+  },
+  "capability_type": "核心能力",
+  "priority": "P0",
+  "integration_phase": "短期",
+  "asset_status": "可执行技能",
+  "status": "active_candidate",
+  "review_status": "ready",
+  "source_origin": "everything-claude-code-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/skills/api-design/SKILL.md",
+  "language_hint": "en",
+  "vcp_mapping": [
+    "KnowledgeBase",
+    "PluginBridge"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": true,
+  "executable_level": "stub",
+  "duplicate_group": "",
+  "issue_flags": [],
+  "recommended_action": "优先标准化并纳入 VCP 首批接入范围",
+  "tags": [
+    "D. 领域能力与专业模板",
+    "D1. 通用软件架构与后端",
+    "P0",
+    "everything-claude-code-main",
+    "lang:en",
+    "taskflow:理解与归纳",
+    "核心能力"
+  ],
+  "version": "0.1.0-draft",
+  "taskflow_category": "理解与归纳",
+  "canonical_group": "api-design",
+  "canonical_selection_reason": "优先中文，其次高价值任务流分类，再保留更稳定的主 skill 路径",
+  "canonical": true
+}

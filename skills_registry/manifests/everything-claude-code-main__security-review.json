@@ -1,0 +1,50 @@
+{
+  "skill_id": "everything-claude-code-main::security-review",
+  "name": "security-review",
+  "title": "Security Review Skill",
+  "summary": "Use this skill when adding authentication, handling user input, working with secrets, creating API endpoints, or implementing payment/sensitive features. Provides comprehensive security checklist and patterns.",
+  "category": {
+    "l1": "B. 工程实现与质量保障",
+    "l2": "B3. 安全与稳定性",
+    "l3": "B3-1. 安全审查与问题定位"
+  },
+  "usage_category": {
+    "usage_method": "理解与归纳",
+    "family": "阅读分析类",
+    "domain": "总结抽取与结构化"
+  },
+  "capability_type": "核心能力",
+  "priority": "P0",
+  "integration_phase": "短期",
+  "asset_status": "可执行技能",
+  "status": "active_candidate",
+  "review_status": "ready",
+  "source_origin": "everything-claude-code-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/skills/security-review/SKILL.md",
+  "language_hint": "en",
+  "vcp_mapping": [
+    "PluginBridge",
+    "QualityGate"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": true,
+  "executable_level": "stub",
+  "duplicate_group": "security_debugging",
+  "issue_flags": [],
+  "recommended_action": "纳入重复组人工复核，必要时合并",
+  "tags": [
+    "B. 工程实现与质量保障",
+    "B3. 安全与稳定性",
+    "P0",
+    "dup:security_debugging",
+    "everything-claude-code-main",
+    "lang:en",
+    "taskflow:验证与审查",
+    "核心能力"
+  ],
+  "version": "0.1.0-draft",
+  "taskflow_category": "验证与审查",
+  "canonical_group": "security-review",
+  "canonical_selection_reason": "优先中文，其次高价值任务流分类，再保留更稳定的主 skill 路径",
+  "canonical": true
+}

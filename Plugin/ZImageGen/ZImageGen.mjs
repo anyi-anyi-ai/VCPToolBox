@@ -28,7 +28,7 @@ const API_BASE_URL = 'https://mrfakename-z-image-turbo.hf.space/gradio_api';
 const PROXY_URL = 'http://127.0.0.1:7890';
 const httpsAgent = new HttpsProxyAgent(PROXY_URL);
 // 如果不需要代理，可以将此设为 null
-const USE_PROXY = true;
+const USE_PROXY = false;
 
 const axiosConfig = {
     headers: {

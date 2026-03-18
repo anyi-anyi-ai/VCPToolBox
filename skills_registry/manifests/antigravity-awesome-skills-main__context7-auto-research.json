@@ -1,0 +1,50 @@
+{
+  "skill_id": "antigravity-awesome-skills-main::context7-auto-research",
+  "name": "context7-auto-research",
+  "title": "context7-auto-research",
+  "summary": "Automatically fetch latest library/framework documentation for Claude Code via Context7 API",
+  "category": {
+    "l1": "C. 知识生产与持续学习",
+    "l2": "C3. 检索增强与研究",
+    "l3": "C3-1. 研究与检索增强"
+  },
+  "usage_category": {
+    "usage_method": "检索与发现",
+    "family": "研究检索类",
+    "domain": "通用知识检索"
+  },
+  "capability_type": "通用能力",
+  "priority": "P1",
+  "integration_phase": "中期",
+  "asset_status": "可执行技能",
+  "status": "registered",
+  "review_status": "ready",
+  "source_origin": "antigravity-awesome-skills-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/context7-auto-research/SKILL.md",
+  "language_hint": "unknown",
+  "vcp_mapping": [
+    "KnowledgeBase",
+    "PluginBridge"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": true,
+  "executable_level": "stub",
+  "duplicate_group": "research_retrieval",
+  "issue_flags": [],
+  "recommended_action": "纳入重复组人工复核，必要时合并",
+  "tags": [
+    "C. 知识生产与持续学习",
+    "C3. 检索增强与研究",
+    "P1",
+    "antigravity-awesome-skills-main",
+    "dup:research_retrieval",
+    "lang:unknown",
+    "taskflow:检索与发现",
+    "通用能力"
+  ],
+  "version": "0.1.0-draft",
+  "taskflow_category": "检索与发现",
+  "canonical_group": "context7-auto-research",
+  "canonical_selection_reason": "无重复候选，直接保留",
+  "canonical": true
+}

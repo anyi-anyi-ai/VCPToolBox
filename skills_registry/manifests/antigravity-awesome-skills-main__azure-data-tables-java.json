@@ -1,0 +1,49 @@
+{
+  "skill_id": "antigravity-awesome-skills-main::azure-data-tables-java",
+  "name": "azure-data-tables-java",
+  "title": "Azure Tables SDK for Java",
+  "summary": "Build table storage applications with Azure Tables SDK for Java. Use when working with Azure Table Storage or Cosmos DB Table API for NoSQL key-value data, schemaless storage, or structured data at...",
+  "category": {
+    "l1": "D. 领域能力与专业模板",
+    "l2": "D1. 通用软件架构与后端",
+    "l3": "D1-1. 后端与语言专项模板"
+  },
+  "usage_category": {
+    "usage_method": "检索与发现",
+    "family": "研究检索类",
+    "domain": "通用知识检索"
+  },
+  "capability_type": "扩展能力",
+  "priority": "P2",
+  "integration_phase": "长期",
+  "asset_status": "可执行技能",
+  "status": "registered",
+  "review_status": "ready",
+  "source_origin": "antigravity-awesome-skills-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/azure-data-tables-java/SKILL.md",
+  "language_hint": "unknown",
+  "vcp_mapping": [
+    "KnowledgeBase",
+    "PluginBridge"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": true,
+  "executable_level": "stub",
+  "duplicate_group": "",
+  "issue_flags": [],
+  "recommended_action": "列入后续扩展池，按需求接入",
+  "tags": [
+    "D. 领域能力与专业模板",
+    "D1. 通用软件架构与后端",
+    "P2",
+    "antigravity-awesome-skills-main",
+    "lang:unknown",
+    "taskflow:理解与归纳",
+    "扩展能力"
+  ],
+  "version": "0.1.0-draft",
+  "taskflow_category": "理解与归纳",
+  "canonical_group": "azure-data-tables-java",
+  "canonical_selection_reason": "无重复候选，直接保留",
+  "canonical": true
+}

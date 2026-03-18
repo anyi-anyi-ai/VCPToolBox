@@ -1,0 +1,45 @@
+{
+  "skill_id": "renleixu::docx",
+  "name": "docx",
+  "title": "DOCX creation, editing, and analysis",
+  "summary": "Use this skill whenever the user wants to create, read, edit, or manipulate Word documents (.docx files). Triggers include: any mention of 'Word doc', 'word document', '.docx', or requests to produce professional documents with formatting like tables of contents, headings, page numbers, or letterheads. Also use when extracting or reorganizing content from .docx files, inserting or replacing images in documents, performing find-and-replace in Word files, working with tracked changes or comments, or converting content into a polished Word document. If the user asks for a 'report', 'memo', 'letter', 'template', or similar deliverable as a Word or .docx file, use this skill. Do NOT use for PDFs, spreadsheets, Google Docs, or general coding tasks unrelated to document generation.",
+  "category": {
+    "l1": "D. 领域能力与专业模板",
+    "l2": "D3. 行业化/专项场景",
+    "l3": "D3-1. 专项业务与内容场景"
+  },
+  "usage_category": {
+    "usage_method": "理解与归纳",
+    "family": "阅读分析类",
+    "domain": "总结抽取与结构化"
+  },
+  "capability_type": "扩展能力",
+  "priority": "P2",
+  "integration_phase": "长期",
+  "asset_status": "可执行技能",
+  "status": "registered",
+  "review_status": "ready",
+  "source_origin": "renleixu",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/renleixu/skills-main/skills/docx/SKILL.md",
+  "language_hint": "unknown",
+  "vcp_mapping": [
+    "DomainSkills",
+    "PluginTemplates"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": false,
+  "executable_level": "catalog_only",
+  "duplicate_group": "",
+  "issue_flags": [],
+  "recommended_action": "列入后续扩展池，按需求接入",
+  "tags": [
+    "renleixu",
+    "P2",
+    "扩展能力",
+    "D. 领域能力与专业模板",
+    "D3. 行业化/专项场景",
+    "lang:unknown"
+  ],
+  "version": "0.1.0-draft",
+  "canonical": true
+}

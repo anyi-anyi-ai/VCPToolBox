@@ -1,0 +1,49 @@
+{
+  "skill_id": "chiclaude-skills-main::scientific-problem-selection",
+  "name": "scientific-problem-selection",
+  "title": "Scientific Problem Selection Skills",
+  "summary": "This skill should be used when scientists need help with research problem selection, project ideation, troubleshooting stuck projects, or strategic scientific decisions. Use this skill when users ask to pitch a new research idea, work through a project problem, evaluate project risks, plan research strategy, navigate decision trees, or get help choosing what scientific problem to work on. Typical requests include \"I have an idea for a project\", \"I'm stuck on my research\", \"help me evaluate this project\", \"what should I work on\", or \"I need strategic advice about my research\".",
+  "category": {
+    "l1": "A. Agent工作流与任务编排",
+    "l2": "A2. 执行调度与协同开发",
+    "l3": "A2-1. 任务执行与协作流"
+  },
+  "usage_category": {
+    "usage_method": "检索与发现",
+    "family": "研究检索类",
+    "domain": "通用知识检索"
+  },
+  "capability_type": "通用能力",
+  "priority": "P1",
+  "integration_phase": "中期",
+  "asset_status": "可执行技能",
+  "status": "registered",
+  "review_status": "ready",
+  "source_origin": "chiclaude-skills-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/anthropics-knowledge-work-plugins/bio-research/skills/scientific-problem-selection/SKILL.md",
+  "language_hint": "unknown",
+  "vcp_mapping": [
+    "KnowledgeBase",
+    "PluginBridge"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": true,
+  "executable_level": "stub",
+  "duplicate_group": "",
+  "issue_flags": [],
+  "recommended_action": "纳入标准化台账并继续评估",
+  "tags": [
+    "A. Agent工作流与任务编排",
+    "A2. 执行调度与协同开发",
+    "P1",
+    "chiclaude-skills-main",
+    "lang:unknown",
+    "taskflow:检索与发现",
+    "通用能力"
+  ],
+  "version": "0.1.0-draft",
+  "taskflow_category": "检索与发现",
+  "canonical_group": "scientific-problem-selection",
+  "canonical_selection_reason": "无重复候选，直接保留",
+  "canonical": true
+}

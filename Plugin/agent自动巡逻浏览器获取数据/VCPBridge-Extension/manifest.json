@@ -1,0 +1,42 @@
+{
+  "manifest_version": 3,
+  "name": "VCPBridge - 浏览器数据桥接器",
+  "version": "1.6.1",
+  "description": "将浏览器页面数据桥接到VCP系统，支持抖音/小红书/微博等平台的结构化数据提取、一键投喂与抖音下载调试诊断（评论预热）。",
+  "permissions": [
+    "activeTab",
+    "contextMenus",
+    "storage",
+    "downloads",
+    "declarativeNetRequest",
+    "webRequest"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.douyin.com/*"],
+      "js": ["main-world/douyin-downloader.js"],
+      "run_at": "document_start",
+      "world": "MAIN"
+    },
+    {
+      "matches": ["https://www.douyin.com/*"],
+      "js": ["content-scripts/douyin.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content-scripts/generic.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "VCPBridge"
+  }
+}

@@ -1,0 +1,126 @@
+{
+  "name": "ObsidianManager",
+  "displayName": "Obsidian 混合中枢大管家",
+  "pluginType": "synchronous",
+  "version": "2.2.0",
+  "description": "VCP 与 Obsidian 的同步多指令管理插件。以 REST 为主命令层完成目录、读写、搜索、元数据与内容管理，以 CLI 为补充层完成打开笔记、打开每日笔记、URI 跳转与受控命令执行。",
+  "author": "VCP Agent",
+  "license": "MIT",
+  "entryPoint": {
+    "command": "node ObsidianManager.js",
+    "timeout": 30000
+  },
+  "communication": {
+    "protocol": "stdio"
+  },
+  "configSchema": {
+    "OBSIDIAN_EXECUTABLE_PATH": {
+      "type": "string",
+      "description": "Obsidian 启动程序的绝对路径"
+    },
+    "OBSIDIAN_VAULT_NAME": {
+      "type": "string",
+      "description": "默认目标 Vault 名称"
+    },
+    "OBSIDIAN_REST_URL": {
+      "type": "string",
+      "description": "Obsidian Local REST API 基地址"
+    },
+    "OBSIDIAN_REST_KEY": {
+      "type": "string",
+      "description": "Obsidian Local REST API 的 Bearer Token"
+    },
+    "OBSIDIAN_DEBUG": {
+      "type": "string",
+      "description": "是否输出 REST 请求、响应与写入校验调试日志，推荐 true/false"
+    },
+    "OBSIDIAN_VERIFY_WRITE": {
+      "type": "string",
+      "description": "WriteNote 后是否立即回读并校验写入内容，推荐 true/false，默认 true"
+    },
+    "OBSIDIAN_ALLOWED_COMMANDS": {
+      "type": "string",
+      "description": "允许通过 RunObsidianCommand 调用的 Obsidian 命令 ID 白名单，多个命令用英文逗号分隔"
+    }
+  },
+  "capabilities": {
+    "invocationCommands": [
+      {
+        "command": "ListDirectory",
+        "description": "功能(REST主层): 列出 Obsidian Vault 中指定目录的内容，返回结构化 JSON 列表。\n参数:\n- path (字符串, 可选): 目录路径，支持 path / directoryPath / dir / folderPath，默认 '/'.\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」ObsidianManager「末」,\ncommand:「始」ListDirectory「末」,\npath:「始」/「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "ReadNote",
+        "description": "功能(REST主层): 读取指定笔记或文件的原始 Markdown 内容。\n参数:\n- filepath (字符串, 必需): 文件相对路径，支持 filepath / filePath / path / notePath。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」ObsidianManager「末」,\ncommand:「始」ReadNote「末」,\nfilepath:「始」项目/会议记录.md「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "WriteNote",
+        "description": "功能(REST主层): 创建或完整覆盖写入一篇笔记。\n参数:\n- filepath (字符串, 必需): 目标文件路径。\n- content (字符串, 必需): 完整写入内容，支持 content / text / body。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」ObsidianManager「末」,\ncommand:「始」WriteNote「末」,\nfilepath:「始」收件箱/新笔记.md「末」,\ncontent:「始」# 标题\n正文内容\n「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "AppendNote",
+        "description": "功能(REST主层): 向已有笔记尾部追加内容。\n参数:\n- filepath (字符串, 必需): 目标文件路径。\n- content (字符串, 必需): 要追加的文本，支持 content / text / body / appendContent。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」ObsidianManager「末」,\ncommand:「始」AppendNote「末」,\nfilepath:「始」收件箱.md「末」,\ncontent:「始」\n- [ ] 新任务\n「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "SearchVault",
+        "description": "功能(REST主层): 在 Vault 中进行全文搜索，返回匹配结果 JSON。\n参数:\n- query (字符串, 必需): 检索词，支持 query / keyword / search / q。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」ObsidianManager「末」,\ncommand:「始」SearchVault「末」,\nquery:「始」项目X「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "SearchAdvanced",
+        "description": "功能(REST主层): 组合检索词、路径和标签进行增强搜索。\n参数:\n- query (字符串, 必需): 主检索词。\n- path (字符串, 可选): 限定目录。\n- tag (字符串, 可选): 限定标签。\n- limit (整数, 可选): 期望结果上限，目前仅作为结果提示字段。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」ObsidianManager「末」,\ncommand:「始」SearchAdvanced「末」,\nquery:「始」日报「末」,\npath:「始」Daily Notes「末」,\ntag:「始」项目A「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "GetActiveNote",
+        "description": "功能(REST主层): 获取当前在 Obsidian 前台界面里处于激活状态的笔记信息。\n参数: 无。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」ObsidianManager「末」,\ncommand:「始」GetActiveNote「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "DeleteNote",
+        "description": "功能(REST主层): 删除指定笔记。\n参数:\n- filepath (字符串, 必需): 目标文件路径，支持 filepath / filePath / path / notePath。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」ObsidianManager「末」,\ncommand:「始」DeleteNote「末」,\nfilepath:「始」草稿/旧笔记.md「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "MoveNote",
+        "description": "功能(REST主层): 移动笔记到新路径。\n参数:\n- from (字符串, 必需): 原路径，支持 from / sourcePath / filepath / filePath。\n- to (字符串, 必需): 新路径，支持 to / targetPath / destinationPath / newPath。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」ObsidianManager「末」,\ncommand:「始」MoveNote「末」,\nfrom:「始」收件箱/临时.md「末」,\nto:「始」项目A/临时.md「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "RenameNote",
+        "description": "功能(REST主层): 重命名笔记文件名，保留原目录。\n参数:\n- filepath (字符串, 必需): 原文件路径。\n- newName (字符串, 必需): 新文件名，支持 newName / name / targetName / renameTo。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」ObsidianManager「末」,\ncommand:「始」RenameNote「末」,\nfilepath:「始」项目A/草稿.md「末」,\nnewName:「始」项目A-定稿.md「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "GetNoteMetadata",
+        "description": "功能(REST主层增强): 读取笔记内容并返回基础元数据摘要，例如大小、行数、标题数、任务数、扩展名。\n参数:\n- filepath (字符串, 必需): 目标文件路径。\n说明:\n- 当前版本通过读取文件内容计算摘要，不依赖额外 REST metadata 路由。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」ObsidianManager「末」,\ncommand:「始」GetNoteMetadata「末」,\nfilepath:「始」项目A/会议记录.md「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "CreateDailyNote",
+        "description": "功能(REST主层增强): 创建或覆盖指定日期的每日笔记。\n参数:\n- date (字符串, 可选): 日期，默认今天，格式如 2026-03-07。\n- folder (字符串, 可选): 日记目录，默认 Daily Notes。\n- filename (字符串, 可选): 文件名，默认 date.md。\n- content (字符串, 可选): 初始内容或模板。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」ObsidianManager「末」,\ncommand:「始」CreateDailyNote「末」,\ndate:「始」2026-03-07「末」,\nfolder:「始」Daily Notes「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "ListRecentNotes",
+        "description": "功能(REST主层增强): 列出指定目录下的近期笔记候选集合。\n参数:\n- path (字符串, 可选): 目录路径，默认 '/'.\n- limit (整数, 可选): 返回上限，默认 10。\n说明:\n- 当前版本基于目录列表结果做轻量截断，后续可升级为真实按修改时间排序。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」ObsidianManager「末」,\ncommand:「始」ListRecentNotes「末」,\npath:「始」Daily Notes「末」,\nlimit:「始」5「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "OpenNote",
+        "description": "功能(CLI补层): 在桌面前台唤起 Obsidian 并打开指定笔记。\n参数:\n- filepath (字符串, 可选): 完整相对路径。\n- noteName (字符串, 可选): 笔记标题或文件名。\n说明: filepath 与 noteName 至少提供一个。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」ObsidianManager「末」,\ncommand:「始」OpenNote「末」,\nfilepath:「始」项目A/会议记录.md「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "OpenVault",
+        "description": "功能(CLI补层): 打开 Obsidian 应用并进入指定 Vault。\n参数:\n- vaultName (字符串, 可选): Vault 名称；若不提供则回退到 OBSIDIAN_VAULT_NAME。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」ObsidianManager「末」,\ncommand:「始」OpenVault「末」,\nvaultName:「始」VCPToolBox「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "OpenDailyNote",
+        "description": "功能(CLI补层): 打开 Obsidian 每日笔记。\n参数: 无。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」ObsidianManager「末」,\ncommand:「始」OpenDailyNote「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "OpenURI",
+        "description": "功能(CLI补层): 打开任意 Obsidian URI。\n参数:\n- uri (字符串, 必需): 完整 obsidian:// URI。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」ObsidianManager「末」,\ncommand:「始」OpenURI「末」,\nuri:「始」obsidian://open?vault=VCPToolBox&file=收件箱.md「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "RunObsidianCommand",
+        "description": "功能(CLI补层): 执行已加入白名单的 Obsidian 命令 ID。\n参数:\n- commandId (字符串, 必需): Obsidian 命令 ID，支持 commandId / command / obsidianCommand。\n前提:\n- 必须在 OBSIDIAN_ALLOWED_COMMANDS 中显式配置白名单。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」ObsidianManager「末」,\ncommand:「始」RunObsidianCommand「末」,\ncommandId:「始」workspace:open-settings「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "Batch",
+        "description": "功能(多指令编排): 串行执行多个 ObsidianManager 命令，适合“先搜索、再读、再写、最后打开”的工作流。\n参数:\n- operations (数组, 可选): 每项形如 { command, ...args }。\n- 或使用 command1 / command2 / filepath1 / query2 这种 VCP 串行调用格式。\n- stopOnError (布尔, 可选): 是否遇错即停，默认 false。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」ObsidianManager「末」,\ncommand1:「始」SearchVault「末」,\nquery1:「始」项目A「末」,\ncommand2:「始」ReadNote「末」,\nfilepath2:「始」项目A/会议记录.md「末」\n<<<[END_TOOL_REQUEST]>>>"
+      }
+    ]
+  }
+}

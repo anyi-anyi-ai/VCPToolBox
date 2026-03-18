@@ -1,0 +1,45 @@
+{
+  "skill_id": "renleixu::frontend-design",
+  "name": "frontend-design",
+  "title": "frontend-design",
+  "summary": "Create distinctive, production-grade frontend interfaces with high design quality. Use this skill when the user asks to build web components, pages, artifacts, posters, or applications (examples include websites, landing pages, dashboards, React components, HTML/CSS layouts, or when styling/beautifying any web UI). Generates creative, polished code and UI design that avoids generic AI aesthetics.",
+  "category": {
+    "l1": "D. 领域能力与专业模板",
+    "l2": "D2. 前端与体验设计",
+    "l3": "D2-1. 前端界面与体验表达"
+  },
+  "usage_category": {
+    "usage_method": "规划与拆解",
+    "family": "方案规划类",
+    "domain": "需求澄清与设计前置"
+  },
+  "capability_type": "扩展能力",
+  "priority": "P2",
+  "integration_phase": "长期",
+  "asset_status": "可执行技能",
+  "status": "registered",
+  "review_status": "ready",
+  "source_origin": "renleixu",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/renleixu/skills-main/skills/frontend-design/SKILL.md",
+  "language_hint": "en",
+  "vcp_mapping": [
+    "DomainSkills",
+    "PluginTemplates"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": true,
+  "executable_level": "stub",
+  "duplicate_group": "",
+  "issue_flags": [],
+  "recommended_action": "列入后续扩展池，按需求接入",
+  "tags": [
+    "renleixu",
+    "P2",
+    "扩展能力",
+    "D. 领域能力与专业模板",
+    "D2. 前端与体验设计",
+    "lang:en"
+  ],
+  "version": "0.1.0-draft",
+  "canonical": true
+}

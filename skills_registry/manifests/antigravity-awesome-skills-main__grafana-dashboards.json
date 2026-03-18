@@ -1,0 +1,45 @@
+{
+  "skill_id": "antigravity-awesome-skills-main::grafana-dashboards",
+  "name": "grafana-dashboards",
+  "title": "Grafana Dashboards",
+  "summary": "Create and manage production Grafana dashboards for real-time visualization of system and application metrics. Use when building monitoring dashboards, visualizing metrics, or creating operational ...",
+  "category": {
+    "l1": "C. 知识生产与持续学习",
+    "l2": "C1. 技能资产治理",
+    "l3": "C1-1. 盘点、编写与治理"
+  },
+  "usage_category": {
+    "usage_method": "输出与交付",
+    "family": "产出交付类",
+    "domain": "写作表达与最终交付"
+  },
+  "capability_type": "通用能力",
+  "priority": "P1",
+  "integration_phase": "中期",
+  "asset_status": "可执行技能",
+  "status": "registered",
+  "review_status": "ready",
+  "source_origin": "antigravity-awesome-skills-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/grafana-dashboards/SKILL.md",
+  "language_hint": "unknown",
+  "vcp_mapping": [
+    "KnowledgeBase",
+    "SkillsRegistry"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": true,
+  "executable_level": "stub",
+  "duplicate_group": "",
+  "issue_flags": [],
+  "recommended_action": "纳入标准化台账并继续评估",
+  "tags": [
+    "antigravity-awesome-skills-main",
+    "P1",
+    "通用能力",
+    "C. 知识生产与持续学习",
+    "C1. 技能资产治理",
+    "lang:unknown"
+  ],
+  "version": "0.1.0-draft",
+  "canonical": true
+}

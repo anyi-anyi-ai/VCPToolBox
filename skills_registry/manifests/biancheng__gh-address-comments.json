@@ -1,0 +1,51 @@
+{
+  "skill_id": "biancheng::gh-address-comments",
+  "name": "gh-address-comments",
+  "title": "PR Comment Handler",
+  "summary": "Help address review/issue comments on the open GitHub PR for the current branch using gh CLI; verify gh auth first and prompt the user to authenticate if not logged in.",
+  "category": {
+    "l1": "Z. 待确认",
+    "l2": "Z1. 待补充分析",
+    "l3": "Z1-1. 未识别技能"
+  },
+  "usage_category": {
+    "usage_method": "理解与归纳",
+    "family": "阅读分析类",
+    "domain": "总结抽取与结构化"
+  },
+  "capability_type": "通用能力",
+  "priority": "P1",
+  "integration_phase": "中期",
+  "asset_status": "可执行技能",
+  "status": "registered",
+  "review_status": "needs_review",
+  "source_origin": "biancheng",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/biancheng/skills-main/skills/.curated/gh-address-comments/SKILL.md",
+  "language_hint": "unknown",
+  "vcp_mapping": [
+    "KnowledgeBase",
+    "PluginBridge"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": true,
+  "executable_level": "stub",
+  "duplicate_group": "",
+  "issue_flags": [
+    "待确认分类"
+  ],
+  "recommended_action": "补充读取内容后再分类",
+  "tags": [
+    "P1",
+    "Z. 待确认",
+    "Z1. 待补充分析",
+    "biancheng",
+    "lang:unknown",
+    "taskflow:理解与归纳",
+    "通用能力"
+  ],
+  "version": "0.1.0-draft",
+  "taskflow_category": "理解与归纳",
+  "canonical_group": "gh-address-comments",
+  "canonical_selection_reason": "无重复候选，直接保留",
+  "canonical": true
+}

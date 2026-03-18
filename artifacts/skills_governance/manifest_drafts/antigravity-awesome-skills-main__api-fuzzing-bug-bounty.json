@@ -1,0 +1,35 @@
+{
+  "skill_id": "antigravity-awesome-skills-main::api-fuzzing-bug-bounty",
+  "name": "api-fuzzing-bug-bounty",
+  "title": "API Fuzzing for Bug Bounty",
+  "summary": "This skill should be used when the user asks to \\\"test API security\\\", \\\"fuzz APIs\\\", \\\"find IDOR vulnerabilities\\\", \\\"test REST API\\\", \\\"test GraphQL\\\", \\\"API penetration testing\\\", \\\"bug b...",
+  "category": {
+    "l1": "B. 工程实现与质量保障",
+    "l2": "B2. 测试与验证",
+    "l3": "B2-1. 测试验证闭环"
+  },
+  "capability_type": "通用能力",
+  "priority": "P1",
+  "integration_phase": "中期",
+  "asset_status": "可执行技能",
+  "language_hint": "en",
+  "source_origin": "antigravity-awesome-skills-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/api-fuzzing-bug-bounty/SKILL.md",
+  "duplicate_group": "",
+  "issue_flags": [],
+  "recommended_action": "纳入标准化台账并继续评估",
+  "vcp_mapping": [
+    "QualityGate",
+    "DebugMode"
+  ],
+  "status": "draft",
+  "version": "0.1.0-draft",
+  "tags": [
+    "antigravity-awesome-skills-main",
+    "P1",
+    "通用能力",
+    "B. 工程实现与质量保障",
+    "B2. 测试与验证",
+    "lang:en"
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "skill_id": "antigravity-awesome-skills-main::nextjs-app-router-patterns",
+  "name": "nextjs-app-router-patterns",
+  "title": "Next.js App Router Patterns",
+  "summary": "Master Next.js 14+ App Router with Server Components, streaming, parallel routes, and advanced data fetching. Use when building Next.js applications, implementing SSR/SSG, or optimizing React Serve...",
+  "category": {
+    "l1": "C. 知识生产与持续学习",
+    "l2": "C1. 技能资产治理",
+    "l3": "C1-1. 盘点、编写与治理"
+  },
+  "usage_category": {
+    "usage_method": "输出与交付",
+    "family": "产出交付类",
+    "domain": "写作表达与最终交付"
+  },
+  "capability_type": "通用能力",
+  "priority": "P1",
+  "integration_phase": "中期",
+  "asset_status": "可执行技能",
+  "status": "registered",
+  "review_status": "ready",
+  "source_origin": "antigravity-awesome-skills-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/nextjs-app-router-patterns/SKILL.md",
+  "language_hint": "unknown",
+  "vcp_mapping": [
+    "PluginBridge",
+    "QualityGate"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": true,
+  "executable_level": "stub",
+  "duplicate_group": "",
+  "issue_flags": [],
+  "recommended_action": "纳入标准化台账并继续评估",
+  "tags": [
+    "C. 知识生产与持续学习",
+    "C1. 技能资产治理",
+    "P1",
+    "antigravity-awesome-skills-main",
+    "lang:unknown",
+    "taskflow:验证与审查",
+    "通用能力"
+  ],
+  "version": "0.1.0-draft",
+  "taskflow_category": "验证与审查",
+  "canonical_group": "nextjs-app-router-patterns",
+  "canonical_selection_reason": "优先中文，其次高价值任务流分类，再保留更稳定的主 skill 路径",
+  "canonical": true
+}

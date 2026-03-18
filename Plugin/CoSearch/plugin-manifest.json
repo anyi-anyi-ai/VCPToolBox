@@ -1,0 +1,47 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "CoSearch",
+  "version": "1.2.0",
+  "displayName": "CoSearch 深度研究插件",
+  "description": "基于 OpenAI-compatible Responses API + web_search 的语义级并发深度检索插件，支持 lite/standard/deep 三种模式。",
+  "author": "VCP",
+  "pluginType": "synchronous",
+  "entryPoint": {
+    "type": "shell",
+    "command": "bash run_cosearch.sh"
+  },
+  "communication": {
+    "protocol": "stdio",
+    "timeout": 1800000
+  },
+  "configSchema": {
+    "COSEARCH_API_KEY": {
+      "type": "string",
+      "description": "必填。API Key（也可使用 OPENAI_API_KEY）。"
+    },
+    "COSEARCH_BASE_URL": {
+      "type": "string",
+      "description": "可选。API 地址，默认 https://api.openai.com/v1/responses"
+    },
+    "COSEARCH_MODEL": {
+      "type": "string",
+      "description": "可选。模型名称，默认 gpt-5.2"
+    },
+    "COSEARCH_WORKSPACE_DIR": {
+      "type": "string",
+      "description": "可选。报告输出目录，默认 workspace"
+    },
+    "COSEARCH_ALLOWED_DOMAINS": {
+      "type": "string",
+      "description": "可选。逗号分隔的域名白名单。"
+    }
+  },
+  "capabilities": {
+    "invocationCommands": [
+      {
+        "commandIdentifier": "CoSearch",
+        "description": "执行深度研究检索。\n参数:\n- SearchTopic (字符串, 必需): 研究主题。\n- Keywords (字符串或数组, 必需): 检索关键词（逗号/换行分隔也可）。\n- ShowURL (布尔值, 可选, 默认 true): 是否展示证据 URL。\n- Mode (字符串, 可选): lite | standard | deep。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」CoSearch「末」,\nSearchTopic:「始」2026 AI Agent 框架演进「末」,\nKeywords:「始」OpenAI Agents SDK, LangGraph, AutoGen, CrewAI「末」,\nShowURL:「始」true「末」,\nMode:「始」standard「末」\n<<<[END_TOOL_REQUEST]>>>"
+      }
+    ]
+  }
+}

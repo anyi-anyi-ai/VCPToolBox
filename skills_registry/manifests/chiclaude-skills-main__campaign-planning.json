@@ -1,0 +1,50 @@
+{
+  "skill_id": "chiclaude-skills-main::campaign-planning",
+  "name": "campaign-planning",
+  "title": "Campaign Planning Skill",
+  "summary": "Plan marketing campaigns with objectives, audience segmentation, channel strategy, content calendars, and success metrics. Use when launching a campaign, planning a product launch, building a content calendar, allocating budget across channels, or defining campaign KPIs.",
+  "category": {
+    "l1": "A. Agent工作流与任务编排",
+    "l2": "A2. 执行调度与协同开发",
+    "l3": "A2-1. 任务执行与协作流"
+  },
+  "usage_category": {
+    "usage_method": "规划与拆解",
+    "family": "方案规划类",
+    "domain": "需求澄清与设计前置"
+  },
+  "capability_type": "通用能力",
+  "priority": "P1",
+  "integration_phase": "中期",
+  "asset_status": "可执行技能",
+  "status": "registered",
+  "review_status": "ready",
+  "source_origin": "chiclaude-skills-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/anthropics-knowledge-work-plugins/marketing/skills/campaign-planning/SKILL.md",
+  "language_hint": "unknown",
+  "vcp_mapping": [
+    "KnowledgeBase",
+    "PluginBridge"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": true,
+  "executable_level": "stub",
+  "duplicate_group": "workflow_planning_execution",
+  "issue_flags": [],
+  "recommended_action": "纳入重复组人工复核，必要时合并",
+  "tags": [
+    "A. Agent工作流与任务编排",
+    "A2. 执行调度与协同开发",
+    "P1",
+    "chiclaude-skills-main",
+    "dup:workflow_planning_execution",
+    "lang:unknown",
+    "taskflow:检索与发现",
+    "通用能力"
+  ],
+  "version": "0.1.0-draft",
+  "taskflow_category": "检索与发现",
+  "canonical_group": "campaign-planning",
+  "canonical_selection_reason": "无重复候选，直接保留",
+  "canonical": true
+}

@@ -1,0 +1,49 @@
+{
+  "skill_id": "chiclaude-skills-main::ai-content-pipeline",
+  "name": "ai-content-pipeline",
+  "title": "AI Content Pipeline",
+  "summary": "Build multi-step AI content creation pipelines combining image, video, audio, and text. Workflow examples: generate image -> animate -> add voiceover -> merge with music. Tools: FLUX, Veo, Kokoro TTS, OmniHuman, media merger, upscaling. Use for: YouTube videos, social media content, marketing materials, automated content. Triggers: content pipeline, ai workflow, content creation, multi-step ai, content automation, ai video workflow, generate and edit, ai content factory, automated content creation, ai production pipeline, media pipeline, content at scale",
+  "category": {
+    "l1": "D. 领域能力与专业模板",
+    "l2": "D3. 行业化/专项场景",
+    "l3": "D3-1. 专项业务与内容场景"
+  },
+  "usage_category": {
+    "usage_method": "执行与编排",
+    "family": "执行编排类",
+    "domain": "工作流与协同执行"
+  },
+  "capability_type": "扩展能力",
+  "priority": "P2",
+  "integration_phase": "长期",
+  "asset_status": "可执行技能",
+  "status": "registered",
+  "review_status": "ready",
+  "source_origin": "chiclaude-skills-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/inference-sh-1-skills/skills/ai-content-pipeline/SKILL.md",
+  "language_hint": "en",
+  "vcp_mapping": [
+    "KnowledgeBase",
+    "PluginBridge"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": true,
+  "executable_level": "stub",
+  "duplicate_group": "",
+  "issue_flags": [],
+  "recommended_action": "列入后续扩展池，按需求接入",
+  "tags": [
+    "D. 领域能力与专业模板",
+    "D3. 行业化/专项场景",
+    "P2",
+    "chiclaude-skills-main",
+    "lang:en",
+    "taskflow:检索与发现",
+    "扩展能力"
+  ],
+  "version": "0.1.0-draft",
+  "taskflow_category": "检索与发现",
+  "canonical_group": "ai-content-pipeline",
+  "canonical_selection_reason": "优先中文，其次高价值任务流分类，再保留更稳定的主 skill 路径",
+  "canonical": true
+}

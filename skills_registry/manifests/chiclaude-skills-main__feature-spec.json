@@ -1,0 +1,51 @@
+{
+  "skill_id": "chiclaude-skills-main::feature-spec",
+  "name": "feature-spec",
+  "title": "Feature Spec Skill",
+  "summary": "Write structured product requirements documents (PRDs) with problem statements, user stories, requirements, and success metrics. Use when speccing a new feature, writing a PRD, defining acceptance criteria, prioritizing requirements, or documenting product decisions.",
+  "category": {
+    "l1": "D. 领域能力与专业模板",
+    "l2": "D3. 行业化/专项场景",
+    "l3": "D3-1. 专项业务与内容场景"
+  },
+  "usage_category": {
+    "usage_method": "规划与拆解",
+    "family": "方案规划类",
+    "domain": "需求澄清与设计前置"
+  },
+  "capability_type": "扩展能力",
+  "priority": "P2",
+  "integration_phase": "长期",
+  "asset_status": "可执行技能",
+  "status": "registered",
+  "review_status": "ready",
+  "source_origin": "chiclaude-skills-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/anthropics-knowledge-work-plugins/product-management/skills/feature-spec/SKILL.md",
+  "language_hint": "unknown",
+  "vcp_mapping": [
+    "KnowledgeBase",
+    "PluginBridge"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": true,
+  "executable_level": "stub",
+  "duplicate_group": "",
+  "issue_flags": [
+    "平台原生语义待改造"
+  ],
+  "recommended_action": "列入后续扩展池，按需求接入",
+  "tags": [
+    "D. 领域能力与专业模板",
+    "D3. 行业化/专项场景",
+    "P2",
+    "chiclaude-skills-main",
+    "lang:unknown",
+    "taskflow:检索与发现",
+    "扩展能力"
+  ],
+  "version": "0.1.0-draft",
+  "taskflow_category": "检索与发现",
+  "canonical_group": "feature-spec",
+  "canonical_selection_reason": "无重复候选，直接保留",
+  "canonical": true
+}

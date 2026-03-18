@@ -1,0 +1,23 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "AIMemo",
+  "displayName": "AIMemo 历史回忆检索",
+  "version": "1.0.1",
+  "description": "基于聊天历史JSON的关键词滑窗回忆工具。",
+  "author": "VCP",
+  "pluginType": "hybridservice",
+  "entryPoint": {
+    "script": "index.js"
+  },
+  "communication": {
+    "protocol": "direct"
+  },
+  "capabilities": {
+    "invocationCommands": [
+      {
+        "commandIdentifier": "SearchHistory",
+        "description": "按关键词检索历史会话。参数：keyword(必需), window_size(可选), maid(可选), userDataPath(可选), currentTopicId(可选)。"
+      }
+    ]
+  }
+}

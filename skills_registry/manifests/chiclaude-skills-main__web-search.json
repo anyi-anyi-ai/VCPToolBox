@@ -1,0 +1,50 @@
+{
+  "skill_id": "chiclaude-skills-main::web-search",
+  "name": "web-search",
+  "title": "Web Search & Extraction",
+  "summary": "Web search and content extraction with Tavily and Exa via inference.sh CLI. Apps: Tavily Search, Tavily Extract, Exa Search, Exa Answer, Exa Extract. Capabilities: AI-powered search, content extraction, direct answers, research. Use for: research, RAG pipelines, fact-checking, content aggregation, agents. Triggers: web search, tavily, exa, search api, content extraction, research, internet search, ai search, search assistant, web scraping, rag, perplexity alternative",
+  "category": {
+    "l1": "C. 知识生产与持续学习",
+    "l2": "C3. 检索增强与研究",
+    "l3": "C3-1. 研究与检索增强"
+  },
+  "usage_category": {
+    "usage_method": "检索与发现",
+    "family": "研究检索类",
+    "domain": "通用知识检索"
+  },
+  "capability_type": "通用能力",
+  "priority": "P1",
+  "integration_phase": "中期",
+  "asset_status": "可执行技能",
+  "status": "registered",
+  "review_status": "ready",
+  "source_origin": "chiclaude-skills-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/inference-sh-1-skills/skills/web-search/SKILL.md",
+  "language_hint": "en",
+  "vcp_mapping": [
+    "KnowledgeBase",
+    "PluginBridge"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": true,
+  "executable_level": "stub",
+  "duplicate_group": "research_retrieval",
+  "issue_flags": [],
+  "recommended_action": "纳入重复组人工复核，必要时合并",
+  "tags": [
+    "C. 知识生产与持续学习",
+    "C3. 检索增强与研究",
+    "P1",
+    "chiclaude-skills-main",
+    "dup:research_retrieval",
+    "lang:en",
+    "taskflow:检索与发现",
+    "通用能力"
+  ],
+  "version": "0.1.0-draft",
+  "taskflow_category": "检索与发现",
+  "canonical_group": "web-search",
+  "canonical_selection_reason": "优先中文，其次高价值任务流分类，再保留更稳定的主 skill 路径",
+  "canonical": true
+}

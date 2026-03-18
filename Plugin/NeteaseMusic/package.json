@@ -1,0 +1,10 @@
+{
+  "name": "netease-music-vcp-plugin",
+  "version": "1.0.0",
+  "description": "VCP plugin for NetEase Cloud Music - search songs, get playback URLs, get lyrics",
+  "type": "module",
+  "main": "NeteaseMusic.mjs",
+  "dependencies": {
+    "NeteaseCloudMusicApi": "^4.24.0"
+  }
+}

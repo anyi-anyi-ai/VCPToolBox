@@ -2,8 +2,7 @@
   "name": "midi-translator-js",
   "version": "0.1.0",
   "description": "JavaScript frontend for the MIDITranslator plugin",
-  "main": "js-module/index.js",
-  "type": "module",
+  "main": "MIDITranslator.js",
   "scripts": {
     "build": "webpack --mode production",
     "dev": "webpack --mode development --watch",

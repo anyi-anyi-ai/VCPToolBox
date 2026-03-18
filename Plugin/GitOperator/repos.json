@@ -1,0 +1,21 @@
+{
+  "defaultProfile": "VCPToolBox",
+  "profiles": {
+    "VCPToolBox": {
+      "localPath": "H:\\VCP\\VCPzhangduan\\VCPToolBox",
+      "pushRemote": "origin",
+      "pushBranch": "main",
+      "pullUrl": "https://github.com/anyi-anyi-ai/VCPToolBox.git",
+      "pullRemote": "upstream",
+      "pullBranch": "main",
+      "mergeStrategy": "merge"
+    },
+    "VCPChat": {
+      "localPath": "H:\\VCP\\VCPzhangduan\\VCPChat",
+      "pushRemote": "origin",
+      "pushBranch": "main",
+      "pullRemote": "origin",
+      "pullBranch": "main"
+    }
+  }
+}

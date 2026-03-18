@@ -1,0 +1,69 @@
+{
+  "priority_order": [
+    {
+      "repo": "antigravity-awesome-skills-main",
+      "cleanup_load": 906,
+      "mirror_webapp": 906,
+      "backup": 0,
+      "docs_variant": 0
+    },
+    {
+      "repo": "chiclaude-skills-main",
+      "cleanup_load": 92,
+      "mirror_webapp": 0,
+      "backup": 89,
+      "docs_variant": 3
+    },
+    {
+      "repo": "everything-claude-code-main",
+      "cleanup_load": 80,
+      "mirror_webapp": 0,
+      "backup": 0,
+      "docs_variant": 80
+    }
+  ],
+  "repos": {
+    "antigravity-awesome-skills-main": {
+      "cleanup_load": 906,
+      "counts": {
+        "mirror_webapp": 906,
+        "backup": 0,
+        "docs_variant": 0,
+        "primary_skills": 955
+      },
+      "recommended_actions": [
+        "remove mirror_webapp paths and keep original skills/"
+      ]
+    },
+    "chiclaude-skills-main": {
+      "cleanup_load": 92,
+      "counts": {
+        "mirror_webapp": 0,
+        "backup": 89,
+        "docs_variant": 3,
+        "primary_skills": 516
+      },
+      "recommended_actions": [
+        "remove skills-original-backup paths",
+        "review docs_variant paths, keep only canonical source"
+      ]
+    },
+    "everything-claude-code-main": {
+      "cleanup_load": 80,
+      "counts": {
+        "mirror_webapp": 0,
+        "backup": 0,
+        "docs_variant": 80,
+        "primary_skills": 78
+      },
+      "recommended_actions": [
+        "review docs_variant paths, keep only canonical source"
+      ]
+    }
+  },
+  "totals": {
+    "mirror_webapp": 906,
+    "backup": 89,
+    "docs_variant": 83
+  }
+}

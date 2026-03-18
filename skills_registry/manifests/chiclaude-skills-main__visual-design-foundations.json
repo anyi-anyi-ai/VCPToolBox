@@ -1,0 +1,49 @@
+{
+  "skill_id": "chiclaude-skills-main::visual-design-foundations",
+  "name": "visual-design-foundations",
+  "title": "Visual Design Foundations",
+  "summary": "Apply typography, color theory, spacing systems, and iconography principles to create cohesive visual designs. Use when establishing design tokens, building style guides, or improving visual hierarchy and consistency.",
+  "category": {
+    "l1": "C. 知识生产与持续学习",
+    "l2": "C1. 技能资产治理",
+    "l3": "C1-1. 盘点、编写与治理"
+  },
+  "usage_category": {
+    "usage_method": "规划与拆解",
+    "family": "方案规划类",
+    "domain": "需求澄清与设计前置"
+  },
+  "capability_type": "通用能力",
+  "priority": "P1",
+  "integration_phase": "中期",
+  "asset_status": "可执行技能",
+  "status": "registered",
+  "review_status": "ready",
+  "source_origin": "chiclaude-skills-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/wshobson-agents/plugins/ui-design/skills/visual-design-foundations/SKILL.md",
+  "language_hint": "en",
+  "vcp_mapping": [
+    "AdminPanel",
+    "PluginBridge"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": true,
+  "executable_level": "stub",
+  "duplicate_group": "",
+  "issue_flags": [],
+  "recommended_action": "纳入标准化台账并继续评估",
+  "tags": [
+    "C. 知识生产与持续学习",
+    "C1. 技能资产治理",
+    "P1",
+    "chiclaude-skills-main",
+    "lang:en",
+    "taskflow:输出与交付",
+    "通用能力"
+  ],
+  "version": "0.1.0-draft",
+  "taskflow_category": "输出与交付",
+  "canonical_group": "visual-design-foundations",
+  "canonical_selection_reason": "无重复候选，直接保留",
+  "canonical": true
+}

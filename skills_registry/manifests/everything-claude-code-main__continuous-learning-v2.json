@@ -1,0 +1,47 @@
+{
+  "skill_id": "everything-claude-code-main::continuous-learning-v2",
+  "name": "continuous-learning-v2",
+  "title": "Continuous Learning v2 - Instinct-Based Architecture",
+  "summary": "Instinct-based learning system that observes sessions via hooks, creates atomic instincts with confidence scoring, and evolves them into skills/commands/agents.",
+  "category": {
+    "l1": "C. 知识生产与持续学习",
+    "l2": "C2. 会话学习与经验沉淀",
+    "l3": "C2-1. 学习与压缩"
+  },
+  "usage_category": {
+    "usage_method": "规划与拆解",
+    "family": "方案规划类",
+    "domain": "需求澄清与设计前置"
+  },
+  "capability_type": "核心能力",
+  "priority": "P0",
+  "integration_phase": "短期",
+  "asset_status": "可执行技能",
+  "status": "active_candidate",
+  "review_status": "ready",
+  "source_origin": "everything-claude-code-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/skills/continuous-learning-v2/SKILL.md",
+  "language_hint": "en",
+  "vcp_mapping": [
+    "KnowledgeBase",
+    "SkillsRegistry"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": true,
+  "executable_level": "stub",
+  "duplicate_group": "",
+  "issue_flags": [
+    "存在版本重叠"
+  ],
+  "recommended_action": "保留较新版本，旧版本归档或并入",
+  "tags": [
+    "everything-claude-code-main",
+    "P0",
+    "核心能力",
+    "C. 知识生产与持续学习",
+    "C2. 会话学习与经验沉淀",
+    "lang:en"
+  ],
+  "version": "0.1.0-draft",
+  "canonical": true
+}

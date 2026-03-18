@@ -1,0 +1,51 @@
+{
+  "skill_id": "chiclaude-skills-main::ui-ux-pro-max",
+  "name": "ui-ux-pro-max",
+  "title": "🔥 [No.011] UI/UX Pro Max - 设计智能",
+  "summary": "",
+  "category": {
+    "l1": "C. 知识生产与持续学习",
+    "l2": "C1. 技能资产治理",
+    "l3": "C1-1. 盘点、编写与治理"
+  },
+  "usage_category": {
+    "usage_method": "输出与交付",
+    "family": "产出交付类",
+    "domain": "写作表达与最终交付"
+  },
+  "capability_type": "通用能力",
+  "priority": "P1",
+  "integration_phase": "中期",
+  "asset_status": "可执行技能",
+  "status": "registered",
+  "review_status": "ready",
+  "source_origin": "chiclaude-skills-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/nextlevelbuilder-ui-ux-pro-max-skill/src/ui-ux-pro-max/SKILL.md",
+  "language_hint": "zh",
+  "vcp_mapping": [
+    "KnowledgeBase",
+    "PluginBridge"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": true,
+  "executable_level": "stub",
+  "duplicate_group": "",
+  "issue_flags": [
+    "缺少描述"
+  ],
+  "recommended_action": "纳入标准化台账并继续评估",
+  "tags": [
+    "C. 知识生产与持续学习",
+    "C1. 技能资产治理",
+    "P1",
+    "chiclaude-skills-main",
+    "lang:zh",
+    "taskflow:检索与发现",
+    "通用能力"
+  ],
+  "version": "0.1.0-draft",
+  "taskflow_category": "检索与发现",
+  "canonical_group": "ui-ux-pro",
+  "canonical_selection_reason": "优先中文，其次高价值任务流分类，再保留更稳定的主 skill 路径",
+  "canonical": true
+}

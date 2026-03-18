@@ -1,0 +1,45 @@
+{
+  "skill_id": "chiclaude-skills-main::openapi-spec-generation",
+  "name": "openapi-spec-generation",
+  "title": "OpenAPI Spec Generation",
+  "summary": "Generate and maintain OpenAPI 3.1 specifications from code, design-first specs, and validation patterns. Use when creating API documentation, generating SDKs, or ensuring API contract compliance.",
+  "category": {
+    "l1": "D. 领域能力与专业模板",
+    "l2": "D1. 通用软件架构与后端",
+    "l3": "D1-1. 后端与语言专项模板"
+  },
+  "usage_category": {
+    "usage_method": "规划与拆解",
+    "family": "方案规划类",
+    "domain": "需求澄清与设计前置"
+  },
+  "capability_type": "扩展能力",
+  "priority": "P2",
+  "integration_phase": "长期",
+  "asset_status": "可执行技能",
+  "status": "registered",
+  "review_status": "ready",
+  "source_origin": "chiclaude-skills-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/wshobson-agents/plugins/documentation-generation/skills/openapi-spec-generation/SKILL.md",
+  "language_hint": "en",
+  "vcp_mapping": [
+    "DomainSkills",
+    "PluginTemplates"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": true,
+  "executable_level": "stub",
+  "duplicate_group": "",
+  "issue_flags": [],
+  "recommended_action": "列入后续扩展池，按需求接入",
+  "tags": [
+    "chiclaude-skills-main",
+    "P2",
+    "扩展能力",
+    "D. 领域能力与专业模板",
+    "D1. 通用软件架构与后端",
+    "lang:en"
+  ],
+  "version": "0.1.0-draft",
+  "canonical": true
+}

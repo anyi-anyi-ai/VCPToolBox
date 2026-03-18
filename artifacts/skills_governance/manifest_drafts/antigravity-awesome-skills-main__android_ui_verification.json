@@ -1,0 +1,36 @@
+{
+  "skill_id": "antigravity-awesome-skills-main::android_ui_verification",
+  "name": "android_ui_verification",
+  "title": "Android UI Verification Skill",
+  "summary": "Automated end-to-end UI testing and verification on an Android Emulator using ADB.",
+  "category": {
+    "l1": "B. 工程实现与质量保障",
+    "l2": "B2. 测试与验证",
+    "l3": "B2-1. 测试验证闭环"
+  },
+  "capability_type": "通用能力",
+  "priority": "P1",
+  "integration_phase": "中期",
+  "asset_status": "可执行技能",
+  "language_hint": "en",
+  "source_origin": "antigravity-awesome-skills-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/android_ui_verification/SKILL.md",
+  "duplicate_group": "verification_loop",
+  "issue_flags": [],
+  "recommended_action": "纳入重复组人工复核，必要时合并",
+  "vcp_mapping": [
+    "QualityGate",
+    "DebugMode"
+  ],
+  "status": "draft",
+  "version": "0.1.0-draft",
+  "tags": [
+    "antigravity-awesome-skills-main",
+    "P1",
+    "通用能力",
+    "B. 工程实现与质量保障",
+    "B2. 测试与验证",
+    "lang:en",
+    "dup:verification_loop"
+  ]
+}

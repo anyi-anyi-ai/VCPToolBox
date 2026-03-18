@@ -1,0 +1,45 @@
+{
+  "skill_id": "chiclaude-skills-main::multi-cloud-architecture",
+  "name": "multi-cloud-architecture",
+  "title": "Multi-Cloud Architecture",
+  "summary": "Design multi-cloud architectures using a decision framework to select and integrate services across AWS, Azure, and GCP. Use when building multi-cloud systems, avoiding vendor lock-in, or leveraging best-of-breed services from multiple providers.",
+  "category": {
+    "l1": "A. Agent工作流与任务编排",
+    "l2": "A1. 需求澄清与方案设计",
+    "l3": "A1-1. 需求澄清与设计前置"
+  },
+  "usage_category": {
+    "usage_method": "检索与发现",
+    "family": "研究检索类",
+    "domain": "通用知识检索"
+  },
+  "capability_type": "通用能力",
+  "priority": "P1",
+  "integration_phase": "中期",
+  "asset_status": "可执行技能",
+  "status": "registered",
+  "review_status": "ready",
+  "source_origin": "chiclaude-skills-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/wshobson-agents/plugins/cloud-infrastructure/skills/multi-cloud-architecture/SKILL.md",
+  "language_hint": "en",
+  "vcp_mapping": [
+    "AgentOrchestrator",
+    "WorkflowEngine"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": true,
+  "executable_level": "stub",
+  "duplicate_group": "",
+  "issue_flags": [],
+  "recommended_action": "纳入标准化台账并继续评估",
+  "tags": [
+    "chiclaude-skills-main",
+    "P1",
+    "通用能力",
+    "A. Agent工作流与任务编排",
+    "A1. 需求澄清与方案设计",
+    "lang:en"
+  ],
+  "version": "0.1.0-draft",
+  "canonical": true
+}

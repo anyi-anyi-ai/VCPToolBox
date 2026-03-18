@@ -1,0 +1,49 @@
+{
+  "skill_id": "everything-claude-code-main::frontend-patterns",
+  "name": "frontend-patterns",
+  "title": "Frontend Development Patterns",
+  "summary": "Frontend development patterns for React, Next.js, state management, performance optimization, and UI best practices.",
+  "category": {
+    "l1": "D. 领域能力与专业模板",
+    "l2": "D2. 前端与体验设计",
+    "l3": "D2-1. 前端界面与体验表达"
+  },
+  "usage_category": {
+    "usage_method": "输出与交付",
+    "family": "产出交付类",
+    "domain": "写作表达与最终交付"
+  },
+  "capability_type": "核心能力",
+  "priority": "P0",
+  "integration_phase": "短期",
+  "asset_status": "可执行技能",
+  "status": "active_candidate",
+  "review_status": "ready",
+  "source_origin": "everything-claude-code-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/skills/frontend-patterns/SKILL.md",
+  "language_hint": "unknown",
+  "vcp_mapping": [
+    "AdminPanel",
+    "PluginBridge"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": false,
+  "executable_level": "catalog_only",
+  "duplicate_group": "",
+  "issue_flags": [],
+  "recommended_action": "优先标准化并纳入 VCP 首批接入范围",
+  "tags": [
+    "D. 领域能力与专业模板",
+    "D2. 前端与体验设计",
+    "P0",
+    "everything-claude-code-main",
+    "lang:unknown",
+    "taskflow:输出与交付",
+    "核心能力"
+  ],
+  "version": "0.1.0-draft",
+  "taskflow_category": "输出与交付",
+  "canonical_group": "frontend-patterns",
+  "canonical_selection_reason": "优先中文，其次高价值任务流分类，再保留更稳定的主 skill 路径",
+  "canonical": true
+}

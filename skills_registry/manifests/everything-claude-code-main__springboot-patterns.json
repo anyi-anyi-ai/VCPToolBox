@@ -1,0 +1,49 @@
+{
+  "skill_id": "everything-claude-code-main::springboot-patterns",
+  "name": "springboot-patterns",
+  "title": "Spring Boot Development Patterns",
+  "summary": "Spring Boot architecture patterns, REST API design, layered services, data access, caching, async processing, and logging. Use for Java Spring Boot backend work.",
+  "category": {
+    "l1": "D. 领域能力与专业模板",
+    "l2": "D1. 通用软件架构与后端",
+    "l3": "D1-1. 后端与语言专项模板"
+  },
+  "usage_category": {
+    "usage_method": "规划与拆解",
+    "family": "方案规划类",
+    "domain": "需求澄清与设计前置"
+  },
+  "capability_type": "扩展能力",
+  "priority": "P2",
+  "integration_phase": "长期",
+  "asset_status": "可执行技能",
+  "status": "registered",
+  "review_status": "ready",
+  "source_origin": "everything-claude-code-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/skills/springboot-patterns/SKILL.md",
+  "language_hint": "en",
+  "vcp_mapping": [
+    "KnowledgeBase",
+    "PluginBridge"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": true,
+  "executable_level": "stub",
+  "duplicate_group": "",
+  "issue_flags": [],
+  "recommended_action": "列入后续扩展池，按需求接入",
+  "tags": [
+    "D. 领域能力与专业模板",
+    "D1. 通用软件架构与后端",
+    "P2",
+    "everything-claude-code-main",
+    "lang:en",
+    "taskflow:理解与归纳",
+    "扩展能力"
+  ],
+  "version": "0.1.0-draft",
+  "taskflow_category": "理解与归纳",
+  "canonical_group": "springboot-patterns",
+  "canonical_selection_reason": "无重复候选，直接保留",
+  "canonical": true
+}

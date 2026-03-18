@@ -1,0 +1,49 @@
+{
+  "skill_id": "antigravity-awesome-skills-main::brand-guidelines-community",
+  "name": "brand-guidelines-community",
+  "title": "Anthropic Brand Styling",
+  "summary": "Applies Anthropic's official brand colors and typography to any sort of artifact that may benefit from having Anthropic's look-and-feel. Use it when brand colors or style guidelines, visual formatt...",
+  "category": {
+    "l1": "C. 知识生产与持续学习",
+    "l2": "C1. 技能资产治理",
+    "l3": "C1-1. 盘点、编写与治理"
+  },
+  "usage_category": {
+    "usage_method": "输出与交付",
+    "family": "产出交付类",
+    "domain": "写作表达与最终交付"
+  },
+  "capability_type": "通用能力",
+  "priority": "P1",
+  "integration_phase": "中期",
+  "asset_status": "可执行技能",
+  "status": "registered",
+  "review_status": "ready",
+  "source_origin": "antigravity-awesome-skills-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/brand-guidelines-community/SKILL.md",
+  "language_hint": "unknown",
+  "vcp_mapping": [
+    "AdminPanel",
+    "PluginBridge"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": true,
+  "executable_level": "stub",
+  "duplicate_group": "",
+  "issue_flags": [],
+  "recommended_action": "纳入标准化台账并继续评估",
+  "tags": [
+    "C. 知识生产与持续学习",
+    "C1. 技能资产治理",
+    "P1",
+    "antigravity-awesome-skills-main",
+    "lang:unknown",
+    "taskflow:输出与交付",
+    "通用能力"
+  ],
+  "version": "0.1.0-draft",
+  "taskflow_category": "输出与交付",
+  "canonical_group": "brand-guidelines-community",
+  "canonical_selection_reason": "无重复候选，直接保留",
+  "canonical": true
+}

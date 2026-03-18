@@ -1,0 +1,49 @@
+{
+  "skill_id": "antigravity-awesome-skills-main::dbos-golang",
+  "name": "dbos-golang",
+  "title": "DBOS Go Best Practices",
+  "summary": "DBOS Go SDK for building reliable, fault-tolerant applications with durable workflows. Use this skill when writing Go code with DBOS, creating workflows and steps, using queues, using the DBOS Clie...",
+  "category": {
+    "l1": "D. 领域能力与专业模板",
+    "l2": "D1. 通用软件架构与后端",
+    "l3": "D1-1. 后端与语言专项模板"
+  },
+  "usage_category": {
+    "usage_method": "执行与编排",
+    "family": "执行编排类",
+    "domain": "工作流与协同执行"
+  },
+  "capability_type": "扩展能力",
+  "priority": "P2",
+  "integration_phase": "长期",
+  "asset_status": "可执行技能",
+  "status": "registered",
+  "review_status": "ready",
+  "source_origin": "antigravity-awesome-skills-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/dbos-golang/SKILL.md",
+  "language_hint": "en",
+  "vcp_mapping": [
+    "PluginBridge",
+    "WorkflowEngine"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": true,
+  "executable_level": "stub",
+  "duplicate_group": "",
+  "issue_flags": [],
+  "recommended_action": "列入后续扩展池，按需求接入",
+  "tags": [
+    "D. 领域能力与专业模板",
+    "D1. 通用软件架构与后端",
+    "P2",
+    "antigravity-awesome-skills-main",
+    "lang:en",
+    "taskflow:执行与编排",
+    "扩展能力"
+  ],
+  "version": "0.1.0-draft",
+  "taskflow_category": "执行与编排",
+  "canonical_group": "dbos-golang",
+  "canonical_selection_reason": "无重复候选，直接保留",
+  "canonical": true
+}

@@ -1,0 +1,66 @@
+{
+    "present continuous": {
+        "title": "Present Continuous Tense (现在进行时)",
+        "explanation": "表示现在(说话瞬间)正在进行或发生的动作，或现阶段正在进行的状态。常与 now, at the moment, currently 等词连用。",
+        "structure": "am/is/are + verb-ing",
+        "examples": [
+            "I am studying English now. (我现在正在学英语。)",
+            "She is running in the park. (她正在公园跑步。)",
+            "They are building a new bridge this year. (他们今年正在建一座新桥。)"
+        ]
+    },
+    "past perfect": {
+        "title": "Past Perfect Tense (过去完成时)",
+        "explanation": "表示在过去某一时间或动作之前已经发生或完成的动作，即“过去的过去”。常与 by the time, before, already 等词连用。",
+        "structure": "had + past participle (过去分词)",
+        "examples": [
+            "We had already eaten when they arrived. (他们到达时我们已经吃过饭了。)",
+            "I noticed that he had left his umbrella. (我注意到他把伞落下了。)"
+        ]
+    },
+    "present perfect": {
+        "title": "Present Perfect Tense (现在完成时)",
+        "explanation": "表示过去发生并已经完成的动作对现在造成的影响或后果，或者从过去某一时间开始一直延续到现在(并可能继续延伸)的动作或状态。常与 for, since, already, yet, just 连用。",
+        "structure": "have/has + past participle (过去分词)",
+        "examples": [
+            "I have lived in Beijing for ten years. (我在北京住了十年了。)",
+            "She has just finished her homework. (她刚刚做完作业。)"
+        ]
+    },
+    "future continuous": {
+        "title": "Future Continuous Tense (将来进行时)",
+        "explanation": "表示在将来某一特定时刻或某段时间正在进行的动作。",
+        "structure": "will be + verb-ing",
+        "examples": [
+            "This time tomorrow, I will be flying to London. (明天的这个时候，我将正在飞往伦敦的航班上。)",
+            "Don't call me at 8 PM; I will be having dinner. (晚上八点别给我打电话，我正在吃晚饭。)"
+        ]
+    },
+    "attributive clause": {
+        "title": "Attributive Clause (定语从句)",
+        "explanation": "在复合句中修饰名词或代词的从句叫做定语从句。被修饰的词叫先行词。引导定语从句的词叫关系词（关系代词或关系副词）。",
+        "structure": "先行词 + 关系词(who/which/that/where/when/whose) + 从句",
+        "examples": [
+            "The man who is speaking is our teacher. (正在讲话的那个人是我们的老师。)",
+            "This is the house where I lived when I was young. (这就是我小时候住过的房子。)"
+        ]
+    },
+    "noun clause": {
+        "title": "Noun Clause (名词性从句)",
+        "explanation": "在句子中起名词作用的从句，包括主语从句、宾语从句、表语从句和同位语从句。常由 that, whether, if, wh- 疑问词引导。",
+        "structure": "引导词 + 句子可以作主语/宾语/表语/同位语",
+        "examples": [
+            "I know that he is a good student. (我知道他是个好学生。 - 宾语从句)",
+            "Whether we will go for a picnic depends on the weather. (我们是否去野餐取决于天气。 - 主语从句)"
+        ]
+    },
+    "subjunctive mood": {
+        "title": "Subjunctive Mood (虚拟语气)",
+        "explanation": "表示说话人的假设、愿望、建议或一种与事实相反的情况。常用于 if 引导的非真实条件句中。",
+        "structure": "与现在相反: If ... did/were ..., ... would/could/should/might do ...",
+        "examples": [
+            "If I were you, I would accept the offer. (如果我是你，我就会接受这个提议。)",
+            "I wish I had a car. (我希望我有一辆车。)"
+        ]
+    }
+}

@@ -1,0 +1,49 @@
+{
+  "skill_id": "chiclaude-skills-main::journal-entry-prep",
+  "name": "journal-entry-prep",
+  "title": "Journal Entry Preparation",
+  "summary": "Prepare journal entries with proper debits, credits, and supporting documentation for month-end close. Use when booking accruals, prepaid amortization, fixed asset depreciation, payroll entries, revenue recognition, or any manual journal entry.",
+  "category": {
+    "l1": "D. 领域能力与专业模板",
+    "l2": "D3. 行业化/专项场景",
+    "l3": "D3-1. 专项业务与内容场景"
+  },
+  "usage_category": {
+    "usage_method": "输出与交付",
+    "family": "产出交付类",
+    "domain": "写作表达与最终交付"
+  },
+  "capability_type": "扩展能力",
+  "priority": "P2",
+  "integration_phase": "长期",
+  "asset_status": "可执行技能",
+  "status": "registered",
+  "review_status": "ready",
+  "source_origin": "chiclaude-skills-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/anthropics-knowledge-work-plugins/finance/skills/journal-entry-prep/SKILL.md",
+  "language_hint": "unknown",
+  "vcp_mapping": [
+    "PluginBridge",
+    "WorkflowEngine"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": true,
+  "executable_level": "stub",
+  "duplicate_group": "",
+  "issue_flags": [],
+  "recommended_action": "列入后续扩展池，按需求接入",
+  "tags": [
+    "D. 领域能力与专业模板",
+    "D3. 行业化/专项场景",
+    "P2",
+    "chiclaude-skills-main",
+    "lang:unknown",
+    "taskflow:执行与编排",
+    "扩展能力"
+  ],
+  "version": "0.1.0-draft",
+  "taskflow_category": "执行与编排",
+  "canonical_group": "journal-entry-prep",
+  "canonical_selection_reason": "无重复候选，直接保留",
+  "canonical": true
+}

@@ -1,0 +1,49 @@
+{
+  "skill_id": "everything-claude-code-main::database-migrations",
+  "name": "database-migrations",
+  "title": "Database Migration Patterns",
+  "summary": "Database migration best practices for schema changes, data migrations, rollbacks, and zero-downtime deployments across PostgreSQL, MySQL, and common ORMs (Prisma, Drizzle, Django, TypeORM, golang-migrate).",
+  "category": {
+    "l1": "D. 领域能力与专业模板",
+    "l2": "D1. 通用软件架构与后端",
+    "l3": "D1-1. 后端与语言专项模板"
+  },
+  "usage_category": {
+    "usage_method": "专项领域技能",
+    "family": "专项场景类",
+    "domain": "未归一专项方向"
+  },
+  "capability_type": "扩展能力",
+  "priority": "P2",
+  "integration_phase": "长期",
+  "asset_status": "可执行技能",
+  "status": "registered",
+  "review_status": "ready",
+  "source_origin": "everything-claude-code-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/skills/database-migrations/SKILL.md",
+  "language_hint": "unknown",
+  "vcp_mapping": [
+    "PluginBridge",
+    "WorkflowEngine"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": true,
+  "executable_level": "stub",
+  "duplicate_group": "",
+  "issue_flags": [],
+  "recommended_action": "列入后续扩展池，按需求接入",
+  "tags": [
+    "D. 领域能力与专业模板",
+    "D1. 通用软件架构与后端",
+    "P2",
+    "everything-claude-code-main",
+    "lang:unknown",
+    "taskflow:规划与拆解",
+    "扩展能力"
+  ],
+  "version": "0.1.0-draft",
+  "taskflow_category": "规划与拆解",
+  "canonical_group": "database-migrations",
+  "canonical_selection_reason": "无重复候选，直接保留",
+  "canonical": true
+}

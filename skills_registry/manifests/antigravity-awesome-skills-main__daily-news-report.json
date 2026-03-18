@@ -1,0 +1,49 @@
+{
+  "skill_id": "antigravity-awesome-skills-main::daily-news-report",
+  "name": "daily-news-report",
+  "title": "Daily News Report v3.0",
+  "summary": "Scrapes content based on a preset URL list, filters high-quality technical information, and generates daily Markdown reports.",
+  "category": {
+    "l1": "D. 领域能力与专业模板",
+    "l2": "D3. 行业化/专项场景",
+    "l3": "D3-1. 专项业务与内容场景"
+  },
+  "usage_category": {
+    "usage_method": "验证与审查",
+    "family": "测试审查类",
+    "domain": "测试验证与安全质量"
+  },
+  "capability_type": "扩展能力",
+  "priority": "P2",
+  "integration_phase": "长期",
+  "asset_status": "可执行技能",
+  "status": "registered",
+  "review_status": "ready",
+  "source_origin": "antigravity-awesome-skills-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/daily-news-report/SKILL.md",
+  "language_hint": "unknown",
+  "vcp_mapping": [
+    "PluginBridge",
+    "WorkflowEngine"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": true,
+  "executable_level": "stub",
+  "duplicate_group": "",
+  "issue_flags": [],
+  "recommended_action": "列入后续扩展池，按需求接入",
+  "tags": [
+    "D. 领域能力与专业模板",
+    "D3. 行业化/专项场景",
+    "P2",
+    "antigravity-awesome-skills-main",
+    "lang:unknown",
+    "taskflow:执行与编排",
+    "扩展能力"
+  ],
+  "version": "0.1.0-draft",
+  "taskflow_category": "执行与编排",
+  "canonical_group": "daily-news-report",
+  "canonical_selection_reason": "无重复候选，直接保留",
+  "canonical": true
+}

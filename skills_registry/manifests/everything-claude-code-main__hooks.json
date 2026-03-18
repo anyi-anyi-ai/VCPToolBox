@@ -1,0 +1,48 @@
+{
+  "skill_id": "everything-claude-code-main::hooks",
+  "name": "hooks",
+  "title": "Hooks",
+  "summary": "",
+  "category": {
+    "l1": "E. 平台配置与运行支撑",
+    "l2": "E1. 平台配置与安装",
+    "l3": "E1-1. 配置、部署与运行支撑"
+  },
+  "usage_category": {
+    "usage_method": "执行与编排",
+    "family": "平台运行类",
+    "domain": "配置部署与运行"
+  },
+  "capability_type": "支撑能力",
+  "priority": "P1",
+  "integration_phase": "中期",
+  "asset_status": "待确认技能说明",
+  "status": "registered",
+  "review_status": "ready",
+  "source_origin": "everything-claude-code-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/hooks/README.md",
+  "language_hint": "unknown",
+  "vcp_mapping": [
+    "HookSystem",
+    "PlatformConfig"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": true,
+  "executable_level": "metadata_only",
+  "duplicate_group": "",
+  "issue_flags": [
+    "缺少描述",
+    "非标准技能文件"
+  ],
+  "recommended_action": "纳入标准化台账并继续评估",
+  "tags": [
+    "everything-claude-code-main",
+    "P1",
+    "支撑能力",
+    "E. 平台配置与运行支撑",
+    "E1. 平台配置与安装",
+    "lang:unknown"
+  ],
+  "version": "0.1.0-draft",
+  "canonical": true
+}

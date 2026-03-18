@@ -1,0 +1,66 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "QQGroupReader",
+  "version": "1.0.0",
+  "displayName": "QQ群聊消息读取器",
+  "description": "从本地 NTQQ 加密数据库中读取群聊消息，支持按群号、时间范围查询，返回结构化文本供 AI 分析整理。需要预先配置数据库解密密钥。",
+  "author": "VCP Team",
+  "pluginType": "synchronous",
+  "entryPoint": {
+    "type": "nodejs",
+    "command": "node QQGroupReader.js"
+  },
+  "communication": {
+    "protocol": "stdio",
+    "timeout": 30000
+  },
+  "configSchema": {
+    "QQ_DB_KEY": {
+      "type": "string",
+      "description": "NTQQ 数据库解密密钥（16字节字符串，通过 lldb 从 QQ 进程提取）"
+    },
+    "QQ_DB_DIR": {
+      "type": "string",
+      "description": "NTQQ 数据库目录路径，例如 ~/Library/Containers/com.tencent.qq/Data/Library/Application Support/QQ/nt_qq_xxx/nt_db"
+    },
+    "SQLCIPHER_PATH": {
+      "type": "string",
+      "description": "sqlcipher 可执行文件路径，默认 /opt/homebrew/opt/sqlcipher/bin/sqlcipher",
+      "default": "/opt/homebrew/opt/sqlcipher/bin/sqlcipher"
+    },
+    "DEFAULT_HOURS": {
+      "type": "integer",
+      "description": "默认查询最近多少小时的消息，默认 24",
+      "default": 24
+    },
+    "MAX_MESSAGES": {
+      "type": "integer",
+      "description": "单次查询最大消息数，默认 500",
+      "default": 500
+    }
+  },
+  "capabilities": {
+    "invocationCommands": [
+      {
+        "commandIdentifier": "ReadGroupMessages",
+        "description": "读取指定QQ群的聊天消息。从本地NTQQ加密数据库中提取消息文本，返回结构化内容供分析。\n\n参数:\n- group_id (字符串, 必需): QQ群号\n- hours (数字, 可选): 查询最近多少小时的消息，默认24\n- limit (数字, 可选): 最大消息数，默认500\n\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」QQGroupReader「末」,\ncommand:「始」ReadGroupMessages「末」,\ngroup_id:「始」123456789「末」,\nhours:「始」24「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」QQGroupReader「末」,\ncommand:「始」ReadGroupMessages「末」,\ngroup_id:「始」123456789「末」,\nhours:「始」24「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "ListGroups",
+        "description": "列出所有QQ群及其消息数量。\n\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」QQGroupReader「末」,\ncommand:「始」ListGroups「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」QQGroupReader「末」,\ncommand:「始」ListGroups「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "ReadWatchedMessages",
+        "description": "读取关注群中匹配关注条件的消息（关注人或关注话题关键词）。自动使用config.env中配置的WATCH_GROUP、WATCH_QQ和WATCH_KEYWORDS进行过滤。\n\n参数:\n- group_id (字符串, 可选): 群号，不填则使用配置的WATCH_GROUP\n- hours (数字, 可选): 查询最近多少小时，默认24\n- limit (数字, 可选): 最大消息数，默认500\n\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」QQGroupReader「末」,\ncommand:「始」ReadWatchedMessages「末」,\nhours:「始」6「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」QQGroupReader「末」,\ncommand:「始」ReadWatchedMessages「末」,\nhours:「始」6「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "GetNewMessages",
+        "description": "增量获取新消息。自动记录上次读取位置，每次只返回上次之后的新消息。适合轮询场景（如智能客服模式）。首次调用返回最近5分钟的消息。\n\n参数:\n- group_id (字符串, 可选): 群号，不填则使用配置的WATCH_GROUP\n- limit (数字, 可选): 最大消息数，默认100\n\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」QQGroupReader「末」,\ncommand:「始」GetNewMessages「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」QQGroupReader「末」,\ncommand:「始」GetNewMessages「末」\n<<<[END_TOOL_REQUEST]>>>"
+      }
+    ]
+  }
+}

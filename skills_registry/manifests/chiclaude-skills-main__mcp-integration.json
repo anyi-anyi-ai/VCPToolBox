@@ -1,0 +1,49 @@
+{
+  "skill_id": "chiclaude-skills-main::mcp-integration",
+  "name": "mcp-integration",
+  "title": "MCP Integration for Claude Code Plugins",
+  "summary": "This skill should be used when the user asks to \"add MCP server\", \"integrate MCP\", \"configure MCP in plugin\", \"use .mcp.json\", \"set up Model Context Protocol\", \"connect external service\", mentions \"${CLAUDE_PLUGIN_ROOT} with MCP\", or discusses MCP server types (SSE, stdio, HTTP, WebSocket). Provides comprehensive guidance for integrating Model Context Protocol servers into Claude Code plugins for external tool and service integration.",
+  "category": {
+    "l1": "E. 平台配置与运行支撑",
+    "l2": "E1. 平台配置与安装",
+    "l3": "E1-1. 配置、部署与运行支撑"
+  },
+  "usage_category": {
+    "usage_method": "检索与发现",
+    "family": "研究检索类",
+    "domain": "通用知识检索"
+  },
+  "capability_type": "支撑能力",
+  "priority": "P1",
+  "integration_phase": "中期",
+  "asset_status": "可执行技能",
+  "status": "registered",
+  "review_status": "ready",
+  "source_origin": "chiclaude-skills-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/anthropics-claude-plugins-official/plugins/plugin-dev/skills/mcp-integration/SKILL.md",
+  "language_hint": "unknown",
+  "vcp_mapping": [
+    "KnowledgeBase",
+    "PluginBridge"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": true,
+  "executable_level": "stub",
+  "duplicate_group": "",
+  "issue_flags": [],
+  "recommended_action": "纳入标准化台账并继续评估",
+  "tags": [
+    "E. 平台配置与运行支撑",
+    "E1. 平台配置与安装",
+    "P1",
+    "chiclaude-skills-main",
+    "lang:unknown",
+    "taskflow:理解与归纳",
+    "支撑能力"
+  ],
+  "version": "0.1.0-draft",
+  "taskflow_category": "理解与归纳",
+  "canonical_group": "mcp-integration",
+  "canonical_selection_reason": "无重复候选，直接保留",
+  "canonical": true
+}

@@ -1,0 +1,36 @@
+{
+  "skill_id": "antigravity-awesome-skills-main::api-security-best-practices",
+  "name": "api-security-best-practices",
+  "title": "API Security Best Practices",
+  "summary": "Implement secure API design patterns including authentication, authorization, input validation, rate limiting, and protection against common API vulnerabilities",
+  "category": {
+    "l1": "B. 工程实现与质量保障",
+    "l2": "B3. 安全与稳定性",
+    "l3": "B3-1. 安全审查与问题定位"
+  },
+  "capability_type": "通用能力",
+  "priority": "P1",
+  "integration_phase": "中期",
+  "asset_status": "可执行技能",
+  "language_hint": "en",
+  "source_origin": "antigravity-awesome-skills-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/api-security-best-practices/SKILL.md",
+  "duplicate_group": "security_debugging",
+  "issue_flags": [],
+  "recommended_action": "纳入重复组人工复核，必要时合并",
+  "vcp_mapping": [
+    "QualityGate",
+    "DebugMode"
+  ],
+  "status": "draft",
+  "version": "0.1.0-draft",
+  "tags": [
+    "antigravity-awesome-skills-main",
+    "P1",
+    "通用能力",
+    "B. 工程实现与质量保障",
+    "B3. 安全与稳定性",
+    "lang:en",
+    "dup:security_debugging"
+  ]
+}

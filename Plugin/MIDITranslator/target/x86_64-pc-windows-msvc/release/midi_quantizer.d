@@ -1,0 +1,1 @@
+H:\VCP\VCPzhangduan\VCPToolBox\Plugin\MIDITranslator\target\x86_64-pc-windows-msvc\release\midi_quantizer.dll: H:\VCP\VCPzhangduan\VCPToolBox\Plugin\MIDITranslator\build.rs H:\VCP\VCPzhangduan\VCPToolBox\Plugin\MIDITranslator\src\lib.rs

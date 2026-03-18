@@ -1,0 +1,49 @@
+{
+  "skill_id": "chiclaude-skills-main::team-composition-analysis",
+  "name": "team-composition-analysis",
+  "title": "Team Composition Analysis",
+  "summary": "This skill should be used when the user asks to \"plan team structure\", \"determine hiring needs\", \"design org chart\", \"calculate compensation\", \"plan equity allocation\", or requests organizational design and headcount planning for a startup.",
+  "category": {
+    "l1": "A. Agent工作流与任务编排",
+    "l2": "A2. 执行调度与协同开发",
+    "l3": "A2-1. 任务执行与协作流"
+  },
+  "usage_category": {
+    "usage_method": "理解与归纳",
+    "family": "阅读分析类",
+    "domain": "总结抽取与结构化"
+  },
+  "capability_type": "通用能力",
+  "priority": "P1",
+  "integration_phase": "中期",
+  "asset_status": "可执行技能",
+  "status": "registered",
+  "review_status": "ready",
+  "source_origin": "chiclaude-skills-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/wshobson-agents/plugins/startup-business-analyst/skills/team-composition-analysis/SKILL.md",
+  "language_hint": "en",
+  "vcp_mapping": [
+    "KnowledgeBase",
+    "PluginBridge"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": true,
+  "executable_level": "stub",
+  "duplicate_group": "",
+  "issue_flags": [],
+  "recommended_action": "纳入标准化台账并继续评估",
+  "tags": [
+    "A. Agent工作流与任务编排",
+    "A2. 执行调度与协同开发",
+    "P1",
+    "chiclaude-skills-main",
+    "lang:en",
+    "taskflow:理解与归纳",
+    "通用能力"
+  ],
+  "version": "0.1.0-draft",
+  "taskflow_category": "理解与归纳",
+  "canonical_group": "team-composition-analysis",
+  "canonical_selection_reason": "优先中文，其次高价值任务流分类，再保留更稳定的主 skill 路径",
+  "canonical": true
+}

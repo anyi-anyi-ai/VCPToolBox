@@ -1,0 +1,35 @@
+{
+  "skill_id": "antigravity-awesome-skills-main::azure-ai-anomalydetector-java",
+  "name": "azure-ai-anomalydetector-java",
+  "title": "Azure AI Anomaly Detector SDK for Java",
+  "summary": "Build anomaly detection applications with Azure AI Anomaly Detector SDK for Java. Use when implementing univariate/multivariate anomaly detection, time-series analysis, or AI-powered monitoring.",
+  "category": {
+    "l1": "D. 领域能力与专业模板",
+    "l2": "D1. 通用软件架构与后端",
+    "l3": "D1-1. 后端与语言专项模板"
+  },
+  "capability_type": "扩展能力",
+  "priority": "P2",
+  "integration_phase": "长期",
+  "asset_status": "可执行技能",
+  "language_hint": "unknown",
+  "source_origin": "antigravity-awesome-skills-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/azure-ai-anomalydetector-java/SKILL.md",
+  "duplicate_group": "",
+  "issue_flags": [],
+  "recommended_action": "列入后续扩展池，按需求接入",
+  "vcp_mapping": [
+    "PluginTemplates",
+    "DomainSkills"
+  ],
+  "status": "draft",
+  "version": "0.1.0-draft",
+  "tags": [
+    "antigravity-awesome-skills-main",
+    "P2",
+    "扩展能力",
+    "D. 领域能力与专业模板",
+    "D1. 通用软件架构与后端",
+    "lang:unknown"
+  ]
+}

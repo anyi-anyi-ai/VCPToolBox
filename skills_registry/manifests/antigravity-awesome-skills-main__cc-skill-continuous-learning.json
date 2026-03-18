@@ -1,0 +1,49 @@
+{
+  "skill_id": "antigravity-awesome-skills-main::cc-skill-continuous-learning",
+  "name": "cc-skill-continuous-learning",
+  "title": "cc-skill-continuous-learning",
+  "summary": "Development skill from everything-claude-code",
+  "category": {
+    "l1": "C. 知识生产与持续学习",
+    "l2": "C2. 会话学习与经验沉淀",
+    "l3": "C2-1. 学习与压缩"
+  },
+  "usage_category": {
+    "usage_method": "知识治理与持续学习",
+    "family": "知识治理类",
+    "domain": "技能治理与持续学习"
+  },
+  "capability_type": "通用能力",
+  "priority": "P1",
+  "integration_phase": "中期",
+  "asset_status": "可执行技能",
+  "status": "registered",
+  "review_status": "ready",
+  "source_origin": "antigravity-awesome-skills-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/cc-skill-continuous-learning/SKILL.md",
+  "language_hint": "unknown",
+  "vcp_mapping": [
+    "PluginBridge",
+    "WorkflowEngine"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": true,
+  "executable_level": "stub",
+  "duplicate_group": "",
+  "issue_flags": [],
+  "recommended_action": "纳入标准化台账并继续评估",
+  "tags": [
+    "C. 知识生产与持续学习",
+    "C2. 会话学习与经验沉淀",
+    "P1",
+    "antigravity-awesome-skills-main",
+    "lang:unknown",
+    "taskflow:执行与编排",
+    "通用能力"
+  ],
+  "version": "0.1.0-draft",
+  "taskflow_category": "执行与编排",
+  "canonical_group": "cc-skill-continuous-learning",
+  "canonical_selection_reason": "无重复候选，直接保留",
+  "canonical": true
+}

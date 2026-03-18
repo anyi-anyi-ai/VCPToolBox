@@ -1,0 +1,46 @@
+{
+  "skill_id": "antigravity-awesome-skills-main::k8s-security-policies",
+  "name": "k8s-security-policies",
+  "title": "Kubernetes Security Policies",
+  "summary": "Implement Kubernetes security policies including NetworkPolicy, PodSecurityPolicy, and RBAC for production-grade security. Use when securing Kubernetes clusters, implementing network isolation, or ...",
+  "category": {
+    "l1": "B. 工程实现与质量保障",
+    "l2": "B3. 安全与稳定性",
+    "l3": "B3-1. 安全审查与问题定位"
+  },
+  "usage_category": {
+    "usage_method": "验证与审查",
+    "family": "测试审查类",
+    "domain": "测试验证与安全质量"
+  },
+  "capability_type": "通用能力",
+  "priority": "P1",
+  "integration_phase": "中期",
+  "asset_status": "可执行技能",
+  "status": "registered",
+  "review_status": "ready",
+  "source_origin": "antigravity-awesome-skills-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/k8s-security-policies/SKILL.md",
+  "language_hint": "en",
+  "vcp_mapping": [
+    "DebugMode",
+    "QualityGate"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": true,
+  "executable_level": "stub",
+  "duplicate_group": "security_debugging",
+  "issue_flags": [],
+  "recommended_action": "纳入重复组人工复核，必要时合并",
+  "tags": [
+    "antigravity-awesome-skills-main",
+    "P1",
+    "通用能力",
+    "B. 工程实现与质量保障",
+    "B3. 安全与稳定性",
+    "lang:en",
+    "dup:security_debugging"
+  ],
+  "version": "0.1.0-draft",
+  "canonical": true
+}

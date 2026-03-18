@@ -1,0 +1,45 @@
+{
+  "skill_id": "renleixu::theme-factory",
+  "name": "theme-factory",
+  "title": "Theme Factory Skill",
+  "summary": "Toolkit for styling artifacts with a theme. These artifacts can be slides, docs, reportings, HTML landing pages, etc. There are 10 pre-set themes with colors/fonts that you can apply to any artifact that has been creating, or can generate a new theme on-the-fly.",
+  "category": {
+    "l1": "D. 领域能力与专业模板",
+    "l2": "D2. 前端与体验设计",
+    "l3": "D2-1. 前端界面与体验表达"
+  },
+  "usage_category": {
+    "usage_method": "知识治理与持续学习",
+    "family": "知识治理类",
+    "domain": "技能治理与持续学习"
+  },
+  "capability_type": "扩展能力",
+  "priority": "P2",
+  "integration_phase": "长期",
+  "asset_status": "可执行技能",
+  "status": "registered",
+  "review_status": "ready",
+  "source_origin": "renleixu",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/renleixu/skills-main/skills/theme-factory/SKILL.md",
+  "language_hint": "unknown",
+  "vcp_mapping": [
+    "DomainSkills",
+    "PluginTemplates"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": false,
+  "executable_level": "catalog_only",
+  "duplicate_group": "",
+  "issue_flags": [],
+  "recommended_action": "列入后续扩展池，按需求接入",
+  "tags": [
+    "renleixu",
+    "P2",
+    "扩展能力",
+    "D. 领域能力与专业模板",
+    "D2. 前端与体验设计",
+    "lang:unknown"
+  ],
+  "version": "0.1.0-draft",
+  "canonical": true
+}

@@ -1,120 +1,20 @@
-# KarakeepSearch VCP Plugin
+# KarakeepSearch (KarakeepSearch)
 
-This document provides instructions for setting up and using the KarakeepSearch VCP plugin.
+## 📖 插件概览
+这是一份由 VCP 自动生成的插件说明。
 
----
+**简述**: 
+暂无描述
 
-## English Instructions
+## 🔧 主要功能
 
-### 1. Setup
+该插件主要作为一个基础环境或后台辅助模块运行，或暂未暴露出具体的交互命令。
 
-1.  **Place the Plugin**: Copy the entire `KarakeepSearch` directory into the `Plugin` directory of your VCPToolBox instance.
 
-2.  **Configuration**: Create a `config.env` file inside this directory by copying `config.env.example`. Then, fill in your Karakeep server details:
-    ```env
-    # plugins/KarakeepSearch/config.env
-    KARAKEEP_API_ADDR=https://your-karakeep.example.com
-    KARAKEEP_API_KEY=sk-xxxxxxx
-    ```
-
-The VCP server will automatically detect and load the plugin based on the `plugin-manifest.json` file.
-
-### 2. Usage
-
-To use the plugin, an AI agent needs to generate a `TOOL_REQUEST` block as described in the manifest.
-
--   **Tool**: `SearchBookmarks`
--   **Description**: Searches bookmarks in Karakeep.
--   **Parameters**:
-    -   `query` (string, required): The search query. Supports advanced syntax like `is:fav`, `#tag`, etc.
-    -   `limit` (number, optional, default: 10): The number of results to return.
-    -   `nextCursor` (string, optional): The cursor for pagination, obtained from a previous search result.
-
-#### Example VCP Call
-
-```
-<<<[TOOL_REQUEST]>>>
-tool_name:「始」KarakeepSearch「末」,
-query:「始」machine learning is:fav「末」,
-limit:「始」5「末」
-<<<[END_TOOL_REQUEST]>>>
-```
-
-#### Response Format
-
--   **Success**:
-    ```json
-    {
-      "status": "success",
-      "result": {
-        "content": [{"type": "text", "text": "Bookmark details..."}],
-        "nextCursor": "a_cursor_string_or_null"
-      }
-    }
-    ```
--   **Error**:
-    ```json
-    {
-      "status": "error",
-      "code": "ERROR_CODE",
-      "error": "A descriptive error message."
-    }
-    ```
+## 💡 如何使用
+1. 确保在 VCP 启动状态下，且该插件未被 `missing_plugins.txt` 或配置禁用。
+2. 内部模型/Agent 可以在遇到符合条件的自然语言对话时，自动分析并调用上述 `命令` (如果具有的话)。
+3. 您可以查阅 `plugin-manifest.json` 获取更底层的实现参数。
 
 ---
-
-## 中文说明
-
-### 1. 设置
-
-1.  **放置插件**: 将整个 `KarakeepSearch` 文件夹复制到你的 VCPToolBox 实例的 `Plugin` 目录下。
-
-2.  **配置**: 在此目录中，通过复制 `config.env.example` 来创建一个 `config.env` 文件。然后，填入你的 Karakeep 服务器详细信息：
-    ```env
-    # plugins/KarakeepSearch/config.env
-    KARAKEEP_API_ADDR=https://your-karakeep.example.com
-    KARAKEEP_API_KEY=sk-xxxxxxx
-    ```
-
-VCP 服务器将根据 `plugin-manifest.json` 文件自动检测并加载插件。
-
-### 2. 使用方法
-
-要使用此插件，AI 代理需要生成一个如清单文件中所述的 `TOOL_REQUEST` 块。
-
--   **工具**: `SearchBookmarks`
--   **描述**: 在 Karakeep 中搜索书签。
--   **参数**:
-    -   `query` (字符串, 必需): 搜索查询。支持高级语法，如 `is:fav`, `#tag` 等。
-    -   `limit` (数字, 可选, 默认: 10): 返回的结果数量。
-    -   `nextCursor` (字符串, 可选): 用于分页的光标，从上一次搜索结果中获取。
-
-#### VCP 调用示例
-
-```
-<<<[TOOL_REQUEST]>>>
-tool_name:「始」KarakeepSearch「末」,
-query:「始」machine learning is:fav「末」,
-limit:「始」5「末」
-<<<[END_TOOL_REQUEST]>>>
-```
-
-#### 响应格式
-
--   **成功**:
-    ```json
-    {
-      "status": "success",
-      "result": {
-        "content": [{"type": "text", "text": "书签详情..."}],
-        "nextCursor": "分页光标字符串或 null"
-      }
-    }
-    ```
--   **错误**:
-    ```json
-    {
-      "status": "error",
-      "code": "错误代码",
-      "error": "详细的错误信息。"
-    }
+*自动生成于: 2026/3/10 10:10:18*

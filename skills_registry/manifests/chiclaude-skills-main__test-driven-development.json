@@ -1,0 +1,52 @@
+{
+  "skill_id": "chiclaude-skills-main::test-driven-development",
+  "name": "test-driven-development",
+  "title": "Test-Driven Development - 测试驱动开发",
+  "summary": "",
+  "category": {
+    "l1": "C. 知识生产与持续学习",
+    "l2": "C1. 技能资产治理",
+    "l3": "C1-1. 盘点、编写与治理"
+  },
+  "usage_category": {
+    "usage_method": "验证与审查",
+    "family": "测试审查类",
+    "domain": "测试验证与安全质量"
+  },
+  "capability_type": "核心能力",
+  "priority": "P0",
+  "integration_phase": "短期",
+  "asset_status": "可执行技能",
+  "status": "active_candidate",
+  "review_status": "ready",
+  "source_origin": "chiclaude-skills-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/obra-superpowers/skills/test-driven-development/SKILL.md",
+  "language_hint": "zh",
+  "vcp_mapping": [
+    "PluginBridge",
+    "QualityGate"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": true,
+  "executable_level": "stub",
+  "duplicate_group": "testing_tdd",
+  "issue_flags": [
+    "缺少描述"
+  ],
+  "recommended_action": "纳入重复组人工复核，必要时合并",
+  "tags": [
+    "C. 知识生产与持续学习",
+    "C1. 技能资产治理",
+    "P0",
+    "chiclaude-skills-main",
+    "dup:testing_tdd",
+    "lang:zh",
+    "taskflow:验证与审查",
+    "核心能力"
+  ],
+  "version": "0.1.0-draft",
+  "taskflow_category": "验证与审查",
+  "canonical_group": "test-driven-development",
+  "canonical_selection_reason": "优先中文，其次高价值任务流分类，再保留更稳定的主 skill 路径",
+  "canonical": true
+}

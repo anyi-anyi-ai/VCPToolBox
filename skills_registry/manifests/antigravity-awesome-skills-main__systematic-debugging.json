@@ -1,0 +1,46 @@
+{
+  "skill_id": "antigravity-awesome-skills-main::systematic-debugging",
+  "name": "systematic-debugging",
+  "title": "Systematic Debugging",
+  "summary": "Use when encountering any bug, test failure, or unexpected behavior, before proposing fixes",
+  "category": {
+    "l1": "B. 工程实现与质量保障",
+    "l2": "B3. 安全与稳定性",
+    "l3": "B3-1. 安全审查与问题定位"
+  },
+  "usage_category": {
+    "usage_method": "验证与审查",
+    "family": "测试审查类",
+    "domain": "测试验证与安全质量"
+  },
+  "capability_type": "核心能力",
+  "priority": "P0",
+  "integration_phase": "短期",
+  "asset_status": "可执行技能",
+  "status": "active_candidate",
+  "review_status": "ready",
+  "source_origin": "antigravity-awesome-skills-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/skills/systematic-debugging/SKILL.md",
+  "language_hint": "unknown",
+  "vcp_mapping": [
+    "DebugMode",
+    "QualityGate"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": true,
+  "executable_level": "stub",
+  "duplicate_group": "security_debugging",
+  "issue_flags": [],
+  "recommended_action": "纳入重复组人工复核，必要时合并",
+  "tags": [
+    "antigravity-awesome-skills-main",
+    "P0",
+    "核心能力",
+    "B. 工程实现与质量保障",
+    "B3. 安全与稳定性",
+    "lang:unknown",
+    "dup:security_debugging"
+  ],
+  "version": "0.1.0-draft",
+  "canonical": true
+}

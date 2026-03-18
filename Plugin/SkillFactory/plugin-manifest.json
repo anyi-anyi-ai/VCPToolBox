@@ -1,0 +1,25 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "SkillFactory",
+  "version": "0.1.0",
+  "displayName": "Skill Factory",
+  "description": "用于根据用户目标生成新的 skill 草案，并完成查重与草案保存。",
+  "author": "VCP",
+  "pluginType": "synchronous",
+  "entryPoint": {
+    "type": "nodejs",
+    "command": "node SkillFactory.js"
+  },
+  "communication": {
+    "protocol": "stdio",
+    "timeout": 60000
+  },
+  "capabilities": {
+    "invocationCommands": [
+      {
+        "commandIdentifier": "SkillFactory",
+        "description": "生成、检查并保存 VCP 本地技能草案。\n参数:\n- action (字符串, 必需): draft_skill_from_prompt | check_skill_overlap | save_skill_draft\n- user_goal (字符串, 可选): 用户想要的新技能目标\n- preferred_language (字符串, 可选): zh | en，默认 zh\n- target_module (字符串或数组, 可选): 目标 VCP 模块\n- style (字符串, 可选): vcp_workflow | generic\n- skill (对象, 可选): 已生成的技能草案\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」SkillFactory「末」,\naction:「始」draft_skill_from_prompt「末」,\nuser_goal:「始」我想让 Agent 在编码前先分析需求并列出风险和接口草图「末」\n<<<[END_TOOL_REQUEST]>>>"
+      }
+    ]
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "skill_id": "chiclaude-skills-main::mcp-builder",
+  "name": "mcp-builder",
+  "title": "MCP Server Development Guide",
+  "summary": "Guide for creating high-quality MCP (Model Context Protocol) servers that enable LLMs to interact with external services through well-designed tools. Use when building MCP servers to integrate external APIs or services, whether in Python (FastMCP) or Node/TypeScript (MCP SDK).",
+  "category": {
+    "l1": "D. 领域能力与专业模板",
+    "l2": "D1. 通用软件架构与后端",
+    "l3": "D1-1. 后端与语言专项模板"
+  },
+  "usage_category": {
+    "usage_method": "检索与发现",
+    "family": "研究检索类",
+    "domain": "通用知识检索"
+  },
+  "capability_type": "扩展能力",
+  "priority": "P2",
+  "integration_phase": "长期",
+  "asset_status": "可执行技能",
+  "status": "registered",
+  "review_status": "ready",
+  "source_origin": "chiclaude-skills-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/chiclaude-skills-main/skills/anthropics-skills/skills/mcp-builder/SKILL.md",
+  "language_hint": "en",
+  "vcp_mapping": [
+    "DomainSkills",
+    "PluginTemplates"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": true,
+  "executable_level": "stub",
+  "duplicate_group": "",
+  "issue_flags": [],
+  "recommended_action": "列入后续扩展池，按需求接入",
+  "tags": [
+    "chiclaude-skills-main",
+    "P2",
+    "扩展能力",
+    "D. 领域能力与专业模板",
+    "D1. 通用软件架构与后端",
+    "lang:en"
+  ],
+  "version": "0.1.0-draft",
+  "canonical": true
+}

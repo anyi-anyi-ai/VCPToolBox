@@ -1,0 +1,26 @@
+{
+    "name": "RecentMemo",
+    "displayName": "RecentMemo Cross-Agent Sync",
+    "version": "2.1.4",
+    "description": "Standalone Cross-Agent Sync (Pure %%RecentMemo::%% Mode). Compatible with VCP variables.",
+    "author": "VCP Engineering",
+    "pluginType": "messagePreprocessor",
+    "entryPoint": {
+        "script": "RecentMemo.js"
+    },
+    "communication": {
+        "protocol": "direct"
+    },
+    "capabilities": {
+        "invocationCommands": [],
+        "systemPromptPlaceholders": [
+            {
+                "placeholder": "%%RecentMemo::AgentName::Rounds::Mode%%",
+                "description": "Inject real-time conversation history."
+            }
+        ]
+    },
+    "configSchema": {
+        "DebugMode": { "type": "boolean", "default": false }
+    }
+}

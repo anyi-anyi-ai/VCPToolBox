@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cosearch.local/schema/request.v1.2.json",
+  "title": "CoSearch stdin request v1.2",
+  "type": "object",
+  "required": [
+    "SearchTopic",
+    "Keywords"
+  ],
+  "properties": {
+    "SearchTopic": {
+      "type": "string",
+      "description": "检索主题；运行时会 trim 后判空。",
+      "minLength": 1,
+      "pattern": ".*\\S.*"
+    },
+    "Keywords": {
+      "description": "关键词，支持逗号/换行字符串或字符串数组。",
+      "oneOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "pattern": ".*\\S.*"
+        },
+        {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": ".*\\S.*"
+          }
+        }
+      ]
+    },
+    "ShowURL": {
+      "description": "可选。布尔值，或字符串（true/1/yes 视为 true）。",
+      "oneOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "Mode": {
+      "type": "string",
+      "description": "可选。lite/standard/deep（大小写不敏感）。",
+      "enum": [
+        "lite",
+        "standard",
+        "deep"
+      ]
+    },
+    "RequestID": {
+      "type": "string",
+      "description": "可选。透传到响应 request_id。"
+    }
+  },
+  "additionalProperties": true,
+  "examples": [
+    {
+      "SearchTopic": "AI Agent 最新进展",
+      "Keywords": "OpenAI agent evals, deep research",
+      "ShowURL": true,
+      "Mode": "standard",
+      "RequestID": "demo-001"
+    }
+  ]
+}

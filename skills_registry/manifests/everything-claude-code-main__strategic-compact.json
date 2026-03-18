@@ -1,0 +1,49 @@
+{
+  "skill_id": "everything-claude-code-main::strategic-compact",
+  "name": "strategic-compact",
+  "title": "Strategic Compact Skill",
+  "summary": "Suggests manual context compaction at logical intervals to preserve context through task phases rather than arbitrary auto-compaction.",
+  "category": {
+    "l1": "C. 知识生产与持续学习",
+    "l2": "C2. 会话学习与经验沉淀",
+    "l3": "C2-1. 学习与压缩"
+  },
+  "usage_category": {
+    "usage_method": "知识治理与持续学习",
+    "family": "知识治理类",
+    "domain": "技能治理与持续学习"
+  },
+  "capability_type": "通用能力",
+  "priority": "P1",
+  "integration_phase": "中期",
+  "asset_status": "可执行技能",
+  "status": "registered",
+  "review_status": "ready",
+  "source_origin": "everything-claude-code-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/everything-claude-code-main/skills/strategic-compact/SKILL.md",
+  "language_hint": "unknown",
+  "vcp_mapping": [
+    "KnowledgeBase",
+    "PluginBridge"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": true,
+  "executable_level": "stub",
+  "duplicate_group": "",
+  "issue_flags": [],
+  "recommended_action": "纳入标准化台账并继续评估",
+  "tags": [
+    "C. 知识生产与持续学习",
+    "C2. 会话学习与经验沉淀",
+    "P1",
+    "everything-claude-code-main",
+    "lang:unknown",
+    "taskflow:检索与发现",
+    "通用能力"
+  ],
+  "version": "0.1.0-draft",
+  "taskflow_category": "检索与发现",
+  "canonical_group": "strategic-compact",
+  "canonical_selection_reason": "优先中文，其次高价值任务流分类，再保留更稳定的主 skill 路径",
+  "canonical": true
+}

@@ -1,0 +1,38 @@
+{
+  "skill_id": "antigravity-awesome-skills-main::antigravity-awesome-skills-main",
+  "name": "antigravity-awesome-skills-main",
+  "title": "🌌 Antigravity Awesome Skills: 954+ Agentic Skills for Claude Code, Gemini CLI, Cursor, Copilot & More",
+  "summary": "",
+  "category": {
+    "l1": "C. 知识生产与持续学习",
+    "l2": "C1. 技能资产治理",
+    "l3": "C1-1. 盘点、编写与治理"
+  },
+  "capability_type": "通用能力",
+  "priority": "P1",
+  "integration_phase": "中期",
+  "asset_status": "待确认技能说明",
+  "language_hint": "en",
+  "source_origin": "antigravity-awesome-skills-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/antigravity-awesome-skills-main/README.md",
+  "duplicate_group": "",
+  "issue_flags": [
+    "缺少描述",
+    "非标准技能文件"
+  ],
+  "recommended_action": "纳入标准化台账并继续评估",
+  "vcp_mapping": [
+    "KnowledgeBase",
+    "SkillsRegistry"
+  ],
+  "status": "draft",
+  "version": "0.1.0-draft",
+  "tags": [
+    "antigravity-awesome-skills-main",
+    "P1",
+    "通用能力",
+    "C. 知识生产与持续学习",
+    "C1. 技能资产治理",
+    "lang:en"
+  ]
+}

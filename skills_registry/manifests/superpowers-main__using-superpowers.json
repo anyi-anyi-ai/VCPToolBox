@@ -1,0 +1,49 @@
+{
+  "skill_id": "superpowers-main::using-superpowers",
+  "name": "using-superpowers",
+  "title": "Using Skills",
+  "summary": "Use when starting any conversation - establishes how to find and use skills, requiring Skill tool invocation before ANY response including clarifying questions",
+  "category": {
+    "l1": "E. 平台配置与运行支撑",
+    "l2": "E1. 平台配置与安装",
+    "l3": "E1-1. 配置、部署与运行支撑"
+  },
+  "usage_category": {
+    "usage_method": "输出与交付",
+    "family": "产出交付类",
+    "domain": "写作表达与最终交付"
+  },
+  "capability_type": "支撑能力",
+  "priority": "P1",
+  "integration_phase": "中期",
+  "asset_status": "可执行技能",
+  "status": "registered",
+  "review_status": "ready",
+  "source_origin": "superpowers-main",
+  "source_path": "H:/VCP/VCPzhangduan/VCPziliao/skills/superpowers-main/skills/using-superpowers/SKILL.md",
+  "language_hint": "unknown",
+  "vcp_mapping": [
+    "PluginBridge",
+    "WorkflowEngine"
+  ],
+  "trigger_mode": "manual_or_rule",
+  "bridgeable": true,
+  "executable_level": "stub",
+  "duplicate_group": "",
+  "issue_flags": [],
+  "recommended_action": "纳入标准化台账并继续评估",
+  "tags": [
+    "E. 平台配置与运行支撑",
+    "E1. 平台配置与安装",
+    "P1",
+    "lang:unknown",
+    "superpowers-main",
+    "taskflow:规划与拆解",
+    "支撑能力"
+  ],
+  "version": "0.1.0-draft",
+  "taskflow_category": "规划与拆解",
+  "canonical_group": "using-superpowers",
+  "canonical_selection_reason": "优先中文，其次高价值任务流分类，再保留更稳定的主 skill 路径",
+  "canonical": true
+}

@@ -1,0 +1,43 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "SeedreamGen",
+  "version": "1.0.0",
+  "displayName": "火山引擎Seedream 4.0图像生成器",
+  "description": "基于火山引擎Seedream 4.0模型的高质量图像生成插件，支持文生图、图生图、多图融合等功能。",
+  "author": "艾娃",
+  "pluginType": "synchronous",
+  "entryPoint": {
+    "type": "nodejs",
+    "command": "node SeedreamGen.mjs"
+  },
+  "communication": {
+    "protocol": "stdio",
+    "timeout": 300000
+  },
+  "configSchema": {
+    "VOLCENGINE_API_KEY": {
+      "type": "string",
+      "description": "火山引擎API密钥",
+      "required": true
+    },
+    "DEFAULT_WATERMARK": {
+      "type": "boolean",
+      "description": "是否默认添加水印",
+      "default": false
+    },
+    "DEFAULT_RESPONSE_FORMAT": {
+      "type": "string",
+      "description": "默认返回格式：url 或 b64_json",
+      "default": "url"
+    }
+  },
+  "capabilities": {
+    "invocationCommands": [
+      {
+        "commandIdentifier": "SeedreamGenerateImage",
+        "description": "火山引擎Seedream 4.0图像生成器，基于最新的doubao-seedream-4-0模型。\n\n支持的功能：\n1. 文生图：通过文字描述生成图像\n2. 图生图：基于参考图片生成新图像\n3. 多图融合：融合多张图片创造新图像\n4. 组图生成：生成连续的多张图片\n\n调用参数：\n- command: (必需) 指令类型\n  • 'generate' - 文生图\n  • 'edit' - 图生图/修图\n  • 'compose' - 多图融合\n  • 'group' - 组图生成\n- prompt: (必需) 图像生成的提示词，支持中英文，建议≤300汉字或600英文单词\n- resolution: (可选) 图片分辨率，默认'2048x2048'\n  推荐尺寸：\n  • 1:1 → '2048x2048'\n  • 4:3 → '2304x1728'\n  • 3:4 → '1728x2304'\n  • 16:9 → '2560x1440'\n  • 9:16 → '1440x2560'\n- image: (可选) 参考图片URL或Base64，图生图和多图融合时必需\n  • 单张图片：字符串格式\n  • 多张图片：数组格式（最多10张）\n- max_images: (可选) 组图生成时的最大图片数，范围1-15，默认1\n- seed: (可选) 随机种子，-1表示随机\n- guidance_scale: (可选) 提示词相关性，范围1-10\n- watermark: (可选) 是否添加水印，默认false\n\n调用示例：\n\n文生图：\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」SeedreamGen「末」,\ncommand:「始」generate「末」,\nprompt:「始」一只可爱的猫咪在阳光下睡觉「末」,\nresolution:「始」2048x2048「末」\n<<<[END_TOOL_REQUEST]>>>\n\n图生图：\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」SeedreamGen「末」,\ncommand:「始」edit「末」,\nprompt:「始」将这只猫变成卡通风格「末」,\nimage:「始」https://example.com/cat.jpg「末」\n<<<[END_TOOL_REQUEST]>>>\n\n多图融合：\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」SeedreamGen「末」,\ncommand:「始」compose「末」,\nprompt:「始」融合这些元素创造梦幻场景「末」,\nimage:「始」[\"url1\", \"url2\", \"url3\"]「末」\n<<<[END_TOOL_REQUEST]>>>\n\n组图生成：\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」SeedreamGen「末」,\ncommand:「始」group「末」,\nprompt:「始」猫咪的一天：早上起床、吃饭、玩耍、睡觉「末」,\nmax_images:「始」4「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」SeedreamGen「末」,\ncommand:「始」generate「末」,\nprompt:「始」赛博朋克风格的未来城市夜景「末」,\nresolution:「始」2560x1440「末」\n<<<[END_TOOL_REQUEST]>>>"
+      }
+    ]
+  }
+}
