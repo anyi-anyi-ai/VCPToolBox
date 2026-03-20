@@ -1,0 +1,338 @@
+{
+  "101dalmatians-anitaradcliffe.safetensors": {
+    "filename": "101dalmatians-anitaradcliffe.safetensors",
+    "description": "Anita Radcliffe (101 Dalmatians) [Pony/IL] - [style] 风格类 LoRA，用于改变图像的整体艺术风格",
+    "tags": [
+      "xanitax",
+      "1girl",
+      "short hair",
+      "solo",
+      "brown hair",
+      "updo",
+      "brown eyes",
+      "orange hair",
+      "shirt",
+      "open mouth",
+      "black eyes",
+      "indoors",
+      "skirt",
+      "retro artstyle",
+      "lipstick",
+      "long sleeves",
+      "makeup",
+      "smile",
+      "apron",
+      "parody"
+    ],
+    "trigger_words": [
+      "xanitax, orange hair, short hair, updo, black eyes"
+    ],
+    "primary_category": "style",
+    "categories": [
+      "style"
+    ],
+    "default_strength": 0.8,
+    "strength_range": [
+      0.5,
+      1.0
+    ],
+    "usage_count": 0,
+    "file_size": 57426836,
+    "file_hash": "83e0b4bfc29432e68e7fcec49a41bf6121ee390d1a1a38bad80955221faada27",
+    "metadata_source": "safetensors",
+    "scanned_at": "2026-03-18 19:29:17",
+    "registered_at": "2026-03-18 19:29:17"
+  },
+  "add-detail-xl.safetensors": {
+    "filename": "add-detail-xl.safetensors",
+    "description": "Detail Tweaker XL - [style] 风格类 LoRA，用于改变图像的整体艺术风格",
+    "tags": [
+      "detail",
+      "misc",
+      "all",
+      "portrait",
+      "anime"
+    ],
+    "trigger_words": [
+      "add",
+      "detail"
+    ],
+    "primary_category": "style",
+    "categories": [
+      "style",
+      "enhancement"
+    ],
+    "default_strength": 0.8,
+    "strength_range": [
+      0.5,
+      1.0
+    ],
+    "usage_count": 0,
+    "file_size": 228452344,
+    "file_hash": "0d9bd1b873a7863e128b4672e3e245838858f71469a3cec58123c16c06f83bd7",
+    "metadata_source": "safetensors",
+    "scanned_at": "2026-03-18 19:29:17",
+    "registered_at": "2026-03-18 19:29:17"
+  },
+  "ade-nikke-richy-v2_ixl.safetensors": {
+    "filename": "ade-nikke-richy-v2_ixl.safetensors",
+    "description": "Ade (NIKKE) SDXL LoRA [Illustrious] | 3 Outfits - [style] 风格类 LoRA，用于改变图像的整体艺术风格",
+    "tags": [
+      "green eyes",
+      "looking at viewer",
+      "large breasts",
+      "blonde hair",
+      "long sleeves",
+      "long hair",
+      "smile",
+      "blush",
+      "glasses",
+      "braid",
+      "hair bun",
+      "cleavage",
+      "sidelocks",
+      "simple background",
+      "maid",
+      "maid headdress",
+      "white background",
+      "white apron",
+      "rabbit ears",
+      "playboy bunny"
+    ],
+    "trigger_words": [
+      "adedf, green eyes, glasses, eyewear strap, blonde hair, long hair, hair bun, braid, sidelocks, maid headdress, huge breasts, white bowtie, maid, white apron, black dress, puffy sleeves, juliet sleeves, long sleeves",
+      "adems, green eyes, glasses, eyewear strap, blonde hair, long hair, hair bun, braid, sidelocks, hair ribbon, black ribbon, large breasts, heart necklace, white sweater, off-shoulder sweater, bare shoulders, off shoulder, brown jacket, black skirt, black belt",
+      "adeab, green eyes, blonde hair, long hair, hair bun, braid, sidelocks, clover hair ornament, rabbit ears, fake animal ears, black choker, large breasts, black necktie, necktie between breasts, cleavage, black jacket, black leotard, playboy bunny, navel cutout, fishnet pantyhose, white gloves",
+      "adedf, green eyes, glasses, eyewear strap, blonde hair, long hair, hair bun, braid, sidelocks, large breasts"
+    ],
+    "primary_category": "style",
+    "categories": [
+      "style"
+    ],
+    "default_strength": 0.8,
+    "strength_range": [
+      0.5,
+      1.0
+    ],
+    "usage_count": 0,
+    "file_size": 57461548,
+    "file_hash": "d0be88477821acb6c5395b27e2e875500c5cb34a0b8a5fac6219f64444f7aa88",
+    "metadata_source": "safetensors",
+    "scanned_at": "2026-03-18 19:29:17",
+    "registered_at": "2026-03-18 19:29:17"
+  },
+  "aegir_one-on-one_leisure_time_ilxl_goofy.safetensors": {
+    "filename": "aegir_one-on-one_leisure_time_ilxl_goofy.safetensors",
+    "description": "Aegir (one on one leisure time) Azur Lane | Goofy Ai - [style] 风格类 LoRA，用于改变图像的整体艺术风格",
+    "tags": [],
+    "trigger_words": [
+      "aegir \\(one-on-one leisure time\\) \\(azur lane\\), black horns, yellow eyes, white hair, streaked hair, evening gown, plunging neckline, side slit, jacket,pink dress"
+    ],
+    "primary_category": "style",
+    "categories": [
+      "style"
+    ],
+    "default_strength": 0.8,
+    "strength_range": [
+      0.5,
+      1.0
+    ],
+    "usage_count": 0,
+    "file_size": 57417300,
+    "file_hash": "c05a6975992838a572f1291beb529b25bbb10bafab5c4200e9be856ea757245a",
+    "metadata_source": "safetensors",
+    "scanned_at": "2026-03-18 19:29:17",
+    "registered_at": "2026-03-18 19:29:17"
+  },
+  "AGM_Style.safetensors": {
+    "filename": "AGM_Style.safetensors",
+    "description": "AGM Style - [style] 风格类 LoRA，用于改变图像的整体艺术风格",
+    "tags": [
+      "style",
+      "4gmst1le"
+    ],
+    "trigger_words": [
+      "4gmst1le"
+    ],
+    "primary_category": "style",
+    "categories": [
+      "style"
+    ],
+    "default_strength": 0.8,
+    "strength_range": [
+      0.5,
+      1.0
+    ],
+    "usage_count": 0,
+    "file_size": 228455092,
+    "file_hash": "3fc28141d9d00468d3487073cd2963c7432d682d3705cae2263cbffb5c57d051",
+    "metadata_source": "safetensors",
+    "scanned_at": "2026-03-18 19:29:17",
+    "registered_at": "2026-03-18 19:29:17"
+  },
+  "AIイラストおじさん (2).safetensors": {
+    "filename": "AIイラストおじさん (2).safetensors",
+    "description": "<p><strong>Parameters:</strong></p><p>• CFG: 3 - 7</p><p>• Steps: 24 - 35</p><p>• Sampler: Euler a</p><p><strong>Strength LoRA:</strong>  0.3 - 1.0 (0.7 for soft tones, 1.0 for stronger tones).</p>",
+    "tags": [
+      "1girl",
+      "breasts",
+      "long hair",
+      "blush",
+      "bangs",
+      "hetero",
+      "1boy",
+      "looking at viewer",
+      "sweat",
+      "censored",
+      "mosaic censoring",
+      "solo focus",
+      "huge breasts",
+      "halo",
+      "penis",
+      "large breasts",
+      "solo",
+      "nude",
+      "dark skin",
+      "wet"
+    ],
+    "trigger_words": [
+      "AIイラストおじさん",
+      "(2)"
+    ],
+    "primary_category": "style",
+    "categories": [
+      "style"
+    ],
+    "default_strength": 0.8,
+    "strength_range": [
+      0.5,
+      1.0
+    ],
+    "usage_count": 0,
+    "file_size": 912576004,
+    "file_hash": "b0cc32d8132ad5d13b1b1edf654b48ee4cebd3e036b26aff9f5ce70c4a9a65f9",
+    "metadata_source": "safetensors",
+    "scanned_at": "2026-03-18 19:29:17",
+    "registered_at": "2026-03-18 19:29:17"
+  },
+  "ak-47_v4-000186.safetensors": {
+    "filename": "ak-47_v4-000186.safetensors",
+    "description": "",
+    "tags": [
+      "breasts",
+      "large breasts",
+      "1girl",
+      "long hair",
+      "looking at viewer",
+      "solo",
+      "border",
+      "cleavage",
+      "black hair",
+      "smile",
+      "jewelry",
+      "collarbone",
+      "indoors",
+      "mole",
+      "earrings",
+      "blue eyes",
+      "blush",
+      "shirt",
+      "long sleeves",
+      "mature female"
+    ],
+    "trigger_words": [],
+    "primary_category": "unknown",
+    "categories": [
+      "unknown"
+    ],
+    "default_strength": 0.8,
+    "strength_range": [
+      0.5,
+      1.0
+    ],
+    "usage_count": 0,
+    "file_size": 5398472,
+    "file_hash": "369922c7c69dbd59cd2175122eea39de9c0b940d44bc24ce8bdd9659712703e0",
+    "metadata_source": "safetensors",
+    "scanned_at": "2026-03-18 19:29:17",
+    "registered_at": "2026-03-18 19:29:17"
+  },
+  "Anal_Beads_(Concept)_ILXL.safetensors": {
+    "filename": "Anal_Beads_(Concept)_ILXL.safetensors",
+    "description": "LoRA / illustriousXL / Anal Beads - [style] 风格类 LoRA，用于改变图像的整体艺术风格",
+    "tags": [
+      "concept"
+    ],
+    "trigger_words": [
+      "sex toy, anal, object insertion, anal object insertion, anal beads,"
+    ],
+    "primary_category": "style",
+    "categories": [
+      "style",
+      "concept"
+    ],
+    "default_strength": 0.8,
+    "strength_range": [
+      0.5,
+      1.0
+    ],
+    "usage_count": 0,
+    "file_size": 228447980,
+    "file_hash": "164fd9ffc70135311860ea4231b8297d9fd6259df98aea9ad4f66dc5e65dbf6e",
+    "metadata_source": "safetensors",
+    "scanned_at": "2026-03-18 19:29:17",
+    "registered_at": "2026-03-18 19:29:17"
+  },
+  "Ass Size Slider - Illustrious.safetensors": {
+    "filename": "Ass Size Slider - Illustrious.safetensors",
+    "description": "<p>V1 :)</p>",
+    "tags": [],
+    "trigger_words": [
+      "Ass",
+      "Size",
+      "Slider"
+    ],
+    "primary_category": "style",
+    "categories": [
+      "style"
+    ],
+    "default_strength": 0.8,
+    "strength_range": [
+      0.5,
+      1.0
+    ],
+    "usage_count": 0,
+    "file_size": 8789076,
+    "file_hash": "c3184a48d302671812190de224d6c7c79c38ad432760001d83077a14946bc4eb",
+    "metadata_source": "filename",
+    "scanned_at": "2026-03-18 19:29:17",
+    "registered_at": "2026-03-18 19:29:17"
+  },
+  "ass worship - IL v1.0.safetensors": {
+    "filename": "ass worship - IL v1.0.safetensors",
+    "description": "ass worship - [style] 风格类 LoRA，用于改变图像的整体艺术风格",
+    "tags": [],
+    "trigger_words": [
+      "(assworship), ass worship, ass,",
+      "face on ass, ass grab, hand on ass, hugging ass, face press,",
+      "cheek press,",
+      "licking ass, licking, tongue out,",
+      "hand on another's head, head grab,"
+    ],
+    "primary_category": "style",
+    "categories": [
+      "style"
+    ],
+    "default_strength": 0.8,
+    "strength_range": [
+      0.5,
+      1.0
+    ],
+    "usage_count": 0,
+    "file_size": 456483628,
+    "file_hash": "0cabfdab1970d507112e32ab2f649fe7c945e640e411f5c1d90ed461e9aeedad",
+    "metadata_source": "safetensors",
+    "scanned_at": "2026-03-18 19:29:17",
+    "registered_at": "2026-03-18 19:29:17"
+  }
+}

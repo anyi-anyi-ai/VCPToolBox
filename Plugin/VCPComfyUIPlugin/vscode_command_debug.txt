@@ -1,0 +1,2 @@
+cd VCPComfyUIPlugin; python test_fix.py
+

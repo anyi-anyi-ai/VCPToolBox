@@ -23,7 +23,7 @@ const VOLCENGINE_API_CONFIG = {
     // SERVICE_ID and REGION are typically for AK/SK signing, may not be needed for Bearer auth
     // SERVICE_ID: 'ark', 
     // REGION: 'cn-beijing', 
-    MODEL_ID: "doubao-seedream-3-0-t2i-250415", // Using the specific version ID from documentation
+    MODEL_ID: "doubao-seedream-4-5-251128", // Using the specific version ID from documentation
     DEFAULT_PARAMS: {
         n: 1, // Corresponds to batch_size
         guidance_scale: 2.5, // Default guidance_scale

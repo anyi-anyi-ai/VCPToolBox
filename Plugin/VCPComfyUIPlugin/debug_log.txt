@@ -1,0 +1,28 @@
+--- Execution @ 2026-03-18 16:22:49 ---
+Raw stdin received: {"maid":"Nova","command":"auto_register_all_loras"}
+--- Execution @ 2026-03-18 16:30:17 ---
+Raw stdin received: {"maid":"Nova","command":"scan_local_loras"}
+--- Execution @ 2026-03-18 17:05:32 ---
+Raw stdin received: {"maid":"Nova","command":"scan_local_loras","max_files":"10"}
+--- Execution @ 2026-03-18 17:18:37 ---
+Raw stdin received: {"maid":"Nova","command":"scan_local_loras","max_files":"10"}
+--- Execution @ 2026-03-18 17:20:50 ---
+Raw stdin received: {"maid":"Nova","command":"scan_local_loras","max_files":"5"}
+--- Execution @ 2026-03-18 17:23:33 ---
+Raw stdin received: {"maid":"Nova","command":"get_lora_info","lora_name":"101dalmatians-anitaradcliffe"}
+--- Execution @ 2026-03-18 18:16:47 ---
+Raw stdin received: {"maid":"Nova","command":"scan_local_loras","max_files":"10"}
+--- Execution @ 2026-03-18 18:16:47 ---
+Raw stdin received: {"maid":"Nova","command":"scan_local_loras","max_files":"10"}
+--- Execution @ 2026-03-18 18:22:47 ---
+Raw stdin received: {"maid":"Nova","command":"scan_local_loras","max_files":"10"}
+--- Execution @ 2026-03-18 18:58:33 ---
+Raw stdin received: {"maid":"Nova","command":"scan_local_loras","max_files":"5","query_civitai":"true"}
+--- Execution @ 2026-03-18 19:09:46 ---
+Raw stdin received: {"maid":"Nova","command":"scan_local_loras","max_files":"5","query_civitai":"true"}
+--- Execution @ 2026-03-18 19:10:26 ---
+Raw stdin received: {"maid":"Nova","command":"scan_local_loras","max_files":"5","query_civitai":"true"}
+--- Execution @ 2026-03-18 19:25:50 ---
+Raw stdin received: {"maid":"Nova","command":"scan_local_loras","max_files":"10","skip_hash":"true","query_civitai":"false"}
+--- Execution @ 2026-03-18 19:29:12 ---
+Raw stdin received: {"maid":"Nova","command":"scan_local_loras","max_files":"10","skip_hash":"true","query_civitai":"true"}

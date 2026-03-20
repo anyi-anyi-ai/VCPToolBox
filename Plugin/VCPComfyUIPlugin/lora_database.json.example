@@ -1,0 +1,35 @@
+{
+  "example_anime_style.safetensors": {
+    "filename": "example_anime_style.safetensors",
+    "description": "Anime style LoRA for generating anime-like illustrations",
+    "tags": ["anime", "style", "illustration", "2D"],
+    "trigger_words": ["anime style", "anime art", "anime illustration"],
+    "strength_range": [0.6, 1.0],
+    "default_strength": 0.8,
+    "compatible_styles": ["anime", "manga", "illustration"],
+    "usage_count": 0,
+    "registered_at": "2024-01-01 00:00:00"
+  },
+  "example_detail_tweaker.safetensors": {
+    "filename": "example_detail_tweaker.safetensors",
+    "description": "Enhances image details and sharpness",
+    "tags": ["detail", "sharpness", "enhance", "quality"],
+    "trigger_words": ["highly detailed", "detailed", "sharp"],
+    "strength_range": [0.5, 1.5],
+    "default_strength": 0.8,
+    "compatible_styles": ["realistic", "anime", "art"],
+    "usage_count": 0,
+    "registered_at": "2024-01-01 00:00:00"
+  },
+  "example_realistic_vision.safetensors": {
+    "filename": "example_realistic_vision.safetensors",
+    "description": "Realistic photography style LoRA",
+    "tags": ["realistic", "photo", "photography", "real"],
+    "trigger_words": ["realistic", "photorealistic", "photo"],
+    "strength_range": [0.5, 1.0],
+    "default_strength": 0.7,
+    "compatible_styles": ["realistic", "photography", "portrait"],
+    "usage_count": 0,
+    "registered_at": "2024-01-01 00:00:00"
+  }
+}
