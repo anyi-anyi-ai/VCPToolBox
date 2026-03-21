@@ -122,14 +122,20 @@ async function fetchWithPuppeteer(url, mode = 'text', proxyPort = null) {
     let browser;
     try {
         const launchOptions = {
-            headless: true,
-            args: ['--no-sandbox', '--disable-setuid-sandbox']
+           headless: true,
+           args: ['--no-sandbox', '--disable-setuid-sandbox']
         };
 
         if (proxyPort) {
-            launchOptions.args.push(`--proxy-server=http://127.0.0.1:${proxyPort}`);
+            launchOptions.args.push('--proxy-server=http://127.0.0.1:' + proxyPort);
         }
-
+        const defaultThoriumPath = 'F:\ruanjian00000\浏览\thorium_AVX2_138.0.7204.303\BIN\thorium.exe';
+        const browserPath = (process.env.FETCH_BROWSER_PATH || '').trim() || defaultThoriumPath;
+        try {
+            require('fs').accessSync(browserPath);
+            launchOptions.executablePath = browserPath;
+                    } catch (e) {
+                    }
         browser = await puppeteer.launch(launchOptions);
         const page = await browser.newPage();
         await page.setViewport({ width: 1280, height: 800 });
@@ -513,3 +519,5 @@ main().catch(error => {
     process.stdout.write(JSON.stringify({ status: "error", error: errorMsgStr, result: { content: [{ type: 'text', text: errorMsgStr }] } }));
     process.exit(1);
 });
+
+
