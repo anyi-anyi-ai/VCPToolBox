@@ -1,0 +1,42 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "PlumBlossomDivination",
+  "displayName": "梅花易数占卜",
+  "version": "2.2.0",
+  "description": "基于先天八卦数的梅花易数起卦占卜插件，支持数字起卦、时间起卦、随机起卦。采用国风分爻渲染，五行颜色区分，动爻发光特效，体用关系可视化。",
+  "author": "Nova & 小夜",
+  "pluginType": "synchronous",
+  "entryPoint": {
+    "type": "nodejs",
+    "command": "node plum_blossom_divination.js"
+  },
+  "communication": {
+    "protocol": "stdio",
+    "timeout": 60000
+  },
+  "capabilities": {
+    "invocationCommands": [
+      {
+        "commandIdentifier": "divine_by_numbers",
+        "description": "根据用户提供的两个数字进行梅花易数起卦。参数: number1(必需,数字,用于计算上卦), number2(必需,数字,用于计算下卦), question(可选,字符串,所问之事)。插件返回的content可用HTML格式渲染。",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name: 「始」PlumBlossomDivination「末」,\ncommand: 「始」divine_by_numbers「末」,\nnumber1: 「始」4「末」,\nnumber2: 「始」5「末」,\nquestion: 「始」问运势「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "divine_by_time",
+        "description": "根据当前时间自动起卦，使用年支数+月+日+时辰计算。参数: question(可选,字符串,所问之事)。插件返回的content可用HTML格式渲染。",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name: 「始」PlumBlossomDivination「末」,\ncommand: 「始」divine_by_time「末」,\nquestion: 「始」问今日运势「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "commandIdentifier": "divine_random",
+        "description": "由系统随机生成天机数进行起卦。参数: question(可选,字符串,所问之事)。插件返回的content可用HTML格式渲染。",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name: 「始」PlumBlossomDivination「末」,\ncommand: 「始」divine_random「末」,\nquestion: 「始」随机起卦「末」\n<<<[END_TOOL_REQUEST]>>>"
+      }
+    ],
+    "specialNotes": {
+      "divinationRules": "梅花易数起卦规则: 1.上卦=第一个数字除以8取余（余0按8算）对应先天八卦数 2.下卦=第二个数字除以8取余 3.动爻=(两数之和)除以6取余（余0按6算）1=初爻,6=上爻 4.动爻所在卦为用卦，不动卦为体卦 5.根据体用五行生克关系判断吉凶",
+      "trigramNumbers": "先天八卦数: 1乾天金、2兑泽金、3离火火、4震雷木、5巽风木、6坎水水、7艮山土、8坤地土",
+      "renderFeatures": "渲染特性说明: 1.分爻渲染: 阳爻为一整条，阴爻为断开的两条 2.五行颜色: 金=金色(#d4af37)、木=绿色(#4caf50)、水=蓝色(#2196f3)、火=红色(#f44336)、土=棕色(#8d6e63) 3.动爻特效: 动爻位置带有发光呼吸动画(glow class) 4.体用分析: 显示体卦和用卦的分爻小图，直观展示生克关系 5.变卦展示: 本卦→变卦的完整六爻对比，动爻位置阴阳翻转",
+      "aiGuidance": "AI解读建议: 收到起卦结果后，HTML内容可直接渲染显示。解读时应结合: 1.本卦卦辞的整体寓意 2.动爻爻辞的具体指引(注意九/六的区别: 阳爻称九，阴爻称六) 3.体用生克关系的吉凶判断(用生体大吉，用克体受阻) 4.变卦趋势的未来走向 5.大象辞的行为建议。五行颜色已直观展示在爻线中，可直接引用。"
+    }
+  }
+}
