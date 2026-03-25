@@ -1,0 +1,159 @@
+# VCP 桌面推送与挂件工具箱能力收纳
+这里收纳了 VCPdesktop 桌面画布的挂件推送、壁纸控制、挂件管理等工具，用于 Agent 直接操控用户桌面。
+
+VCP桌面是基于 Vchat 核心渲染架构搭建的独立桌面系统，其内核是一张空白的 HTML 画布，封装了 Vchat 前端应用群 IPC 和后端 VCP 所有 API 的虚拟化包装。Agent 可以通过两种方式与桌面交互：**流式推送**和**工具调用**。
+
+## 1. 流式推送挂件 (DESKTOP_PUSH)
+在聊天回复中直接输出以下语法块，内容会被实时流式渲染到桌面画布上，成为一个独立的可拖拽挂件。
+
+**创建挂件：**
+```
+<<<[DESKTOP_PUSH]>>>
+<div style="padding:16px; background:rgba(0,0,0,0.5); color:#fff; border-radius:12px;">
+  <h2>标题</h2>
+  <p>内容</p>
+</div>
+<script>
+// 可选：在此编写交互逻辑
+</script>
+<<<[DESKTOP_PUSH_END]>>>
+```
+
+**热替换已有挂件内容：**
+通过 CSS 选择器定位挂件内部元素并替换其 HTML：
+```
+<<<[DESKTOP_PUSH]>>>
+target:「始」.my-class-name「末」,
+replace:「始」<span style="font-size:52px;">新内容</span>「末」
+<<<[DESKTOP_PUSH_END]>>>
+```
+
+**重要约束：**
+- 推送内容的开头必须是以下白名单标签之一，否则会被忽略：
+  `<!doctype`, `<div`, `<section`, `<article`, `<main`, `<header`, `<nav`, `<aside`, `<canvas`, `<svg`, `<style`, `target:`
+- 创建的挂件直接运行在内存中，用户可选择收藏使其持久化
+- 支持 anime.js 和 three.js 等 JS 库
+
+[===vcp_fold:0.6===]
+
+## 2. 挂件沙箱 API (Widget Sandbox)
+挂件的 `<script>` 在 Shadow DOM 沙箱中执行，以下 API 自动可用：
+
+### document（已代理到 Shadow DOM）
+- `document.querySelector(sel)` / `querySelectorAll(sel)` / `getElementById(id)` → 作用域限定在挂件内部
+- `document.createElement(tag)` / `createTextNode(text)` → 正常创建元素
+- 支持 `addEventListener`、`removeEventListener`、`createDocumentFragment` 等方法
+
+### vcpAPI（后端数据访问，自动认证）
+- `vcpAPI.weather()` → 获取天气数据，返回结构：
+  `{ city, hourly: [{fxTime, temp, text, icon, humidity, windDir, windScale}], daily: [{fxDate, tempMin, tempMax, textDay, iconDay}], airQuality: {aqi, category, pm2p5}, warning: [{title, text}] }`
+- `vcpAPI.fetch('/admin_api/任意端点', opts)` → 通用后端 API（Basic Auth）
+- `vcpAPI.post(messages, options)` → OpenAI 兼容 chat completion 请求（Bearer Token，安全代理）
+  - messages: `[{role: "system", content: "..."}, {role: "user", content: "..."}]`
+  - options: `{ model: "模型名", temperature: 0-2, max_tokens: 数字 }`
+  - 返回: `{ success, content, usage, raw, error }`
+
+### musicAPI（音乐播放器控制）
+- `musicAPI.getState()` → 返回: `{is_playing, file_path, position_secs, duration_secs, volume}`
+- `musicAPI.play()` / `musicAPI.pause()` → 播放/暂停
+- `musicAPI.seek(秒数)` → 跳转
+- `musicAPI.setVolume(0-100)` → 设置音量
+- `musicAPI.send('music-remote-command', 'next')` → 下一首
+- `musicAPI.send('music-remote-command', 'previous')` → 上一首
+
+### 示例：天气挂件
+```
+<<<[DESKTOP_PUSH]>>>
+<div id="w" style="padding:16px;background:rgba(0,0,0,0.5);color:#fff;border-radius:12px;">加载中...</div>
+<script>
+vcpAPI.weather().then(function(data) {
+    var h = data.hourly[0];
+    document.getElementById('w').innerHTML = '<h2>'+h.temp+'°C '+h.text+'</h2><p>湿度'+h.humidity+'%</p>';
+});
+</script>
+<<<[DESKTOP_PUSH_END]>>>
+```
+
+### 示例：音乐控制条
+```
+<<<[DESKTOP_PUSH]>>>
+<div style="display:flex;gap:8px;padding:12px;background:rgba(20,20,40,0.85);border-radius:20px;color:#fff;">
+    <span id="title">--</span>
+    <button onclick="musicAPI.send('music-remote-command','previous')">⏮</button>
+    <button id="pp" onclick="this.dataset.playing==='true'?musicAPI.pause():musicAPI.play()">▶</button>
+    <button onclick="musicAPI.send('music-remote-command','next')">⏭</button>
+</div>
+<script>
+setInterval(async function(){
+    var s = await musicAPI.getState();
+    if(!s) return;
+    var pp = document.getElementById('pp');
+    pp.textContent = s.is_playing ? '⏸' : '▶';
+    pp.dataset.playing = s.is_playing;
+    var fp = s.file_path || '';
+    var parts = fp.split(/[\\\\/]/);
+    var name = parts[parts.length-1] || '--';
+    var dot = name.lastIndexOf('.');
+    if(dot>0) name = name.substring(0,dot);
+    document.getElementById('title').textContent = name;
+}, 2000);
+</script>
+<<<[DESKTOP_PUSH_END]>>>
+```
+
+### 示例：AI 翻译挂件（使用 vcpAPI.post）
+```
+<<<[DESKTOP_PUSH]>>>
+<div style="padding:16px;background:rgba(20,28,58,0.9);color:#fff;border-radius:12px;">
+  <textarea id="src" placeholder="输入文本..." style="width:100%;height:60px;background:rgba(255,255,255,0.05);color:#fff;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px;"></textarea>
+  <button id="btn" style="margin-top:8px;padding:6px 16px;background:rgba(60,120,255,0.6);color:#fff;border:none;border-radius:6px;cursor:pointer;">翻译为英文</button>
+  <div id="out" style="margin-top:8px;min-height:40px;padding:8px;background:rgba(255,255,255,0.04);border-radius:8px;"></div>
+</div>
+<script>
+document.getElementById('btn').addEventListener('click', async function() {
+    var text = document.getElementById('src').value;
+    if (!text) return;
+    document.getElementById('out').textContent = '翻译中...';
+    var result = await vcpAPI.post([
+        { role: "system", content: "你是翻译引擎，只输出翻译结果。" },
+        { role: "user", content: "翻译为英文：\n\n" + text }
+    ], { model: "gemini-2.5-flash-preview", temperature: 0.3 });
+    document.getElementById('out').textContent = result.success ? result.content : '错误: ' + result.error;
+});
+</script>
+<<<[DESKTOP_PUSH_END]>>>
+```
+
+## 3. 桌面壁纸推送 (DesktopRemote - SetWallpaper)
+推送壁纸到用户的 VCPdesktop 桌面。支持网络图片/视频 URL、本地文件 file:// URL、或直接传入 HTML 代码作为动态壁纸。
+tool_name:「始」DesktopRemote「末」,
+command:「始」SetWallpaper「末」,
+wallpaperSource:「始」https://example.com/beautiful-landscape.jpg「末」
+
+HTML 动态壁纸示例：
+tool_name:「始」DesktopRemote「末」,
+command:「始」SetWallpaper「末」,
+wallpaperSource:「始」<!DOCTYPE html><html><head><style>body{margin:0;overflow:hidden;background:#000}canvas{display:block}</style></head><body><canvas id="c"></canvas><script>/* 粒子动画代码 */</script></body></html>「末」
+
+## 4. 查询桌面状态 (DesktopRemote - QueryDesktop)
+感知查询当前桌面上的所有挂件和图标信息。返回 widgets（ID列表、收藏名称、持久化路径）和 icons（快捷方式名称列表）。
+tool_name:「始」DesktopRemote「末」,
+command:「始」QueryDesktop「末」
+
+## 5. 获取挂件源码 (DesktopRemote - ViewWidgetSource)
+查看指定挂件的 HTML 源码。建议先调用 QueryDesktop 获取挂件 ID 列表。
+tool_name:「始」DesktopRemote「末」,
+command:「始」ViewWidgetSource「末」,
+widgetId:「始」widget-abc123「末」
+
+## 6. 工具调用创建挂件 (DesktopRemote - CreateWidget)
+通过工具调用在桌面上创建挂件，可指定位置、尺寸、是否自动收藏。挂件运行在 Shadow DOM 沙箱中，可使用上述所有沙箱 API。
+tool_name:「始」DesktopRemote「末」,
+command:「始」CreateWidget「末」,
+htmlContent:「始」<div style="...">挂件HTML内容</div><script>挂件脚本</script>「末」,
+x:「始」200「末」,
+y:「始」150「末」,
+width:「始」320「末」,
+height:「始」200「末」,
+autoSave:「始」true「末」,
+saveName:「始」我的挂件「末」
