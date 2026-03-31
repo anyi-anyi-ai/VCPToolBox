@@ -1,0 +1,28 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "GeminiNewAPIImageGen",
+  "displayName": "Gemini NewAPI 图像生成与编辑",
+  "version": "1.0.0",
+  "description": "通过 NewAPI 中转站调用 Gemini 图像模型进行图片生成与编辑。",
+  "author": "Nova",
+  "pluginType": "synchronous",
+  "entryPoint": {
+    "type": "nodejs",
+    "command": "node GeminiNewAPIImageGen.mjs"
+  },
+  "communication": {
+    "protocol": "stdio"
+  },
+  "configSchema": {
+    "NewAPIImageKey": "string",
+    "NewAPIBaseURL": "string",
+    "NewAPIModel": "string",
+    "NewAPIProxy": "string",
+    "DIST_IMAGE_SERVERS": "string"
+  },
+  "capabilities": {
+    "invocationCommands": [
+      {
+        "commandIdentifier": "GeminiNewAPIGenerateImage",
+        "description": "通过 NewAPI 中转站调用 Gemini 图像模型生成一张新图片。",
+        "example": "```text\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」GeminiNewAPIImageGen
