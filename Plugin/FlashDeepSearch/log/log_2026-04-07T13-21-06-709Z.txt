@@ -1,0 +1,5 @@
+[FlashDeepSearch] 2026-04-07T13:21:06.713Z: 插件启动，接收到请求。
+[FlashDeepSearch] 2026-04-07T13:21:06.713Z: 研究主题: "Deep analysis of US-Iran 'Operation Epic Fury' April 2026: Military outcomes, leadership decapitation effects, and global economic shockwaves from Hormuz closure.", 搜索广度: 12
+[FlashDeepSearch] 2026-04-07T13:21:06.713Z: 步骤 1: 生成研究关键词...
+[FlashDeepSearch] 2026-04-07T13:21:06.727Z: 调用模型: gemini-3.1-pro-preview
+[FlashDeepSearch] 2026-04-07T13:21:06.757Z: 发生严重错误: Request failed with status code 401
