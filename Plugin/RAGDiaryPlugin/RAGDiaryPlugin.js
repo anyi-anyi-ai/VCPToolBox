@@ -13,6 +13,7 @@ const MetaThinkingManager = require('./MetaThinkingManager.js');
 const SemanticGroupManager = require('./SemanticGroupManager.js');
 const AIMemoHandler = require('./AIMemoHandler.js');
 const ContextVectorManager = require('./ContextVectorManager.js');
+const FoldingStore = require('./FoldingStore.js'); // 🌟 V2折叠：SQLite 迷你数据库
 const CacheManager = require('./CacheManager.js'); // 🌟 新增：统一缓存管理器
 const { chunkText } = require('../../TextChunker.js');
 
@@ -56,6 +57,9 @@ class RAGDiaryPlugin {
         // 🌟 统一缓存管理器
         this.cacheManager = new CacheManager();
         this.queryCacheEnabled = true;
+
+        // 🌟 V2折叠：FoldingStore 迷你数据库
+        this.foldingStore = null;
     }
 
     async loadConfig() {
@@ -160,6 +164,25 @@ class RAGDiaryPlugin {
 
         // --- 加载元思考链配置 ---
         await this.metaThinkingManager.loadConfig();
+
+        // --- 🌟 V2折叠：初始化 FoldingStore（热重载安全：先关旧实例再开新实例） ---
+        try {
+            // 防止热重载时产生幽灵实例：如果旧 store 存在，先优雅关闭
+            if (this.foldingStore) {
+                console.log('[RAGDiaryPlugin] 检测到 FoldingStore 旧实例，正在关闭以防竞态...');
+                this.foldingStore.shutdown();
+                this.foldingStore = null;
+            }
+
+            const foldingDbPath = path.join(__dirname, 'folding_store.db');
+            this.foldingStore = new FoldingStore(foldingDbPath, {
+                maxEntries: parseInt(process.env.FOLDING_STORE_MAX_ENTRIES) || 200,
+                evictCount: parseInt(process.env.FOLDING_STORE_EVICT_COUNT) || 20
+            });
+        } catch (e) {
+            console.error('[RAGDiaryPlugin] FoldingStore 初始化失败，折叠功能将不可用:', e.message);
+            this.foldingStore = null;
+        }
     }
 
     /**
@@ -554,7 +577,7 @@ class RAGDiaryPlugin {
         const truncated = tags.slice(0, targetCount);
 
         if (truncated.length < tags.length) {
-            console.log(`[RAGDiaryPlugin][Truncation] ${tags.length} -> ${truncated.length} tags (Ratio: ${ratio.toFixed(2)}, L:${metrics.L.toFixed(2)}, S:${metrics.S.toFixed(2)})`);
+            console.log(`[RAGDiaryPlugin][Truncation] ${tags.length} -> ${truncated.length} tags (Ratio: ${ratio.toFixed(2)}, L:${(metrics?.L ?? 0).toFixed(2)}, S:${(metrics?.S ?? 0).toFixed(2)})`);
         }
         return truncated;
     }
@@ -997,6 +1020,11 @@ class RAGDiaryPlugin {
             // ✅ 新增：更新上下文向量映射（为后续衰减聚合做准备）
             // 🌟 修复：传递 allowApi 配置，控制是否允许向量化历史消息
             await this.contextVectorManager.updateContext(messages, { allowApi: this.contextVectorAllowApi });
+
+            // 🌟 V2折叠：将上下文中的消息 hash+vector 同步写入 FoldingStore
+            if (this.foldingStore) {
+                this._syncContextToFoldingStore(messages);
+            }
 
             const collectedAttachments = []; // 🌟 V7: 用于收集 ::Base64Memo 触发的附件
 
@@ -2243,10 +2271,22 @@ class RAGDiaryPlugin {
         const timeDecayMatch = modifiers.match(/::TimeDecay(\d+)?(?:\/(\d+\.?\d*))?(?:\/([\w,]+))?/);
         const useTimeDecay = !!timeDecayMatch;
 
-        // ✅ 新增：解析TagMemo修饰符和权重
-        const tagMemoMatch = modifiers.match(/::TagMemo([\d.]+)/);
-        // ✅ 改进：如果 modifiers 中没有指定权重，则使用动态计算的权重
-        let tagWeight = tagMemoMatch ? parseFloat(tagMemoMatch[1]) : (modifiers.includes('::TagMemo') ? defaultTagWeight : null);
+        // 🌟 V8: 解析 TagMemo/TagMemo+ 修饰符
+        // ::TagMemo+  → 激活 TagMemo + 测地线重排（动态权重）
+        // ::TagMemo+0.3 → 激活 TagMemo(权重0.3) + 测地线重排
+        // ::TagMemo0.3 → 激活 TagMemo(权重0.3)，无测地线
+        // ::TagMemo → 激活 TagMemo（动态权重），无测地线
+        const useGeodesicRerank = /::TagMemo\+/.test(modifiers);
+        const tagMemoWeightMatch = modifiers.match(/::TagMemo\+?([\d.]+)/);
+        let tagWeight = tagMemoWeightMatch ? parseFloat(tagMemoWeightMatch[1]) : (modifiers.includes('::TagMemo') ? defaultTagWeight : null);
+
+        // 🌟 V8: 构建 geodesicRerank 选项（传递给 search 的第 7 参数）
+        const geoConfig = this.ragParams?.KnowledgeBaseManager?.geodesicRerank || {};
+        const geoOptions = useGeodesicRerank ? {
+            geodesicRerank: true,
+            geoAlpha: geoConfig.alpha ?? 0.3,
+            minGeoSamples: geoConfig.minGeoSamples ?? 4
+        } : undefined;
 
         // 🌟 解析 Truncate 阈值
         const truncateThreshold = this._extractTruncateThreshold(modifiers);
@@ -2339,7 +2379,7 @@ class RAGDiaryPlugin {
 
             // 1. 语义路召回 (多取一些用于后续衰减/重排)
             const searchK = useRerank ? Math.max(kSemantic * 2, 20) : kSemantic + 10;
-            let ragResults = await this.vectorDBManager.search(dbName, finalQueryVector, searchK + dedupBuffer, tagWeight, coreTagsForSearch);
+            let ragResults = await this.vectorDBManager.search(dbName, finalQueryVector, searchK + dedupBuffer, tagWeight, coreTagsForSearch, undefined, geoOptions);
             ragResults = this._filterContextDuplicates(ragResults, contextDiaryPrefixes);
             ragResults = ragResults.map(r => ({ ...r, source: 'rag' }));
 
@@ -2392,7 +2432,7 @@ class RAGDiaryPlugin {
             const searchPromises = searchVectors.map(async (qv) => {
                 try {
                     const k = qv.type === 'current' ? kForSearch : Math.max(2, Math.round(kForSearch / 2));
-                    let results = await this.vectorDBManager.search(dbName, qv.vector, k, tagWeight, coreTagsForSearch);
+                    let results = await this.vectorDBManager.search(dbName, qv.vector, k, tagWeight, coreTagsForSearch, undefined, geoOptions);
                     if (qv.weight !== 1.0) {
                         results = results.map(r => ({ ...r, score: r.score * qv.weight, original_score: r.score }));
                     }
@@ -2520,6 +2560,8 @@ class RAGDiaryPlugin {
                     useRerank: useRerank,
                     useRerankPlus: useRerankPlus, // 🌟 Rerank+ (RRF) 模式标识
                     rrfAlpha: rrfAlpha, // 🌟 RRF 权重参数
+                    useGeodesicRerank: useGeodesicRerank, // 🌟 V8: 测地线重排标识
+                    geoAlpha: geoOptions?.geoAlpha, // 🌟 V8: 测地线混合权重
                     useTagMemo: tagWeight !== null, // ✅ 添加Tag模式标识
                     tagWeight: tagWeight, // ✅ 添加Tag权重
                     coreTags: coreTagsForDisplay, // 🌟 广播中依然显示提取到的标签，方便观察
@@ -3500,6 +3542,56 @@ class RAGDiaryPlugin {
     }
 
     //####################################################################################
+    //## 🌟 V2折叠：上下文同步到 FoldingStore
+    //####################################################################################
+
+    /**
+     * 将当前上下文中的 assistant 消息同步到 FoldingStore
+     * 仅在 vectorMap 中已有向量的消息才会被写入（不触发额外 API 调用）
+     */
+    _syncContextToFoldingStore(messages) {
+        if (!this.foldingStore) return;
+
+        let syncCount = 0;
+        for (const msg of messages) {
+            if (msg.role !== 'assistant') continue;
+
+            const content = typeof msg.content === 'string'
+                ? msg.content
+                : (Array.isArray(msg.content) ? msg.content.find(p => p.type === 'text')?.text : '') || '';
+
+            if (!content || content.length < 10) continue;
+            // 跳过已折叠的内容
+            if (content.startsWith('[VCP上下文语义折叠-')) continue;
+
+            const sanitized = this.sanitizeForEmbedding(content, 'assistant');
+            if (!sanitized) continue;
+
+            const hash = FoldingStore.hashContent(sanitized);
+
+            // 查 store 是否已有此条目（含持久化向量）
+            const existing = this.foldingStore.getEntry(hash);
+            if (existing && existing.vector) continue; // 已有完整条目，跳过
+
+            // 尝试从内存缓存获取向量（不触发 API）
+            let vector = this._getEmbeddingFromCacheOnly(sanitized);
+
+            // 重启恢复：如果内存缓存为空但 store 中已有旧条目（无向量），保留旧条目等待 V2 补充
+            if (!vector && existing) continue;
+
+            this.foldingStore.upsertVector(hash, {
+                textPreview: sanitized.substring(0, 80),
+                vector: vector // 可能为 null，后续由 ContextFoldingV2 的 embedText 补充
+            });
+            syncCount++;
+        }
+
+        if (syncCount > 0) {
+            console.log(`[RAGDiaryPlugin] V2折叠: 同步了 ${syncCount} 个新 assistant 块到 FoldingStore`);
+        }
+    }
+
+    //####################################################################################
     //## 🌟 ContextBridge - 上下文向量引力场公开只读接口
     //####################################################################################
 
@@ -3678,7 +3770,67 @@ class RAGDiaryPlugin {
             averageVector(vectors) {
                 if (!Array.isArray(vectors)) return null;
                 return self._getAverageVector(vectors);
-            }
+            },
+
+            // ═══════════════════════════════════════════════════
+            // 🌟 V2折叠：FoldingStore 接口
+            // ═══════════════════════════════════════════════════
+
+            /** FoldingStore 读写接口，供 ContextFoldingV2 使用 */
+            foldingStore: self.foldingStore ? Object.freeze({
+                /**
+                 * 获取条目
+                 * @param {string} contentHash - SHA-256 哈希
+                 * @returns {object|null} 条目数据
+                 */
+                getEntry(contentHash) {
+                    return self.foldingStore.getEntry(contentHash);
+                },
+
+                /**
+                 * 写入/更新向量
+                 * @param {string} contentHash
+                 * @param {object} data - { textPreview, vector }
+                 */
+                upsertVector(contentHash, data) {
+                    self.foldingStore.upsertVector(contentHash, data);
+                },
+
+                /**
+                 * 写入摘要结果
+                 * @param {string} contentHash
+                 * @param {string} summary
+                 * @param {string} status - 'ready' | 'failed'
+                 */
+                upsertSummary(contentHash, summary, status) {
+                    self.foldingStore.upsertSummary(contentHash, summary, status);
+                },
+
+                /**
+                 * 标记为摘要生成中
+                 * @param {string} contentHash
+                 */
+                markPending(contentHash) {
+                    self.foldingStore.markPending(contentHash);
+                },
+
+                /**
+                 * 获取统计信息
+                 * @returns {{ count, maxEntries, available }}
+                 */
+                getStats() {
+                    return self.foldingStore.getStats();
+                },
+
+                /**
+                 * 生成内容哈希的静态工具方法
+                 * @param {string} sanitizedContent
+                 * @returns {string}
+                 */
+                hashContent(sanitizedContent) {
+                    return FoldingStore.hashContent(sanitizedContent);
+                }
+            }) : null
         });
     }
 
@@ -3688,6 +3840,13 @@ class RAGDiaryPlugin {
             this.ragParamsWatcher = null;
         }
         this.cacheManager.shutdown();
+
+        // 🌟 V2折叠：关闭 FoldingStore
+        if (this.foldingStore) {
+            this.foldingStore.shutdown();
+            this.foldingStore = null;
+        }
+
         console.log(`[RAGDiaryPlugin] 插件已关闭`);
     }
 }

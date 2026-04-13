@@ -4,6 +4,32 @@ let originalParams = null;
 
 // 参数元数据定义：包含中文名、物理意义、调优逻辑和建议区间
 const PARAM_METADATA = {
+    "ContextFoldingV2": {
+        "thresholdBase": {
+            "name": "折叠阈值基准",
+            "meaning": "上下文语义折叠V2的相似度判定基准线。相似度低于此值的远距离AI输出会被折叠为摘要。",
+            "logic": "调高（如0.60）：更激进地折叠，只有高度相关的内容才保留原文；调低（如0.40）：更保守，大部分内容保留原文。",
+            "range": "建议区间: 0.35 ~ 0.65"
+        },
+        "thresholdRange": {
+            "name": "折叠阈值动态范围",
+            "meaning": "阈值受逻辑深度(L)和语义宽度(S)调节后的上下限范围。",
+            "logic": "下限越低越保守（语义宽泛时保留更多）；上限越高越激进（逻辑聚焦时折叠更多）。",
+            "range": "建议区间: [0.30, 0.70]"
+        },
+        "lWeight": {
+            "name": "逻辑深度(L)系数",
+            "meaning": "逻辑深度对阈值的调节力度。L高表示对话逻辑聚焦，阈值会升高以更激进地折叠无关内容。",
+            "logic": "调高：L对阈值的影响更大，聚焦对话时折叠更激进；调低：L影响减弱，对话焦点变化不会显著改变折叠行为。",
+            "range": "建议区间: 0.02 ~ 0.15"
+        },
+        "sWeight": {
+            "name": "语义宽度(S)系数",
+            "meaning": "语义宽度对阈值的调节力度。S高表示对话语义宽泛，阈值会降低以保守保留更多上下文。",
+            "logic": "调高：S对阈值的影响更大，宽泛对话时折叠更保守；调低：S影响减弱，语义宽度变化不会显著改变折叠行为。",
+            "range": "建议区间: 0.02 ~ 0.15"
+        }
+    },
     "RAGDiaryPlugin": {
         "noise_penalty": {
             "name": "语义宽度惩罚",
@@ -55,6 +81,24 @@ const PARAM_METADATA = {
         }
     },
     "KnowledgeBaseManager": {
+        "geodesicRerank": {
+            "name": "测地线重排 (V8)",
+            "meaning": "复用 Spike 距离场对 KNN 候选做基于 Tag 地形的二次重排。通过 ::TagMemo+ 修饰符激活。",
+            "logic": "V8 核心引擎，让被语义山峰挡住的相关记忆通过 Tag 拓扑关联浮出。三层防御链保证最坏情况=无改动。",
+            "range": "包含 2 个子参数，见下方详细说明。"
+        },
+        "geodesicRerank.alpha": {
+            "name": "测地线混合权重 (α)",
+            "meaning": "测地线分数在最终排序中的占比。0=纯KNN余弦距离，1=纯测地线Tag地形距离。",
+            "logic": "调高：更信任 Tag 拓扑关联，被语义山峰遮挡的记忆更容易浮出；调低：更保守，主要依赖原始向量相似度。",
+            "range": "建议区间: 0.1 ~ 0.5 (默认 0.3)"
+        },
+        "geodesicRerank.minGeoSamples": {
+            "name": "最小采样密度门槛",
+            "meaning": "一个 chunk 在距离场上至少需要命中多少个 Tag 才有资格参与测地线评估。低于此值退化为纯 KNN。",
+            "logic": "调高：更严格，只有 Tag 密度高的 chunk 才会被测地线影响；调低：更宽松，但可能因采样不足导致估计不可靠。莱恩建议 4 作为基准。",
+            "range": "建议区间: 2 ~ 8 (整数，默认 4)"
+        },
         "activationMultiplier": {
             "name": "金字塔激活增益",
             "meaning": "决定了残差金字塔发现的“新颖特征”对最终权重的贡献度。",
@@ -254,12 +298,27 @@ function renderParams(container, params) {
                     
                     // 智能推断步长与范围
                     let min = 0, max = 100, step = 1;
-                    if (subKey.toLowerCase().includes('decay') || subKey.toLowerCase().includes('threshold')) {
+                    const subKeyLower = subKey.toLowerCase();
+                    if (subKeyLower === 'alpha') {
+                        min = 0; max = 1; step = 0.01; // 🌟 V8: 测地线混合权重
+                    } else if (subKeyLower.includes('samples')) {
+                        min = 1; max = 20; step = 1; // 🌟 V8: 最小采样密度门槛
+                    } else if (subKeyLower.includes('decay') || subKeyLower.includes('threshold')) {
                         min = 0; max = subKey.includes('tension') ? 5 : 1; step = 0.01;
-                    } else if (subKey.toLowerCase().includes('hops') || subKey.toLowerCase().includes('nodes') || subKey.toLowerCase().includes('neighbors')) {
+                    } else if (subKeyLower.includes('hops') || subKeyLower.includes('nodes') || subKeyLower.includes('neighbors')) {
                         min = 1; max = subKey.includes('nodes') ? 200 : 20; step = 1;
-                    } else if (subKey.toLowerCase().includes('momentum')) {
+                    } else if (subKeyLower.includes('momentum')) {
                         min = 1; max = 10; step = 0.1;
+                    } else if (subKeyLower.includes('penalty') || subKeyLower.includes('score') || subKeyLower.includes('min')) {
+                        // 🛠️ 修复：语言补偿器和时间衰减的浮点参数
+                        min = 0; max = 1; step = 0.01;
+                    } else if (subKeyLower.includes('half') || subKeyLower.includes('days')) {
+                        // 🛠️ 修复：半衰期等天数参数
+                        min = 1; max = 365; step = 1;
+                    } else if (typeof subVal === 'number' && !Number.isInteger(subVal)) {
+                        // 🛠️ 修复：兜底逻辑 — 如果值本身是浮点数，自动使用小数步长
+                        step = 0.01;
+                        max = Math.max(10, Math.ceil(subVal * 20));
                     }
 
                     const subItem = document.createElement('div');
@@ -327,14 +386,23 @@ async function handleSave(event) {
     const inputs = form.querySelectorAll('input');
     inputs.forEach(input => {
         const { group, key, subkey, index } = input.dataset;
+        // 跳过没有 data-group 的 input（如范围滑块 sub-range-slider）
+        if (!group || !key) return;
         const val = parseFloat(input.value);
+        if (isNaN(val)) return;
         
         if (subkey) {
-            newParams[group][key][subkey] = val;
+            if (newParams[group] && newParams[group][key]) {
+                newParams[group][key][subkey] = val;
+            }
         } else if (index !== undefined) {
-            newParams[group][key][parseInt(index)] = val;
+            if (newParams[group] && Array.isArray(newParams[group][key])) {
+                newParams[group][key][parseInt(index)] = val;
+            }
         } else {
-            newParams[group][key] = val;
+            if (newParams[group]) {
+                newParams[group][key] = val;
+            }
         }
     });
     
