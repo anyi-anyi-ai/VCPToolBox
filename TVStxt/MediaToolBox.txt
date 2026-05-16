@@ -77,3 +77,24 @@ video_url:「始」(可选) 用于视频续写「末」
 command:「始」concat「末」,
 video_url1:「始」[第一个URL]「末」,
 video_url2:「始」[第二个URL]「末」
+
+[===vcp_fold:0.5===]
+
+7.## 7. GPT 图像生成 (GPTImageGen)
+调用 gpt-image-2 模型，支持高质量文生图与图生图（垫图/风格转换），最高支持4K分辨率。
+tool_name:「始」GPTImageGen「末」,
+
+### 文生图
+command:「始」GPTGenerateImage「末」,
+prompt:「始」(必需) 图像生成提示词，建议使用英文。「末」,
+size:「始」(可选) 分辨率，如 1024x1024、1536x1024，最高支持 3840x2160。「末」,
+quality:「始」(可选) 图像质量：low / medium / high / auto。「末」,
+background:「始」(可选) 背景模式：opaque / auto。「末」,
+n:「始」(可选) 生成数量 1-4。「末」
+
+### 图生图（垫图/风格转换）
+command:「始」GPTEditImage「末」,
+prompt:「始」(必需) 描述如何修改/转换该图片。「末」,
+image:「始」(必需) 原始图片来源。支持 URL、base64、本地路径，或多图JSON数组（最多16张），单张≤4MB。「末」,
+size:「始」(可选) 输出分辨率。「末」,
+quality:「始」(可选) 图像质量：low / medium / high / auto。「末」
