@@ -1393,6 +1393,8 @@ VCP-Agent 拥有完整的自主主观能动性。
 1. **时间线规划行动 (AgentAssistant 总线)**：
    - Agent 可以调用 AgentAssistant 总线，给"未来的自己打电话"
    - 从而引发一个 post 递归，实现时间线规划行动
+   - 允许Agent调用工具时使用全局计时器，让工具调用在未来被触发
+   - 允许Agent查询过去，现在，未来的工具调用进度和结果。
 
 2. **自我心跳驱动 (FlowInvite 总线)**：
    - Agent 可以调用一个 FlowInvite 总线
@@ -1402,6 +1404,8 @@ VCP-Agent 拥有完整的自主主观能动性。
 
 3. **跨 Agent 唤醒**：
    - Agent 可以被 AgentAssistant 里的别的 Agent 的通话唤醒
+   - 被唤醒的Agent可以自主控制自己的任务周期和心跳方法
+   - Agent唤醒支持网状异步和占线拒接
 
 4. **流式输出编辑**：
    - Agent 可以在流式输出里回溯/编辑已经发出的内容
