@@ -1,0 +1,15 @@
+{
+  "keyPool": {
+    "currentIndex": 0,
+    "keys": [
+      {
+        "key": "f718421f-4395-4d7e-94d4-8b89e7a62e47",
+        "active": true,
+        "errorCount": 2,
+        "maxErrors": 3,
+        "lastError": "2026-05-17T07:17:05.316Z",
+        "lastErrorType": "api_error"
+      }
+    ]
+  }
+}
