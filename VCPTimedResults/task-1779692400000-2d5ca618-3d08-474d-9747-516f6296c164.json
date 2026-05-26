@@ -1,0 +1,32 @@
+{
+  "taskId": "task-1779692400000-2d5ca618-3d08-474d-9747-516f6296c164",
+  "toolName": "TimedTaskQuery",
+  "status": "error",
+  "createdAt": "2026-05-25T12:41:16+08:00",
+  "scheduledLocalTime": "2026-05-25T15:00:00+08:00",
+  "executedAt": "2026-05-25T07:00:02.433Z",
+  "requestor": "ToolExecutor: TimedTaskQuery",
+  "arguments": {
+    "maid": "Nova",
+    "arg": "准备创建一个 2026-05-25-15:00 的提醒任务，内容：提醒主人做毕设展板。若本工具不支持创建，仅作查询则忽略本次预检。",
+    "content": "提醒主人：做毕设展板。",
+    "__vcp_timed_call": {
+      "taskId": "task-1779692400000-2d5ca618-3d08-474d-9747-516f6296c164",
+      "requestedAt": "2026-05-25T12:41:16+08:00",
+      "scheduledFor": "2026-05-25T15:00:00+08:00",
+      "triggeredAt": "2026-05-25T15:00:00+08:00",
+      "originalTimelyContact": "2026-05-25-15:00",
+      "source": "ToolExecutor: TimedTaskQuery"
+    }
+  },
+  "timedCall": {
+    "taskId": "task-1779692400000-2d5ca618-3d08-474d-9747-516f6296c164",
+    "requestedAt": "2026-05-25T12:41:16+08:00",
+    "scheduledFor": "2026-05-25T15:00:00+08:00",
+    "triggeredAt": "2026-05-25T15:00:00+08:00",
+    "originalTimelyContact": "2026-05-25-15:00",
+    "source": "ToolExecutor: TimedTaskQuery"
+  },
+  "error": "{\"plugin_error\":\"缺少有效的 task_id。task_id 只能包含字母、数字、下划线、点和连字符。\",\"MaidName\":\"Nova\",\"timestamp\":\"2026-05-25T15:00:02.429+08:00\"}",
+  "details": "Error: {\"plugin_error\":\"缺少有效的 task_id。task_id 只能包含字母、数字、下划线、点和连字符。\",\"MaidName\":\"Nova\",\"timestamp\":\"2026-05-25T15:00:02.429+08:00\"}\n    at PluginManager.processToolCall (H:\\VCP\\VCPzhangduan\\VCPToolBox\\Plugin.js:1009:19)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async executeTimedContact (H:\\VCP\\VCPzhangduan\\VCPToolBox\\routes\\taskScheduler.js:94:24)"
+}

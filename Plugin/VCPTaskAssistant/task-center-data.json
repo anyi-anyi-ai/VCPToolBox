@@ -1,9 +1,77 @@
 {
   "version": 1,
-  "globalEnabled": false,
+  "globalEnabled": true,
   "settings": {
     "maxHistory": 200
   },
-  "tasks": [],
-  "history": []
+  "tasks": [
+    {
+      "id": "fa_1779684043535",
+      "name": "新建草稿任务",
+      "type": "custom_prompt",
+      "enabled": true,
+      "schedule": {
+        "mode": "manual",
+        "intervalMinutes": 60,
+        "runAt": null,
+        "cronValue": null,
+        "jitterSeconds": 0
+      },
+      "targets": {
+        "agents": [
+          "Nova",
+          "random1"
+        ]
+      },
+      "dispatch": {
+        "channel": "AgentAssistant",
+        "temporaryContact": true,
+        "maid": "VCP系统",
+        "taskDelegation": true
+      },
+      "payload": {
+        "promptTemplate": "5月25日下午3点提醒我，提醒我，做毕设展板",
+        "availablePlaceholders": []
+      },
+      "runtime": {
+        "running": false,
+        "lastRunTime": null,
+        "lastFinishTime": null,
+        "lastResult": null,
+        "lastError": null,
+        "lastDurationMs": null,
+        "runCount": 0,
+        "successCount": 0,
+        "errorCount": 0,
+        "nextRunTime": null
+      },
+      "meta": {
+        "createdAt": "2026-05-25T05:30:45.637Z",
+        "updatedAt": "2026-05-26T02:15:36.240Z"
+      }
+    }
+  ],
+  "history": [
+    {
+      "id": "run_1779684049296",
+      "taskId": "fa_1779684043535",
+      "taskName": "新建草稿任务",
+      "type": "custom_prompt",
+      "triggerSource": "manual-trigger",
+      "startedAt": "2026-05-25T04:40:49.285Z",
+      "finishedAt": "2026-05-25T04:40:49.296Z",
+      "durationMs": 11,
+      "status": "success",
+      "agents": [
+        "Nova"
+      ],
+      "failedAgents": [],
+      "originalAgents": [
+        "Nova",
+        "random1"
+      ],
+      "randomTag": "random1",
+      "message": "success (1 agents, picked from random1)"
+    }
+  ]
 }

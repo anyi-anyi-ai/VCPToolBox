@@ -1,0 +1,13 @@
+{
+    "NOVA": {
+        "name": "Nova",
+        "totalPoints": 5,
+        "history": [
+            {
+                "time": "2026-05-25T04:41:16.804Z",
+                "pointsDelta": 5,
+                "reason": "成功完成异步委托任务: aa-delegation-1779684049293-01fb6bb0"
+            }
+        ]
+    }
+}

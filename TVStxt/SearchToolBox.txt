@@ -68,3 +68,62 @@ q:「始」关键词「末」
 ### 谷歌反向搜图
 command:「始」google_reverse_image_search「末」,
 image_url:「始」图片 URL (支持 file:// 或 https)「末」
+
+
+
+VCP工具调用格式与指南
+
+<<<[TOOL_REQUEST]>>>
+maid:「始」你的署名「末」, //重要字段，以进行任务追踪
+tool_name:「始」工具名「末」, //必要字段
+arg:「始」工具参数「末」, //具体视不同工具需求而定
+<<<[END_TOOL_REQUEST]>>>
+
+使用「始」「末」包裹参数来兼容富文本识别。
+主动判断当前需求，灵活使用各类工具调用。
+
+========================================
+
+1. AnySearch 实时搜索插件 (AnySearch)
+插件: AnySearch
+说明: 调用 AnySearch 进行实时搜索、垂直领域搜索、批量搜索、领域目录查询或网页正文提取。
+参数:
+- command/action (string, 可选, 默认 search): search、list_domains、batch_search、extract。
+- query/q/text (string, search 必需): 搜索词。垂直搜索时必须遵循 list_domains 返回的 query_format。
+- domain (string, 可选): 垂直领域，如 finance、academic、security、code、tech、legal 等。
+- sub_domain (string, 垂直搜索建议/通常必需): 子领域路由，如 finance.us_stock、academic.doi、security.cve。
+- sub_domain_params (object|string, 可选): 子领域额外参数。
+- content_types (string|array, 可选): web、news、code、doc、academic、data、image、video、audio。
+- zone (string, 可选): cn 或 intl；当 list_domains 标记 zone=CN 时必须传 cn。
+- max_results (integer, 可选): 结果数量，范围 1-100。
+- freshness (string, 可选): day、week、month、year。
+- domains (string|array, list_domains 可选): 批量查询最多 5 个领域；与 domain 二选一。
+- queries (array|string, batch_search 必需): 1-5 个查询对象或字符串。
+- url (string, extract 必需): 需要提取正文的网页 URL。
+调用格式示例:
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」AnySearch「末」,
+command:「始」search「末」,
+query:「始」AI regulation 2026「末」,
+content_types:「始」news「末」,
+freshness:「始」week「末」,
+max_results:「始」5「末」
+<<<[END_TOOL_REQUEST]>>>
+
+垂直搜索前先调用 list_domains 获取 sub_domain、query_format、params_schema 和 zone 约束。
+
+示例:
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」AnySearch「末」,
+command:「始」list_domains「末」,
+domain:「始」finance「末」
+<<<[END_TOOL_REQUEST]>>>
+
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」AnySearch「末」,
+command:「始」extract「末」,
+url:「始」https://example.com/article「末」
+<<<[END_TOOL_REQUEST]>>>
+
+----------------------------------------
+
