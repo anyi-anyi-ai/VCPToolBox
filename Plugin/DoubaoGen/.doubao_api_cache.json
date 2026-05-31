@@ -3,13 +3,128 @@
     "currentIndex": 0,
     "keys": [
       {
-        "key": "f718421f-4395-4d7e-94d4-8b89e7a62e47",
+        "key": "6d9c34ca-cc07-4cd7-a5d5-ebea93636d0e",
         "active": true,
-        "errorCount": 2,
+        "errorCount": 0,
         "maxErrors": 3,
-        "lastError": "2026-05-17T07:17:05.316Z",
-        "lastErrorType": "api_error"
+        "lastError": "2026-05-31T03:08:29.793Z",
+        "lastErrorType": "api_error",
+        "lastSuccess": "2026-05-31T03:26:08.695Z"
       }
     ]
-  }
+  },
+  "models": [
+    {
+      "created": 1745579251,
+      "domain": "ImageGeneration",
+      "features": {
+        "structured_outputs": {
+          "json_object": false,
+          "json_schema": false
+        }
+      },
+      "id": "doubao-seedream-3-0-t2i-250415",
+      "modalities": {
+        "input_modalities": [
+          "text"
+        ],
+        "output_modalities": [
+          "image"
+        ]
+      },
+      "name": "doubao-seedream-3-0-t2i",
+      "object": "model",
+      "status": "Retiring",
+      "task_type": [
+        "TextToImage"
+      ],
+      "token_limits": {},
+      "version": "250415"
+    },
+    {
+      "created": 1757244120,
+      "domain": "ImageGeneration",
+      "features": {
+        "structured_outputs": {
+          "json_object": false,
+          "json_schema": false
+        }
+      },
+      "id": "doubao-seedream-4-0-250828",
+      "modalities": {
+        "input_modalities": [
+          "text",
+          "image"
+        ],
+        "output_modalities": [
+          "image"
+        ]
+      },
+      "name": "doubao-seedream-4-0",
+      "object": "model",
+      "task_type": [
+        "ImageToImage",
+        "TextToImage"
+      ],
+      "token_limits": {},
+      "version": "250828"
+    },
+    {
+      "created": 1764294940,
+      "domain": "ImageGeneration",
+      "features": {
+        "structured_outputs": {
+          "json_object": false,
+          "json_schema": false
+        }
+      },
+      "id": "doubao-seedream-4-5-251128",
+      "modalities": {
+        "input_modalities": [
+          "text",
+          "image"
+        ],
+        "output_modalities": [
+          "image"
+        ]
+      },
+      "name": "doubao-seedream-4-5",
+      "object": "model",
+      "task_type": [
+        "TextToImage",
+        "ImageToImage"
+      ],
+      "token_limits": {},
+      "version": "251128"
+    },
+    {
+      "created": 1770190658,
+      "domain": "ImageGeneration",
+      "features": {
+        "structured_outputs": {
+          "json_object": false,
+          "json_schema": false
+        }
+      },
+      "id": "doubao-seedream-5-0-260128",
+      "modalities": {
+        "input_modalities": [
+          "text",
+          "image"
+        ],
+        "output_modalities": [
+          "image"
+        ]
+      },
+      "name": "doubao-seedream-5-0",
+      "object": "model",
+      "task_type": [
+        "ImageToImage",
+        "TextToImage"
+      ],
+      "token_limits": {},
+      "version": "260128"
+    }
+  ],
+  "modelsCachedAt": 1780196497049
 }
