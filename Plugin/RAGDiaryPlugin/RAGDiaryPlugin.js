@@ -16,6 +16,7 @@ const ContextVectorManager = require('./ContextVectorManager.js');
 const FoldingStore = require('./FoldingStore.js'); // 🌟 V2折叠：SQLite 迷你数据库
 const CacheManager = require('./CacheManager.js'); // 🌟 新增：统一缓存管理器
 const { chunkText } = require('../../TextChunker.js');
+const { getEmbeddingsBatch } = require('../../EmbeddingUtils.js');
 
 
 const dayjs = require('dayjs');
@@ -53,6 +54,7 @@ class RAGDiaryPlugin {
         this.lastConfigHash = null;
         this.ragParams = {};
         this.ragParamsWatcher = null;
+        this.ragTagsWatcher = null;
 
         // 🌟 统一缓存管理器
         this.cacheManager = new CacheManager();
@@ -250,6 +252,54 @@ class RAGDiaryPlugin {
         });
     }
 
+    /**
+     * ✅ 新增：启动 rag_tags.json 热更新监听器
+     * 文件变更时自动重新加载配置并重建向量缓存
+     */
+    _startRagTagsWatcher() {
+        const configPath = path.join(__dirname, 'rag_tags.json');
+        if (this.ragTagsWatcher) return;
+
+        this.ragTagsWatcher = chokidar.watch(configPath, { ignoreInitial: true });
+        this.ragTagsWatcher.on('change', async () => {
+            console.log('[RAGDiaryPlugin] 🔄 检测到 rag_tags.json 变更，正在热重载配置与向量缓存...');
+            try {
+                const cachePath = path.join(__dirname, 'vector_cache.json');
+                const currentConfigHash = await this._getFileHash(configPath);
+
+                if (!currentConfigHash) {
+                    console.warn('[RAGDiaryPlugin] 热重载: rag_tags.json 文件不存在或为空，跳过。');
+                    return;
+                }
+
+                // 哈希未变则跳过（防止编辑器保存但内容未变的情况）
+                if (this.lastConfigHash === currentConfigHash) {
+                    console.log('[RAGDiaryPlugin] 热重载: 文件哈希未变，跳过重建。');
+                    return;
+                }
+
+                this.lastConfigHash = currentConfigHash;
+
+                // 重新读取配置
+                const configData = await fs.readFile(configPath, 'utf-8');
+                this.ragConfig = JSON.parse(configData);
+
+                // 重建向量缓存
+                await this._buildAndSaveCache(currentConfigHash, cachePath);
+
+                // 清空查询缓存（配置变了，旧缓存结果可能不准确）
+                if (this.queryCacheEnabled) {
+                    this.cacheManager.clear('query');
+                    console.log('[RAGDiaryPlugin] 热重载: 查询缓存已清空。');
+                }
+
+                console.log('[RAGDiaryPlugin] ✅ rag_tags.json 热重载完成。');
+            } catch (error) {
+                console.error('[RAGDiaryPlugin] ❌ rag_tags.json 热重载失败:', error.message);
+            }
+        });
+    }
+
     async _buildAndSaveCache(configHash, cachePath) {
         console.log('[RAGDiaryPlugin] 正在为所有日记本请求 Embedding API (Batch Mode)...');
         this.enhancedVectorCache = {}; // 清空旧的内存缓存
@@ -341,6 +391,7 @@ class RAGDiaryPlugin {
         await this.loadConfig();
         await this.loadRagParams();
         this._startRagParamsWatcher();
+        this._startRagTagsWatcher();
 
         // 启动缓存清理任务
         if (this.queryCacheEnabled) {
@@ -4045,76 +4096,24 @@ class RAGDiaryPlugin {
 
         const apiKey = process.env.API_Key;
         const apiUrl = process.env.API_URL;
-        const embeddingModel = process.env.WhitelistEmbeddingModel;
 
-        if (!apiKey || !apiUrl || !embeddingModel) {
-            console.error('[RAGDiaryPlugin] Embedding API credentials or model is not configured in environment variables.');
+        if (!apiKey || !apiUrl) {
+            console.error('[RAGDiaryPlugin] Embedding API credentials not configured (API_Key / API_URL).');
             return null;
         }
 
-        // 1. 使用 TextChunker 分割文本以避免超长
-        const textChunks = chunkText(text);
-        if (!textChunks || textChunks.length === 0) {
-            console.log('[RAGDiaryPlugin] Text chunking resulted in no chunks.');
-            return null;
-        }
-
-        if (textChunks.length > 1) {
-            console.log(`[RAGDiaryPlugin] Text is too long, split into ${textChunks.length} chunks for embedding.`);
-        }
-
-        const maxRetries = 3;
-        const retryDelay = 1000; // 1 second
-
-        for (let attempt = 1; attempt <= maxRetries; attempt++) {
-            try {
-                const response = await axios.post(`${apiUrl}/v1/embeddings`, {
-                    model: embeddingModel,
-                    input: textChunks // 传入所有文本块
-                }, {
-                    headers: {
-                        'Authorization': `Bearer ${apiKey}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                const embeddings = response.data?.data;
-                if (!embeddings || embeddings.length === 0) {
-                    console.error('[RAGDiaryPlugin] No embeddings found in the API response.');
-                    return null;
-                }
-
-                const vectors = embeddings.map(e => e.embedding).filter(Boolean);
-                if (vectors.length === 0) {
-                    console.error('[RAGDiaryPlugin] No valid embedding vectors in the API response data.');
-                    return null;
-                }
-
-                // 如果只有一个向量，直接返回；否则，计算平均向量
-                if (vectors.length === 1) {
-                    return vectors[0];
-                } else {
-                    console.log(`[RAGDiaryPlugin] Averaging ${vectors.length} vectors into one.`);
-                    return this._getAverageVector(vectors);
-                }
-            } catch (error) {
-                const status = error.response ? error.response.status : null;
-
-                if ((status === 500 || status === 503) && attempt < maxRetries) {
-                    console.warn(`[RAGDiaryPlugin] Embedding API call failed with status ${status}. Attempt ${attempt} of ${maxRetries}. Retrying in ${retryDelay}ms...`);
-                    await new Promise(resolve => setTimeout(resolve, retryDelay));
-                    continue;
-                }
-
-                if (error.response) {
-                    console.error(`[RAGDiaryPlugin] Embedding API Error: ${error.message} (Status: ${error.response.status})`);
-                } else {
-                    console.error('[RAGDiaryPlugin] An error occurred while setting up the embedding request:', error.message);
-                }
-                return null; // Return null after final attempt or for non-retriable errors
+        try {
+            // 🌟 统一调用 EmbeddingUtils：自动享受模型容灾、token 精确切分、429 退避
+            const results = await getEmbeddingsBatch([text], { apiUrl, apiKey });
+            const vector = results[0];
+            if (!vector) {
+                console.error('[RAGDiaryPlugin] getSingleEmbedding: EmbeddingUtils returned null for the input text.');
             }
+            return vector || null;
+        } catch (error) {
+            console.error('[RAGDiaryPlugin] getSingleEmbedding failed via EmbeddingUtils:', error.message);
+            return null;
         }
-        return null; // Should not be reached, but as a fallback
     }
 
     //####################################################################################
@@ -4192,56 +4191,19 @@ class RAGDiaryPlugin {
 
         const apiKey = process.env.API_Key;
         const apiUrl = process.env.API_URL;
-        const embeddingModel = process.env.WhitelistEmbeddingModel;
 
-        if (!apiKey || !apiUrl || !embeddingModel) {
-            console.error('[RAGDiaryPlugin] Embedding API credentials or model is not configured.');
+        if (!apiKey || !apiUrl) {
+            console.error('[RAGDiaryPlugin] Embedding API credentials not configured (API_Key / API_URL).');
             return new Array(texts.length).fill(null);
         }
 
-        const validTasks = texts.map((text, index) => ({ text, index })).filter(t => t.text && t.text.trim());
-        if (validTasks.length === 0) return new Array(texts.length).fill(null);
-
-        const results = new Array(texts.length).fill(null);
-        const maxRetries = 3;
-        const retryDelay = 1000;
-
-        for (let attempt = 1; attempt <= maxRetries; attempt++) {
-            try {
-                const response = await axios.post(`${apiUrl}/v1/embeddings`, {
-                    model: embeddingModel,
-                    input: validTasks.map(t => t.text)
-                }, {
-                    headers: {
-                        'Authorization': `Bearer ${apiKey}`,
-                        'Content-Type': 'application/json'
-                    },
-                    timeout: 60000 // 批量请求可能需要更长时间
-                });
-
-                const embeddings = response.data?.data;
-                if (embeddings && Array.isArray(embeddings)) {
-                    embeddings.forEach((e, i) => {
-                        const originalIndex = validTasks[i].index;
-                        results[originalIndex] = e.embedding;
-                    });
-                    return results;
-                } else {
-                    console.error('[RAGDiaryPlugin] No embeddings found in batch response.');
-                    if (attempt === maxRetries) return results;
-                }
-            } catch (error) {
-                const status = error.response ? error.response.status : null;
-                if ((status === 500 || status === 503 || status === 429) && attempt < maxRetries) {
-                    console.warn(`[RAGDiaryPlugin] Batch Embedding API failed (${status}). Attempt ${attempt}/${maxRetries}. Retrying...`);
-                    await new Promise(resolve => setTimeout(resolve, retryDelay));
-                    continue;
-                }
-                console.error('[RAGDiaryPlugin] Batch embedding API error:', error.message);
-                return results;
-            }
+        try {
+            // 🌟 统一调用 EmbeddingUtils：自动享受模型容灾链、并发批量、token 精确切分、429 退避
+            return await getEmbeddingsBatch(texts, { apiUrl, apiKey });
+        } catch (error) {
+            console.error('[RAGDiaryPlugin] getBatchEmbeddings failed via EmbeddingUtils:', error.message);
+            return new Array(texts.length).fill(null);
         }
-        return results;
     }
 
     async getBatchEmbeddingsCached(texts) {
@@ -4823,6 +4785,10 @@ class RAGDiaryPlugin {
         if (this.ragParamsWatcher) {
             this.ragParamsWatcher.close();
             this.ragParamsWatcher = null;
+        }
+        if (this.ragTagsWatcher) {
+            this.ragTagsWatcher.close();
+            this.ragTagsWatcher = null;
         }
         this.cacheManager.shutdown();
 

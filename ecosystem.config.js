@@ -1,23 +1,29 @@
+// PM2 Ecosystem Configuration
+// 同时启动主服务 (server.js) 和管理面板 (adminServer.js)
 module.exports = {
   apps: [
     {
-      name: 'vcp-server',
-      cwd: 'H:/VCP/VCPzhangduan/VCPToolBox',
+      name: 'vcp-main',
       script: 'server.js',
-      interpreter: 'node',
-      instances: 1,
-      exec_mode: 'fork',
-      autorestart: true,
       watch: false,
-      max_memory_restart: '2G',
+      max_memory_restart: '1500M',
+      kill_timeout: 15000,
       env: {
         NODE_ENV: 'production'
-      },
-      out_file: './logs/vcp-server-out.log',
-      error_file: './logs/vcp-server-error.log',
-      merge_logs: true,
-      time: true,
-      log_date_format: 'YYYY-MM-DD HH:mm:ss'
+      }
+    },
+    {
+      name: 'vcp-admin',
+      script: 'adminServer.js',
+      watch: false,
+      max_memory_restart: '512M',
+      kill_timeout: 5000,
+      // 等待主服务初始化后再启动管理面板
+      wait_ready: false,
+      restart_delay: 5000,
+      env: {
+        NODE_ENV: 'production'
+      }
     }
   ]
 };
