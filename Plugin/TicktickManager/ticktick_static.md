@@ -1,6 +1,6 @@
 # TicktickManager 静态任务快照
 
-更新时间：2026/5/31 09:23:00 Asia/Shanghai
+更新时间：2026/5/31 09:24:30 Asia/Shanghai
 
 ## 需要更新 TICKTICK_ACCESS_TOKEN
 
@@ -9,7 +9,7 @@
 ### 原因
 
 - 错误类型：AUTH_ERROR
-- 错误信息：缺少 TICKTICK_ACCESS_TOKEN，无法调用滴答清单 OpenAPI。
+- 错误信息：缺少 TICKTICK_ACCESS_TOKEN，TicktickManager 静态刷新已跳过。
 - 滴答清单当前政策不再提供刷新令牌，TICKTICK_ACCESS_TOKEN 有效期约半年。
 - 本插件不会在 VCPToolBox 运行环境中自动获取、刷新或写回 token。
 
