@@ -45,8 +45,33 @@ RUN sed -i '/^win10toast/s/^/#/' requirements.txt
 RUN python3 -m pip install --no-cache-dir --break-system-packages -U pip setuptools wheel
 RUN pip3 install --no-cache-dir --break-system-packages --target=/usr/src/app/pydeps -r requirements.txt
 
+# =================================================================
+# 编译 Rust N-API 向量引擎 (vexus-lite)
+# 关键：把 Rust 子项目单独 COPY 并提前编译，让 Docker layer cache 能复用编译产物。
+# 这样 README、插件、图片、普通 JS 文件变更时，不会触发 Rust 全量重编；
+# 只有 rust-vexus-lite/package.json、Cargo.toml、build.rs、src/** 变化才会失效。
+# 仓库内 commit 的预编译 .node 仅作为 node 直跑用户的兜底，镜像必须以源码现编产物为准。
+# =================================================================
+COPY rust-vexus-lite/package.json ./rust-vexus-lite/package.json
+COPY rust-vexus-lite/Cargo.toml ./rust-vexus-lite/Cargo.toml
+COPY rust-vexus-lite/build.rs ./rust-vexus-lite/build.rs
+COPY rust-vexus-lite/src ./rust-vexus-lite/src
+
+RUN echo ">>> Building rust-vexus-lite native addon..." && \
+    cd rust-vexus-lite && \
+    npm install && \
+    npm run build && \
+    mkdir -p /tmp/rust-vexus-lite-built && \
+    cp ./*.node /tmp/rust-vexus-lite-built/ && \
+    cd .. && \
+    echo ">>> rust-vexus-lite build complete."
+
 # 复制所有源代码
 COPY . .
+
+# COPY . . 会把仓库中可能滞后的预编译 .node 合并进 rust-vexus-lite。
+# 将上一步容器内现编产物覆盖回去，确保镜像运行时加载的是当前源码对应的 native addon。
+RUN cp /tmp/rust-vexus-lite-built/*.node ./rust-vexus-lite/
 
 # 构建 AdminPanel-Vue 前端
 RUN if [ -f AdminPanel-Vue/package.json ]; then \
@@ -118,6 +143,10 @@ COPY --from=build /usr/src/app/Agent ./Agent
 COPY --from=build /usr/src/app/routes ./routes
 COPY --from=build /usr/src/app/modules ./modules
 COPY --from=build /usr/src/app/requirements.txt ./
+# 复制容器内编译的 Rust N-API 向量引擎（含新生成的 musl .node 产物）
+# 必须显式 COPY：否则未使用 bind mount 的用户运行时 require('./rust-vexus-lite')
+# 会失败，触发 KnowledgeBaseManager.js 的 process.exit(1)。
+COPY --from=build /usr/src/app/rust-vexus-lite ./rust-vexus-lite
 # 复制 AdminPanel-Vue 构建产物（管理面板前端）
 COPY --from=build /usr/src/app/AdminPanel-Vue/dist ./AdminPanel-Vue/dist
 
