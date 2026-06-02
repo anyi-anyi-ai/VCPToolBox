@@ -954,6 +954,104 @@ class KnowledgeBaseManager {
     }
 
     /**
+     * 🛡️ 启动全量扫描补洞：判断一个文件在 SQLite 中是否已有完整可用的 chunk 向量。
+     * 旧逻辑只看 mtime/size，若上次 API 失败但 files 记录已写入，会在开机全扫时被误判为“无需处理”。
+     */
+    _hasCompleteStoredVectorsForFile(relPath) {
+        try {
+            const expectedBytes = this.config.dimension * Float32Array.BYTES_PER_ELEMENT;
+            const row = this.db.prepare(`
+                SELECT
+                    COUNT(c.id) AS chunks,
+                    SUM(CASE WHEN c.vector IS NOT NULL THEN 1 ELSE 0 END) AS vectors,
+                    SUM(CASE WHEN c.vector IS NOT NULL AND length(c.vector) = ? THEN 1 ELSE 0 END) AS valid_vectors,
+                    SUM(CASE WHEN c.vector IS NOT NULL AND length(c.vector) != ? THEN 1 ELSE 0 END) AS bad_vectors
+                FROM files f
+                LEFT JOIN chunks c ON c.file_id = f.id
+                WHERE f.path = ?
+                GROUP BY f.id
+            `).get(expectedBytes, expectedBytes, relPath);
+
+            if (!row) return false;
+            const chunks = row.chunks || 0;
+            const vectors = row.vectors || 0;
+            const validVectors = row.valid_vectors || 0;
+            const badVectors = row.bad_vectors || 0;
+
+            return chunks > 0 && chunks === vectors && vectors === validVectors && badVectors === 0;
+        } catch (e) {
+            console.warn(`[KnowledgeBase] ⚠️ Failed to check stored vectors for "${relPath}": ${e.message}`);
+            return false;
+        }
+    }
+
+    /**
+     * 🧳 文件搬家/复制优化：按 checksum 在 SQLite 中查找可复用的 chunk 向量。
+     * 只在 chunk 数量完全一致且所有向量维度有效时命中，避免复用半成品或旧模型残留数据。
+     */
+    _findReusableChunkVectors(doc) {
+        try {
+            if (!doc || !doc.checksum || !Array.isArray(doc.chunks) || doc.chunks.length === 0) return null;
+
+            const candidates = this.db.prepare(`
+                SELECT id, path, diary_name
+                FROM files
+                WHERE checksum = ?
+                  AND size = ?
+                  AND path != ?
+                ORDER BY updated_at DESC, id DESC
+                LIMIT 5
+            `).all(doc.checksum, doc.size, doc.relPath);
+
+            if (!candidates || candidates.length === 0) return null;
+
+            const getChunks = this.db.prepare(`
+                SELECT chunk_index, vector
+                FROM chunks
+                WHERE file_id = ?
+                ORDER BY chunk_index ASC
+            `);
+
+            for (const candidate of candidates) {
+                const rows = getChunks.all(candidate.id);
+                if (rows.length !== doc.chunks.length) continue;
+
+                const vectors = [];
+                let valid = true;
+                for (let i = 0; i < rows.length; i++) {
+                    if (rows[i].chunk_index !== i || !rows[i].vector) {
+                        valid = false;
+                        break;
+                    }
+
+                    const decoded = this._decodeVectorBlob(
+                        rows[i].vector,
+                        this.config.dimension,
+                        `reuse:${candidate.path}:${i}`
+                    );
+
+                    if (!decoded) {
+                        valid = false;
+                        break;
+                    }
+
+                    // 复制一份，避免底层 SQLite Buffer 生命周期/复用导致的隐性别名问题。
+                    vectors.push(new Float32Array(decoded));
+                }
+
+                if (valid) {
+                    console.log(`[KnowledgeBase] ♻️ Reusing ${vectors.length} cached chunk vector(s) for moved/copied file "${doc.relPath}" from "${candidate.path}".`);
+                    return vectors;
+                }
+            }
+        } catch (e) {
+            console.warn(`[KnowledgeBase] ⚠️ Failed to lookup reusable vectors for "${doc?.relPath || 'unknown'}": ${e.message}`);
+        }
+
+        return null;
+    }
+
+    /**
      * 🌟 新增：按文件路径列表获取所有分块及其向量
      * 用于 Time 模式下的二次相关性排序
      */
@@ -1231,12 +1329,12 @@ class KnowledgeBaseManager {
                     const diaryName = parts.length > 1 ? parts[0] : 'Root';
 
                     const row = checkFile.get(relPath);
-                    if (row && row.mtime === stats.mtimeMs && row.size === stats.size) return;
+                    if (row && row.mtime === stats.mtimeMs && row.size === stats.size && this._hasCompleteStoredVectorsForFile(relPath)) return;
 
                     const content = await fs.readFile(filePath, 'utf-8');
                     const checksum = crypto.createHash('md5').update(content).digest('hex');
 
-                    if (row && row.checksum === checksum) {
+                    if (row && row.checksum === checksum && this._hasCompleteStoredVectorsForFile(relPath)) {
                         this.db.prepare('UPDATE files SET mtime = ?, size = ? WHERE path = ?').run(stats.mtimeMs, stats.size, relPath);
                         return;
                     }
@@ -1264,15 +1362,28 @@ class KnowledgeBaseManager {
             const allChunksWithMeta = [];
             const uniqueTags = new Set();
 
+            let reusedChunkVectorCount = 0;
             for (const [dName, docs] of docsByDiary) {
                 docs.forEach((doc, dIdx) => {
                     const validChunks = doc.chunks.map(c => this._prepareTextForEmbedding(c)).filter(c => c !== '[EMPTY_CONTENT]');
                     doc.chunks = validChunks;
-                    validChunks.forEach((txt, cIdx) => {
-                        allChunksWithMeta.push({ text: txt, diaryName: dName, doc: doc, chunkIdx: cIdx });
-                    });
+
+                    const reusableVectors = this._findReusableChunkVectors(doc);
+                    if (reusableVectors) {
+                        doc.reusedChunkVectors = reusableVectors;
+                        reusedChunkVectorCount += reusableVectors.length;
+                    } else {
+                        validChunks.forEach((txt, cIdx) => {
+                            allChunksWithMeta.push({ text: txt, diaryName: dName, doc: doc, chunkIdx: cIdx });
+                        });
+                    }
+
                     doc.tags.forEach(t => uniqueTags.add(t));
                 });
+            }
+
+            if (reusedChunkVectorCount > 0) {
+                console.log(`[KnowledgeBase] ♻️ Reused ${reusedChunkVectorCount} chunk vector(s) from SQLite cache; skipped embedding for matching moved/copied content.`);
             }
 
             // Tag 处理
@@ -1393,8 +1504,9 @@ class KnowledgeBaseManager {
 
                         doc.chunks.forEach((txt, i) => {
                             const meta = metaMap.get(`${doc.relPath}:${i}`);
-                            if (meta && meta.vector) { // 🛡️ null 向量的 chunk 自然被跳过，不会写入错误数据
-                                const vecFloat = new Float32Array(meta.vector);
+                            const vectorSource = doc.reusedChunkVectors?.[i] || meta?.vector;
+                            if (vectorSource) { // 🛡️ null 向量的 chunk 自然被跳过，不会写入错误数据
+                                const vecFloat = vectorSource instanceof Float32Array ? vectorSource : new Float32Array(vectorSource);
                                 const vecBuf = Buffer.from(vecFloat.buffer, vecFloat.byteOffset, vecFloat.byteLength);
                                 const r = addChunk.run(fileId, i, txt, vecBuf);
                                 updates.get(dName).push({ id: r.lastInsertRowid, vec: vecFloat });
