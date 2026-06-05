@@ -94,6 +94,402 @@ function extractBearerToken(authHeader) {
 }
 
 // ============================================================
+// 原生工具字段保护/转换（不进入 messages，只在构建上游 body 时加回）
+// ============================================================
+
+function normalizeToolParameters(parameters) {
+    if (parameters && typeof parameters === 'object') return parameters;
+    return { type: 'object', properties: {} };
+}
+
+function toOpenAiChatTool(tool) {
+    if (!tool || typeof tool !== 'object') return null;
+
+    if (tool.type === 'function' && tool.function?.name) {
+        return {
+            type: 'function',
+            function: {
+                name: tool.function.name,
+                ...(tool.function.description && { description: tool.function.description }),
+                parameters: normalizeToolParameters(tool.function.parameters || tool.function.input_schema)
+            }
+        };
+    }
+
+    if ((tool.type === 'function' || !tool.type) && tool.name) {
+        return {
+            type: 'function',
+            function: {
+                name: tool.name,
+                ...(tool.description && { description: tool.description }),
+                parameters: normalizeToolParameters(tool.parameters || tool.input_schema || tool.schema)
+            }
+        };
+    }
+
+    return null;
+}
+
+function extractProtectedTools(body) {
+    const tools = [];
+
+    if (Array.isArray(body?.tools)) {
+        for (const tool of body.tools) {
+            const functionDeclarations = tool?.functionDeclarations || tool?.function_declarations;
+            if (Array.isArray(functionDeclarations)) {
+                for (const declaration of functionDeclarations) {
+                    const converted = toOpenAiChatTool(declaration);
+                    if (converted) tools.push(converted);
+                }
+                continue;
+            }
+
+            const converted = toOpenAiChatTool(tool);
+            if (converted) tools.push(converted);
+        }
+    }
+
+    if (Array.isArray(body?.functions)) {
+        for (const fn of body.functions) {
+            const converted = toOpenAiChatTool({ type: 'function', ...fn });
+            if (converted) tools.push(converted);
+        }
+    }
+
+    return tools;
+}
+
+function normalizeToolChoice(toolChoice, body) {
+    if (!toolChoice && body?.toolConfig?.functionCallingConfig) {
+        const config = body.toolConfig.functionCallingConfig;
+        const mode = String(config.mode || '').toUpperCase();
+        if (mode === 'NONE') return 'none';
+        if (mode === 'ANY') {
+            const allowed = Array.isArray(config.allowedFunctionNames) ? config.allowedFunctionNames.filter(Boolean) : [];
+            if (allowed.length === 1) {
+                return { type: 'function', function: { name: allowed[0] } };
+            }
+            return 'required';
+        }
+        if (mode === 'AUTO') return 'auto';
+    }
+
+    if (!toolChoice) return undefined;
+    if (typeof toolChoice === 'string') return toolChoice;
+    if (typeof toolChoice !== 'object') return undefined;
+
+    if (toolChoice.type === 'function' && toolChoice.function?.name) {
+        return { type: 'function', function: { name: toolChoice.function.name } };
+    }
+
+    if (toolChoice.type === 'function' && toolChoice.name) {
+        return { type: 'function', function: { name: toolChoice.name } };
+    }
+
+    if (toolChoice.type === 'tool' && toolChoice.name) {
+        return { type: 'function', function: { name: toolChoice.name } };
+    }
+
+    if (toolChoice.type === 'auto') return 'auto';
+    if (toolChoice.type === 'any') return 'required';
+    if (toolChoice.type === 'none') return 'none';
+
+    return undefined;
+}
+
+function attachProtectedChatToolFields(targetBody, sourceBody) {
+    const tools = extractProtectedTools(sourceBody);
+    if (tools.length > 0) targetBody.tools = tools;
+
+    const toolChoice = normalizeToolChoice(sourceBody?.tool_choice, sourceBody);
+    if (toolChoice !== undefined) targetBody.tool_choice = toolChoice;
+
+    if (typeof sourceBody?.parallel_tool_calls === 'boolean') {
+        targetBody.parallel_tool_calls = sourceBody.parallel_tool_calls;
+    }
+
+    return targetBody;
+}
+
+function attachProtectedAnthropicToolFields(targetBody, sourceBody) {
+    const tools = extractProtectedTools(sourceBody).map(tool => ({
+        name: tool.function.name,
+        ...(tool.function.description && { description: tool.function.description }),
+        input_schema: normalizeToolParameters(tool.function.parameters)
+    }));
+
+    if (tools.length > 0) targetBody.tools = tools;
+    if (sourceBody?.tool_choice) targetBody.tool_choice = sourceBody.tool_choice;
+
+    return targetBody;
+}
+
+function attachProtectedGeminiToolFields(targetBody, sourceBody) {
+    const functionDeclarations = extractProtectedTools(sourceBody).map(tool => ({
+        name: tool.function.name,
+        ...(tool.function.description && { description: tool.function.description }),
+        parameters: normalizeToolParameters(tool.function.parameters)
+    }));
+
+    if (functionDeclarations.length > 0) {
+        targetBody.tools = [{ functionDeclarations }];
+    }
+
+    if (sourceBody?.toolConfig) {
+        targetBody.toolConfig = sourceBody.toolConfig;
+    }
+
+    return targetBody;
+}
+
+// ============================================================
+// Responses API 响应转换工具
+// ============================================================
+
+function buildResponsesUsage(usage) {
+    return {
+        input_tokens: usage?.prompt_tokens || usage?.input_tokens || 0,
+        output_tokens: usage?.completion_tokens || usage?.output_tokens || 0,
+        total_tokens: usage?.total_tokens || ((usage?.input_tokens || 0) + (usage?.output_tokens || 0)),
+        input_tokens_details: usage?.prompt_tokens_details || usage?.input_tokens_details || {},
+        output_tokens_details: usage?.completion_tokens_details || usage?.output_tokens_details || {}
+    };
+}
+
+function buildBaseResponsesEnvelope(model) {
+    return {
+        id: `resp_${Date.now()}`,
+        object: 'response',
+        created_at: Math.floor(Date.now() / 1000),
+        status: 'in_progress',
+        model,
+        output: [{
+            id: `msg_${Date.now()}`,
+            type: 'message',
+            role: 'assistant',
+            content: [{ type: 'output_text', text: '', annotations: [] }]
+        }],
+        output_text: '',
+        usage: buildResponsesUsage(null)
+    };
+}
+
+function writeResponsesSseEvent(res, eventName, data) {
+    if (res.destroyed || res.writableEnded) return false;
+    res.write(`event: ${eventName}\n`);
+    res.write(`data: ${JSON.stringify(data)}\n\n`);
+    return true;
+}
+
+function safeJsonParse(text) {
+    try {
+        return JSON.parse(text);
+    } catch {
+        return null;
+    }
+}
+
+function extractTextFromProtocolResponse(raw, apiType) {
+    if (apiType === 'anthropic') {
+        const content = raw?.content;
+        return Array.isArray(content) ? content.map(item => item?.text || '').join('') : '';
+    }
+    if (apiType === 'gemini') {
+        const parts = raw?.candidates?.[0]?.content?.parts;
+        return Array.isArray(parts) ? parts.map(part => part?.text || '').join('') : '';
+    }
+    return raw?.choices?.[0]?.message?.content || '';
+}
+
+function extractUsageFromProtocolResponse(raw, apiType) {
+    if (apiType === 'anthropic') {
+        return {
+            input_tokens: raw?.usage?.input_tokens || 0,
+            output_tokens: raw?.usage?.output_tokens || 0,
+            total_tokens: (raw?.usage?.input_tokens || 0) + (raw?.usage?.output_tokens || 0)
+        };
+    }
+    if (apiType === 'gemini') {
+        return {
+            prompt_tokens: raw?.usageMetadata?.promptTokenCount || 0,
+            completion_tokens: raw?.usageMetadata?.candidatesTokenCount || 0,
+            total_tokens: raw?.usageMetadata?.totalTokenCount || 0
+        };
+    }
+    return raw?.usage || null;
+}
+
+function extractStreamDeltaByProtocol(eventJson, apiType) {
+    if (apiType === 'anthropic') {
+        return eventJson?.delta?.text || eventJson?.content_block?.text || '';
+    }
+    if (apiType === 'gemini') {
+        const parts = eventJson?.candidates?.[0]?.content?.parts;
+        return Array.isArray(parts) ? parts.map(part => part?.text || '').join('') : '';
+    }
+    return eventJson?.choices?.[0]?.delta?.content || eventJson?.choices?.[0]?.message?.content || '';
+}
+
+function extractStreamUsageByProtocol(eventJson, apiType) {
+    if (apiType === 'gemini' && eventJson?.usageMetadata) {
+        return {
+            prompt_tokens: eventJson.usageMetadata.promptTokenCount || 0,
+            completion_tokens: eventJson.usageMetadata.candidatesTokenCount || 0,
+            total_tokens: eventJson.usageMetadata.totalTokenCount || 0
+        };
+    }
+    return eventJson?.usage || null;
+}
+
+async function* iterateUpstreamSseJson(readableStream) {
+    const decoder = new TextDecoder('utf-8');
+    let buffer = '';
+
+    for await (const chunk of readableStream) {
+        buffer += decoder.decode(chunk, { stream: true });
+
+        while (true) {
+            const newlineIndex = buffer.indexOf('\n');
+            if (newlineIndex === -1) break;
+
+            const line = buffer.slice(0, newlineIndex).trimEnd();
+            buffer = buffer.slice(newlineIndex + 1);
+
+            const trimmed = line.trim();
+            if (!trimmed || !trimmed.startsWith('data:')) continue;
+
+            const data = trimmed.slice(5).trim();
+            if (data === '[DONE]') return;
+
+            const json = safeJsonParse(data);
+            if (json) yield json;
+        }
+    }
+}
+
+function buildResponsesOutput(raw, apiType, fallbackModel) {
+    const text = extractTextFromProtocolResponse(raw, apiType);
+    const responsePayload = buildBaseResponsesEnvelope(raw?.model || fallbackModel);
+    responsePayload.status = 'completed';
+    responsePayload.output[0].content[0].text = text;
+    responsePayload.output_text = text;
+    responsePayload.usage = buildResponsesUsage(extractUsageFromProtocolResponse(raw, apiType));
+    return responsePayload;
+}
+
+async function sendResponsesStreamFromProtocol(res, upstreamResponse, { model, apiType }) {
+    res.status(upstreamResponse.status);
+    res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
+    res.setHeader('Cache-Control', 'no-cache, no-transform');
+    res.setHeader('Connection', 'keep-alive');
+
+    const responsePayload = buildBaseResponsesEnvelope(model);
+    const itemId = responsePayload.output[0].id;
+    let finalUsage = null;
+
+    writeResponsesSseEvent(res, 'response.created', {
+        type: 'response.created',
+        response: {
+            id: responsePayload.id,
+            object: responsePayload.object,
+            created_at: responsePayload.created_at,
+            status: 'in_progress',
+            model: responsePayload.model,
+            usage: buildResponsesUsage(null)
+        }
+    });
+
+    writeResponsesSseEvent(res, 'response.output_item.added', {
+        type: 'response.output_item.added',
+        output_index: 0,
+        item: { id: itemId, type: 'message', role: 'assistant', content: [] }
+    });
+
+    writeResponsesSseEvent(res, 'response.content_part.added', {
+        type: 'response.content_part.added',
+        item_id: itemId,
+        output_index: 0,
+        content_index: 0,
+        part: { type: 'output_text', text: '' }
+    });
+
+    try {
+        for await (const eventJson of iterateUpstreamSseJson(upstreamResponse.body)) {
+            const delta = extractStreamDeltaByProtocol(eventJson, apiType);
+            if (typeof delta === 'string' && delta.length > 0) {
+                responsePayload.output_text += delta;
+                writeResponsesSseEvent(res, 'response.output_text.delta', {
+                    type: 'response.output_text.delta',
+                    item_id: itemId,
+                    output_index: 0,
+                    content_index: 0,
+                    delta
+                });
+            }
+
+            const usage = extractStreamUsageByProtocol(eventJson, apiType);
+            if (usage) finalUsage = usage;
+            if (eventJson?.model) responsePayload.model = eventJson.model;
+        }
+
+        responsePayload.status = 'completed';
+        responsePayload.output[0].content[0].text = responsePayload.output_text;
+        if (finalUsage) responsePayload.usage = buildResponsesUsage(finalUsage);
+
+        writeResponsesSseEvent(res, 'response.output_text.done', {
+            type: 'response.output_text.done',
+            item_id: itemId,
+            output_index: 0,
+            content_index: 0,
+            text: responsePayload.output_text
+        });
+
+        writeResponsesSseEvent(res, 'response.content_part.done', {
+            type: 'response.content_part.done',
+            item_id: itemId,
+            output_index: 0,
+            content_index: 0,
+            part: { type: 'output_text', text: responsePayload.output_text }
+        });
+
+        writeResponsesSseEvent(res, 'response.output_item.done', {
+            type: 'response.output_item.done',
+            output_index: 0,
+            item: responsePayload.output[0]
+        });
+
+        writeResponsesSseEvent(res, 'response.completed', {
+            type: 'response.completed',
+            response: responsePayload
+        });
+    } catch (error) {
+        responsePayload.status = 'failed';
+        responsePayload.output[0].content[0].text = responsePayload.output_text;
+        responsePayload.error = {
+            code: 'vcp_bridge_stream_error',
+            message: error.message || 'VCP bridge stream failed before completion.'
+        };
+        writeResponsesSseEvent(res, 'response.failed', {
+            type: 'response.failed',
+            response: responsePayload
+        });
+    }
+
+    if (!res.destroyed && !res.writableEnded) res.end();
+}
+
+async function sendResponsesJsonFromProtocol(res, upstreamResponse, { model, apiType }) {
+    const rawText = await upstreamResponse.text();
+    const rawJson = safeJsonParse(rawText);
+
+    if (!upstreamResponse.ok) {
+        return res.status(upstreamResponse.status).type('application/json').send(rawJson || rawText);
+    }
+
+    return res.status(upstreamResponse.status).json(buildResponsesOutput(rawJson || {}, apiType, model));
+}
+
+// ============================================================
 // System Prompt 劫持逻辑
 // ============================================================
 
@@ -142,6 +538,7 @@ function normalizeTextContent(content) {
             if (typeof item === 'string') return item;
             if (item?.type === 'text' && typeof item.text === 'string') return item.text;
             if (item?.type === 'input_text' && typeof item.text === 'string') return item.text;
+            if (item?.type === 'output_text' && typeof item.text === 'string') return item.text;
             return '';
         }).filter(Boolean).join('\n');
     }
@@ -156,7 +553,7 @@ function extractFromResponsesInput(input) {
         if (!item || typeof item !== 'object') continue;
         let role = item.role || (item.type === 'message' ? 'user' : null);
         if (role === 'developer') role = 'system';
-        const content = normalizeTextContent(item.content);
+        const content = normalizeTextContent(item.content || item.output);
         if (role && content) messages.push({ role, content });
     }
     return messages;
@@ -204,7 +601,7 @@ function extractFromGeminiBody(body) {
 // ============================================================
 
 function buildUpstreamChatBody(messages, model, body) {
-    return {
+    const result = {
         model: resolveModel(model),
         messages,
         stream: body.stream === true,
@@ -212,6 +609,7 @@ function buildUpstreamChatBody(messages, model, body) {
         ...(body.top_p !== undefined && { top_p: body.top_p }),
         ...(body.max_tokens !== undefined && { max_tokens: body.max_tokens })
     };
+    return attachProtectedChatToolFields(result, body);
 }
 
 function buildUpstreamAnthropicBody(messages, model, body) {
@@ -228,7 +626,7 @@ function buildUpstreamAnthropicBody(messages, model, body) {
     };
     if (system) result.system = system;
     if (body.temperature !== undefined) result.temperature = body.temperature;
-    return result;
+    return attachProtectedAnthropicToolFields(result, body);
 }
 
 function buildUpstreamGeminiBody(messages, model, body) {
@@ -246,7 +644,7 @@ function buildUpstreamGeminiBody(messages, model, body) {
         genConfig.maxOutputTokens = body.max_output_tokens || body.max_tokens;
     }
     if (Object.keys(genConfig).length > 0) result.generationConfig = genConfig;
-    return result;
+    return attachProtectedGeminiToolFields(result, body);
 }
 
 // ============================================================
@@ -321,7 +719,22 @@ async function proxyRequest(req, res, { messages, model, body, downstreamFormat 
         return res.status(502).json({ error: { message: `Upstream fetch failed: ${err.message}`, type: 'upstream_error' } });
     }
 
-    // 6. 透传响应（保持原始格式，不做响应转换）
+    // 6. Responses API 下游必须返回 Responses 格式，不能裸透传 chat/anthropic/gemini SSE。
+    if (downstreamFormat === 'responses') {
+        const fallbackModel = resolveModel(model);
+        if (stream && upstreamResponse.body) {
+            return sendResponsesStreamFromProtocol(res, upstreamResponse, {
+                model: fallbackModel,
+                apiType: endpoint.type
+            });
+        }
+        return sendResponsesJsonFromProtocol(res, upstreamResponse, {
+            model: fallbackModel,
+            apiType: endpoint.type
+        });
+    }
+
+    // 7. 其他协议暂时透传响应（保持原始格式，不做响应转换）
     res.status(upstreamResponse.status);
     upstreamResponse.headers.forEach((value, key) => {
         const lower = key.toLowerCase();

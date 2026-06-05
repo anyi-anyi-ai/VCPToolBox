@@ -2335,14 +2335,19 @@ class RAGDiaryPlugin {
         console.log(`[RAGDiaryPlugin] Total results to replace: ${results.length}`);
 
         for (const result of results) {
+            const placeholder = typeof result?.placeholder === 'string' ? result.placeholder : '';
+            const replacementContent = result?.content === undefined || result?.content === null
+                ? ''
+                : String(result.content);
+
             const beforeLength = processedContent.length;
-            processedContent = processedContent.replace(result.placeholder, result.content);
+            processedContent = processedContent.replace(placeholder, replacementContent);
             const afterLength = processedContent.length;
 
-            if (beforeLength === afterLength && result.placeholder.length > 0) {
-                console.warn(`[RAGDiaryPlugin] ⚠️ Placeholder not found in content: "${result.placeholder.substring(0, 50)}..."`);
+            if (beforeLength === afterLength && placeholder.length > 0) {
+                console.warn(`[RAGDiaryPlugin] ⚠️ Placeholder not found in content: "${placeholder.substring(0, 50)}..."`);
             } else {
-                console.log(`[RAGDiaryPlugin] ✓ Replaced placeholder: "${result.placeholder.substring(0, 50)}..." with ${result.content.length} chars`);
+                console.log(`[RAGDiaryPlugin] ✓ Replaced placeholder: "${placeholder.substring(0, 50)}..." with ${replacementContent.length} chars`);
             }
         }
 
@@ -2833,11 +2838,12 @@ class RAGDiaryPlugin {
         let tagWeight = tagMemoWeightMatch ? parseFloat(tagMemoWeightMatch[1]) : (modifiers.includes('::TagMemo') ? defaultTagWeight : null);
 
         // 🌟 V8: 构建 geodesicRerank 选项（传递给 search 的第 7 参数）
+        // alpha / minGeoSamples 默认值统一由 rag_params.json: KnowledgeBaseManager.geodesicRerank 热参数提供
         const geoConfig = this.ragParams?.KnowledgeBaseManager?.geodesicRerank || {};
         const geoOptions = useGeodesicRerank ? {
             geodesicRerank: true,
-            geoAlpha: geoConfig.alpha ?? 0.3,
-            minGeoSamples: geoConfig.minGeoSamples ?? 4
+            geoAlpha: geoConfig.alpha,
+            minGeoSamples: geoConfig.minGeoSamples
         } : undefined;
 
         // 🌟 解析 Truncate 阈值
@@ -3625,20 +3631,37 @@ class RAGDiaryPlugin {
         return diariesInRange;
     }
 
+    _formatResultPathLine(result) {
+        const rawPath = result?.fullPath || result?.sourceFile || result?.path || '';
+        if (!rawPath) return '';
+
+        const normalizedPath = String(rawPath).replace(/\\/g, '/');
+        const localUrl = normalizedPath.startsWith('file://')
+            ? normalizedPath
+            : `file:///${normalizedPath}`;
+
+        return `    [路径: ${localUrl}]\n`;
+    }
+
+    _formatMemoryEntry(result, { prefix = '* ', text = null } = {}) {
+        const body = text !== null ? text : (result?.text || '').trim();
+        return `${prefix}${body}\n${this._formatResultPathLine(result)}`;
+    }
+
     formatStandardResults(searchResults, displayName, metadata) {
         const mainResults = searchResults ? searchResults.filter(r => r.source !== 'associate') : [];
         const associateResults = searchResults ? searchResults.filter(r => r.source === 'associate') : [];
 
         let innerContent = `\n[--- 从"${displayName}"中检索到的相关记忆片段 ---]\n`;
         if (mainResults.length > 0) {
-            innerContent += mainResults.map(r => `* ${r.text.trim()}`).join('\n');
+            innerContent += mainResults.map(r => this._formatMemoryEntry(r).trimEnd()).join('\n');
         } else {
             innerContent += "没有找到直接相关的记忆片段。";
         }
 
         if (associateResults.length > 0) {
             innerContent += `\n\n【联想共现记忆 (${associateResults.length}条, 多条记忆交叉关联)】\n`;
-            innerContent += associateResults.map(r => `* ${r.text.trim()}`).join('\n');
+            innerContent += associateResults.map(r => this._formatMemoryEntry(r).trimEnd()).join('\n');
         }
 
         innerContent += `\n[--- 记忆片段结束 ---]\n`;
@@ -3670,16 +3693,20 @@ class RAGDiaryPlugin {
             ragEntries.forEach(entry => {
                 const dateMatch = entry.text.match(/^\[(\d{4}-\d{2}-\d{2})\]/);
                 const datePrefix = dateMatch ? `[${dateMatch[1]}] ` : '';
-                innerContent += `* ${datePrefix}${entry.text.replace(/^\[.*?\]\s*-\s*.*?\n?/, '').trim()}\n`;
+                const body = `${datePrefix}${entry.text.replace(/^\[.*?\]\s*-\s*.*?\n?/, '').trim()}`;
+                innerContent += this._formatMemoryEntry(entry, { text: body });
             });
         }
 
         if (timeEntries.length > 0) {
             innerContent += '\n【时间范围记忆】\n';
             // 按日期从新到旧排序
-            timeEntries.sort((a, b) => new Date(b.date) - new Date(a.date));
+            timeEntries.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
             timeEntries.forEach(entry => {
-                innerContent += `* [${entry.date}] ${entry.text.replace(/^\[.*?\]\s*-\s*.*?\n?/, '').trim()}\n`;
+                const dateMatch = entry.text.match(/^\[(\d{4}[-.]\d{2}[-.]\d{2})\]/);
+                const datePrefix = entry.date || (dateMatch ? dateMatch[1].replace(/\./g, '-') : '未知日期');
+                const body = entry.text.replace(/^\[\d{4}[-.]\d{2}[-.]\d{2}\]\s*-\s*[^\n]*\n?/, '').trim();
+                innerContent += this._formatMemoryEntry(entry, { text: `[${datePrefix}] ${body}` });
             });
         }
 
@@ -3688,7 +3715,8 @@ class RAGDiaryPlugin {
             associateEntries.forEach(entry => {
                 const dateMatch = entry.text.match(/^\[(\d{4}-\d{2}-\d{2})\]/);
                 const datePrefix = dateMatch ? `[${dateMatch[1]}] ` : '';
-                innerContent += `* ${datePrefix}${entry.text.replace(/^\[.*?\]\s*-\s*.*?\n?/, '').trim()}\n`;
+                const body = `${datePrefix}${entry.text.replace(/^\[.*?\]\s*-\s*.*?\n?/, '').trim()}`;
+                innerContent += this._formatMemoryEntry(entry, { text: body });
             });
         }
 
@@ -3713,7 +3741,7 @@ class RAGDiaryPlugin {
 
         innerContent += `[检索到 ${searchResults ? searchResults.length : 0} 条相关记忆]\n`;
         if (searchResults && searchResults.length > 0) {
-            innerContent += searchResults.map(r => `* ${r.text.trim()}`).join('\n');
+            innerContent += searchResults.map(r => this._formatMemoryEntry(r).trimEnd()).join('\n');
         } else {
             innerContent += "没有找到直接相关的记忆片段。";
         }
@@ -4093,6 +4121,8 @@ class RAGDiaryPlugin {
                 score: r.score || undefined,
                 source: r.source || undefined,
                 date: r.date || undefined,
+                fullPath: r.fullPath || undefined,
+                sourceFile: r.sourceFile || undefined,
             };
 
             // ✅ 新增：包含Tag相关信息（如果存在）
@@ -4169,11 +4199,29 @@ class RAGDiaryPlugin {
         }
 
         try {
-            // 🌟 统一调用 EmbeddingUtils：自动享受模型容灾、token 精确切分、429 退避
-            const results = await getEmbeddingsBatch([text], { apiUrl, apiKey });
-            const vector = results[0];
+            const normalizedText = String(text).trim();
+            const chunks = chunkText(normalizedText);
+            if (chunks.length === 0) {
+                console.error('[RAGDiaryPlugin] getSingleEmbedding: text became empty after chunking.');
+                return null;
+            }
+
+            if (chunks.length > 1) {
+                console.warn(
+                    `[RAGDiaryPlugin] getSingleEmbedding: input exceeds safe embedding window; ` +
+                    `split into ${chunks.length} chunks and will merge by token-weighted average.`
+                );
+            }
+
+            // 🌟 统一调用 EmbeddingUtils：自动享受模型容灾链、并发批量、token 精确切分、429 退避。
+            // 对超长用户/AI 上下文，先按 TextChunker 的 safeMaxTokens 切分，再对各 chunk 向量做 token 加权平均，
+            // 避免单条 6800+ token 文本被 EmbeddingUtils 直接跳过导致 RAG 查询向量为 null。
+            const results = await getEmbeddingsBatch(chunks, { apiUrl, apiKey });
+            const weights = chunks.map(chunk => Math.max(1, this._estimateTokens(chunk)));
+            const vector = this._getWeightedAverageVector(results, weights);
+
             if (!vector) {
-                console.error('[RAGDiaryPlugin] getSingleEmbedding: EmbeddingUtils returned null for the input text.');
+                console.error('[RAGDiaryPlugin] getSingleEmbedding: EmbeddingUtils returned no usable vectors for the input text/chunks.');
             }
             return vector || null;
         } catch (error) {
