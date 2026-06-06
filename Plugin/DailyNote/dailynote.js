@@ -1049,7 +1049,32 @@ async function main() {
             const args = JSON.parse(inputData);
             const { command, ...parameters } = args;
 
-            switch (command) {
+            // 鲁棒性兼容：AI 有时会遗漏 command，或把 command 拼错。
+            // 参数形态足够明确时，优先按参数形态纠正：
+            // - 含 target + replace 时，视为 update
+            // - 含 content/contentText/Content 时，视为 create
+            // 显式且正确的 command 保持原样；显式但未知的 command 允许被参数形态覆盖。
+            const rawCommand = typeof command === 'string' ? command.trim().toLowerCase() : command;
+            const hasCreateContent =
+                typeof parameters.contentText === 'string' ||
+                typeof parameters.Content === 'string' ||
+                typeof parameters.content === 'string';
+            const hasUpdateTargetReplace =
+                typeof parameters.target === 'string' &&
+                typeof parameters.replace === 'string';
+
+            let normalizedCommand = rawCommand;
+            if (rawCommand !== 'create' && rawCommand !== 'update') {
+                if (hasUpdateTargetReplace) {
+                    normalizedCommand = 'update';
+                    debugLog(`Command '${command || ''}' is missing or invalid; inferred 'update' from target/replace arguments.`);
+                } else if (hasCreateContent) {
+                    normalizedCommand = 'create';
+                    debugLog(`Command '${command || ''}' is missing or invalid; inferred 'create' from content arguments.`);
+                }
+            }
+
+            switch (normalizedCommand) {
                 case 'create':
                     result = await handleCreateCommand(parameters);
                     break;
@@ -1057,7 +1082,7 @@ async function main() {
                     result = await handleUpdateCommand(parameters);
                     break;
                 default:
-                    result = { status: "error", error: `Unknown command: '${command}'. Use 'create' or 'update'.` };
+                    result = { status: "error", error: `Unknown command: '${normalizedCommand}'. Use 'create' or 'update'.` };
             }
         } catch (error) {
             console.error("[DailyNote] Error processing request:", error.message);

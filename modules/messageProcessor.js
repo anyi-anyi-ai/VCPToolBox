@@ -53,6 +53,96 @@ function replaceFirstAliasPlaceholder(text, alias, replacementText, prefix = '')
     });
 }
 
+const SYSTEM_USER_PREFIX_REGEX = /^\s*\[系统[^\]]*\]/;
+const SYSTEM_NOTIFICATION_PREFIX_REGEX = /^\s*\[系统通知[:：]?\]/;
+const SYSTEM_EMPTY_PROMPT_PREFIX_REGEX = /^\s*\[系统提示:\]无内容/;
+const SYSTEM_INVITATION_PREFIX_REGEX = /^\s*\[系统邀请指令[:：]?\]/;
+const VCP_TOOL_PAYLOAD_PREFIX_REGEX = /^\s*<!-- VCP_TOOL_PAYLOAD -->/;
+
+function extractTextFromMessageContent(content) {
+    if (typeof content === 'string') return content;
+    if (Array.isArray(content)) {
+        return content
+            .filter(part => part && part.type === 'text' && typeof part.text === 'string')
+            .map(part => part.text)
+            .join('\n')
+            .trim();
+    }
+    if (content && typeof content === 'object' && typeof content.text === 'string') {
+        return content.text;
+    }
+    return '';
+}
+
+function isSystemNotificationText(text) {
+    return SYSTEM_NOTIFICATION_PREFIX_REGEX.test(String(text || ''));
+}
+
+function isBetaSystemUserText(text) {
+    const normalizedText = String(text || '');
+    if (!normalizedText) return false;
+    if (isSystemNotificationText(normalizedText)) return false;
+    return SYSTEM_USER_PREFIX_REGEX.test(normalizedText);
+}
+
+function stripSystemNotificationBlocks(text) {
+    if (!text || typeof text !== 'string') return text || '';
+    return text.replace(/\[系统通知[:：]?\][\s\S]*?\[系统通知结束\]/g, '').trim();
+}
+
+function findLastRealUserMessage(messages, options = {}) {
+    if (!Array.isArray(messages)) {
+        return { index: -1, rawContent: '', sanitizedContent: '' };
+    }
+
+    const sanitizer = typeof options.sanitize === 'function' ? options.sanitize : null;
+    const skipBetaSystemUser = options.skipBetaSystemUser !== false;
+    const skipEmptySystemPrompt = options.skipEmptySystemPrompt !== false;
+    const skipSystemInvitation = options.skipSystemInvitation !== false;
+    const skipToolPayload = options.skipToolPayload !== false;
+
+    for (let index = messages.length - 1; index >= 0; index--) {
+        const message = messages[index];
+        if (!message || message.role !== 'user') continue;
+
+        const rawContent = extractTextFromMessageContent(message.content);
+        if (!rawContent || !rawContent.trim()) continue;
+
+        if (skipEmptySystemPrompt && SYSTEM_EMPTY_PROMPT_PREFIX_REGEX.test(rawContent.trim())) {
+            continue;
+        }
+
+        if (skipSystemInvitation && SYSTEM_INVITATION_PREFIX_REGEX.test(rawContent.trim())) {
+            continue;
+        }
+
+        if (skipToolPayload && VCP_TOOL_PAYLOAD_PREFIX_REGEX.test(rawContent.trim())) {
+            continue;
+        }
+
+        if (skipBetaSystemUser && isBetaSystemUserText(rawContent)) {
+            continue;
+        }
+
+        const sanitizedContent = sanitizer
+            ? sanitizer(rawContent, 'user')
+            : stripSystemNotificationBlocks(rawContent);
+
+        if (!sanitizedContent || !sanitizedContent.trim()) {
+            continue;
+        }
+
+        return {
+            index,
+            message,
+            rawContent,
+            sanitizedContent: sanitizedContent.trim()
+        };
+    }
+
+    return { index: -1, rawContent: '', sanitizedContent: '' };
+}
+
 async function resolveAllVariables(text, model, role, context, processingStack = new Set()) {
     if (text == null) return '';
     let processedText = String(text);
@@ -185,30 +275,19 @@ async function resolveDynamicFoldProtocol(foldObj, context, placeholderKey) {
         }
 
         const contextMessages = context.messages || [];
-        const lastUserMessageIndex = contextMessages.findLastIndex(m => {
-            if (m.role !== 'user') return false;
-            const content = typeof m.content === 'string'
-                ? m.content
-                : (Array.isArray(m.content) ? (m.content.find(p => p.type === 'text')?.text || '') : '');
-            return !content.startsWith('[系统邀请指令:]') && !content.trim().startsWith('[系统提示:]无内容');
+        const lastUserMessage = findLastRealUserMessage(contextMessages, {
+            sanitize: typeof ragPlugin.sanitizeForEmbedding === 'function'
+                ? ragPlugin.sanitizeForEmbedding.bind(ragPlugin)
+                : null
         });
         const lastAiMessageIndex = contextMessages.findLastIndex(m => m.role === 'assistant');
 
-        let userContent = '';
+        let userContent = lastUserMessage.sanitizedContent || '';
         let aiContent = null;
-
-        if (lastUserMessageIndex > -1) {
-            const m = contextMessages[lastUserMessageIndex];
-            userContent = typeof m.content === 'string'
-                ? m.content
-                : (Array.isArray(m.content) ? (m.content.find(p => p.type === 'text')?.text || '') : '');
-        }
 
         if (lastAiMessageIndex > -1) {
             const m = contextMessages[lastAiMessageIndex];
-            aiContent = typeof m.content === 'string'
-                ? m.content
-                : (Array.isArray(m.content) ? (m.content.find(p => p.type === 'text')?.text || '') : '');
+            aiContent = extractTextFromMessageContent(m.content);
         }
 
         if (!userContent) {
@@ -217,13 +296,6 @@ async function resolveDynamicFoldProtocol(foldObj, context, placeholderKey) {
         }
 
         if (typeof ragPlugin.sanitizeForEmbedding === 'function') {
-            if (userContent) {
-                const originalUserContent = userContent;
-                userContent = ragPlugin.sanitizeForEmbedding(userContent, 'user');
-                if (context.DEBUG_MODE && originalUserContent.length !== userContent.length) {
-                    console.log('[DynamicFold] User content was sanitized via unified sanitizer.');
-                }
-            }
             if (aiContent) {
                 const originalAiContent = aiContent;
                 aiContent = ragPlugin.sanitizeForEmbedding(aiContent, 'assistant');
@@ -423,8 +495,57 @@ async function resolveDynamicFoldProtocol(foldObj, context, placeholderKey) {
     }
 }
 
+function applyDetectorRules(text, role, context = {}) {
+    const { detectors = [], superDetectors = [] } = context;
+    if (text == null) return '';
+
+    let processedText = String(text);
+
+    if (role === 'system') {
+        for (const rule of detectors) {
+            if (typeof rule.detector === 'string' && rule.detector.length > 0 && typeof rule.output === 'string') {
+                processedText = processedText.replaceAll(rule.detector, rule.output);
+            }
+        }
+    }
+
+    for (const rule of superDetectors) {
+        if (typeof rule.detector === 'string' && rule.detector.length > 0 && typeof rule.output === 'string') {
+            processedText = processedText.replaceAll(rule.detector, rule.output);
+        }
+    }
+
+    return processedText;
+}
+
+function applyDetectorsToMessages(messages, context = {}) {
+    if (!Array.isArray(messages)) {
+        return messages;
+    }
+
+    return messages.map((message) => {
+        const newMessage = JSON.parse(JSON.stringify(message));
+
+        if (typeof newMessage.content === 'string') {
+            newMessage.content = applyDetectorRules(newMessage.content, newMessage.role, context);
+        } else if (Array.isArray(newMessage.content)) {
+            newMessage.content = newMessage.content.map((part) => {
+                if (part && part.type === 'text' && typeof part.text === 'string') {
+                    return {
+                        ...part,
+                        text: applyDetectorRules(part.text, newMessage.role, context)
+                    };
+                }
+                return part;
+            });
+        }
+
+        return newMessage;
+    });
+}
+
 async function replaceOtherVariables(text, model, role, context) {
-    const { pluginManager, cachedEmojiLists, detectors, superDetectors, DEBUG_MODE } = context;
+    const { pluginManager, cachedEmojiLists, DEBUG_MODE } = context;
     if (text == null) return '';
     let processedText = String(text);
 
@@ -580,17 +701,6 @@ async function replaceOtherVariables(text, model, role, context) {
         } else if (processedText && typeof processedText === 'string' && processedText.includes('{{Image_Key}}')) {
             if (DEBUG_MODE) console.warn('[replaceOtherVariables] {{Image_Key}} placeholder found in text, but ImageServer plugin or its Image_Key is not resolved. Placeholder will not be replaced.');
         }
-        for (const rule of detectors) {
-            if (typeof rule.detector === 'string' && rule.detector.length > 0 && typeof rule.output === 'string') {
-                processedText = processedText.replaceAll(rule.detector, rule.output);
-            }
-        }
-    }
-
-    for (const rule of superDetectors) {
-        if (typeof rule.detector === 'string' && rule.detector.length > 0 && typeof rule.output === 'string') {
-            processedText = processedText.replaceAll(rule.detector, rule.output);
-        }
     }
 
     // 同时兼容标准双花括号、异常三花括号、以及被字符串转义后常见的四花括号格式
@@ -671,5 +781,12 @@ module.exports = {
     // 导出主函数，并重命名旧函数以供内部调用
     replaceAgentVariables: resolveAllVariables,
     replaceOtherVariables,
-    replacePriorityVariables
+    replacePriorityVariables,
+    applyDetectorRules,
+    applyDetectorsToMessages,
+    extractTextFromMessageContent,
+    isSystemNotificationText,
+    isBetaSystemUserText,
+    stripSystemNotificationBlocks,
+    findLastRealUserMessage
 };
