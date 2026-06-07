@@ -1,0 +1,6 @@
+{
+  "requestId": "aa-delegation-1780725768790-23f62d0f",
+  "pluginName": "AgentAssistant",
+  "status": "Failed",
+  "message": "### 委托任务完成报告 (Nova)\n\n任务执行过程中发生异常: Request failed with status code 500"
+}

@@ -1,0 +1,6 @@
+{
+  "requestId": "aa-delegation-1780725777566-16d09b2b",
+  "pluginName": "AgentAssistant",
+  "status": "Failed",
+  "message": "### 委托任务完成报告 (NOVA)\n\n达到最大轮数限制 (15 轮)，任务尚未自动上报完成。"
+}
