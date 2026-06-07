@@ -30,7 +30,26 @@ function getDb(agentName, projectBasePath) {
         timestamp TEXT NOT NULL,
         postContextHash TEXT
     );
-    CREATE INDEX IF NOT EXISTS idx_agent_ts ON messages(agentName, timestamp);`);
+    CREATE INDEX IF NOT EXISTS idx_agent_ts ON messages(agentName, timestamp);
+
+    CREATE TABLE IF NOT EXISTS postTurns (
+        turnId TEXT PRIMARY KEY,
+        agentName TEXT NOT NULL,
+        frontendSource TEXT NOT NULL,
+        requestHash TEXT NOT NULL,
+        requestBlockCount INTEGER NOT NULL,
+        status TEXT NOT NULL,
+        responseMessageId INTEGER,
+        responseContentHash TEXT,
+        createdAt TEXT NOT NULL,
+        updatedAt TEXT NOT NULL,
+        completedAt TEXT,
+        abortedAt TEXT
+    );
+    CREATE INDEX IF NOT EXISTS idx_post_turns_agent_frontend_updated
+        ON postTurns(agentName, frontendSource, updatedAt);
+    CREATE INDEX IF NOT EXISTS idx_post_turns_request_hash
+        ON postTurns(agentName, frontendSource, requestHash);`);
     dbCache.set(agentName, db);
     return db;
 }
@@ -82,7 +101,74 @@ function updateMessageContent(id, content) {
 
 function updateMessageById(agentName, id, content, projectBasePath) {
     const db = getDb(agentName, projectBasePath);
-    db.prepare(`UPDATE messages SET content=? WHERE id=?`).run(content, id);
+    return db.prepare(`UPDATE messages SET content=? WHERE id=?`).run(content, id);
+}
+
+function updateMessageTimestampById(agentName, id, timestamp, projectBasePath) {
+    const db = getDb(agentName, projectBasePath);
+    return db.prepare(`UPDATE messages SET timestamp=? WHERE agentName=? AND id=?`).run(timestamp, agentName, id);
+}
+
+function insertPostTurn(agentName, { turnId, frontendSource, requestHash, requestBlockCount, status = 'pending', responseMessageId = null, responseContentHash = null, createdAt, updatedAt }, projectBasePath) {
+    const db = getDb(agentName, projectBasePath);
+    db.prepare(
+        `INSERT INTO postTurns
+         (turnId, agentName, frontendSource, requestHash, requestBlockCount, status, responseMessageId, responseContentHash, createdAt, updatedAt)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         ON CONFLICT(turnId) DO UPDATE SET
+             requestHash=excluded.requestHash,
+             requestBlockCount=excluded.requestBlockCount,
+             status=excluded.status,
+             responseMessageId=COALESCE(excluded.responseMessageId, postTurns.responseMessageId),
+             responseContentHash=COALESCE(excluded.responseContentHash, postTurns.responseContentHash),
+             updatedAt=excluded.updatedAt`
+    ).run(
+        turnId,
+        agentName,
+        frontendSource,
+        requestHash,
+        requestBlockCount,
+        status,
+        responseMessageId,
+        responseContentHash,
+        createdAt,
+        updatedAt
+    );
+}
+
+function getPostTurn(agentName, turnId, projectBasePath) {
+    const db = getDb(agentName, projectBasePath);
+    return db.prepare(
+        `SELECT * FROM postTurns WHERE agentName=? AND turnId=? LIMIT 1`
+    ).get(agentName, turnId);
+}
+
+function getRecentCompletedPostTurn(agentName, frontendSource, limit = 20, projectBasePath) {
+    const db = getDb(agentName, projectBasePath);
+    return db.prepare(
+        `SELECT * FROM postTurns
+         WHERE agentName=? AND frontendSource=? AND status='completed' AND responseMessageId IS NOT NULL
+         ORDER BY updatedAt DESC
+         LIMIT ?`
+    ).all(agentName, frontendSource, limit);
+}
+
+function completePostTurn(agentName, turnId, responseMessageId, responseContentHash, completedAt, projectBasePath) {
+    const db = getDb(agentName, projectBasePath);
+    return db.prepare(
+        `UPDATE postTurns
+         SET status='completed', responseMessageId=?, responseContentHash=?, completedAt=?, updatedAt=?
+         WHERE agentName=? AND turnId=?`
+    ).run(responseMessageId, responseContentHash || null, completedAt, completedAt, agentName, turnId);
+}
+
+function markPostTurnAborted(agentName, turnId, abortedAt, projectBasePath) {
+    const db = getDb(agentName, projectBasePath);
+    db.prepare(
+        `UPDATE postTurns
+         SET status='aborted', abortedAt=?, updatedAt=?
+         WHERE agentName=? AND turnId=? AND status='pending'`
+    ).run(abortedAt, abortedAt, agentName, turnId);
 }
 
 /**
@@ -133,6 +219,12 @@ module.exports = {
     getDb,
     insertMessage,
     updateMessageById,
+    updateMessageTimestampById,
+    insertPostTurn,
+    getPostTurn,
+    getRecentCompletedPostTurn,
+    completePostTurn,
+    markPostTurnAborted,
     getRecentMessages,
     getRecentMessagesByFrontend,
     getMessagesBetweenTimestamps,
