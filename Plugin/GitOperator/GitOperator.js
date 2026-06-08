@@ -15,6 +15,7 @@ const { getAuthCode } = require('../../modules/captchaDecoder');
 const REPOS_FILE = path.resolve(__dirname, 'repos.json');
 const ENV_FILE = path.resolve(__dirname, 'config.env');
 const DEBUG_LOG = path.resolve(__dirname, 'debug.log');
+const AUDIT_LOG = path.resolve(__dirname, 'audit.log');
 
 // --- 工具函数 ---
 
@@ -59,10 +60,147 @@ function debugLog(msg) {
   } catch (e) { /* ignore */ }
 }
 
+function auditLog(command, profileName, status, detail) {
+  try {
+    const entry = `[${new Date().toISOString()}] ${command} by profile "${profileName || 'unknown'}" - ${status}${detail ? ' | ' + detail : ''}`;
+    fs.appendFileSync(AUDIT_LOG, entry + '\n');
+  } catch (e) { /* ignore */ }
+}
+
 function sanitizeOutput(text, token) {
   if (!token || !text) return text;
   const masked = token.slice(0, 4) + '****' + token.slice(-4);
-  return text.split(token).join(masked);
+  let sanitized = text.split(token).join(masked);
+  // 清理 URL 中可能残留的 token（URL 编码等情况）
+  sanitized = sanitized.replace(/https?:\/\/[^@\s]+@/g, 'https://[REDACTED]@');
+  return sanitized;
+}
+
+// --- Stale Lock 清理 & 进程级文件锁 ---
+
+const LOCK_STALE_THRESHOLD_MS = 60000; // 60秒判定为残留锁
+const LOCK_RETRY_INTERVAL_MS = 500;    // 等待间隔
+const LOCK_MAX_RETRIES = 60;           // 最多等待30秒
+
+/**
+ * 清理残留的 git index.lock 文件
+ * 超过 LOCK_STALE_THRESHOLD_MS 未更新的锁文件视为残留，自动删除
+ */
+function cleanStaleLock(cwd) {
+  const lockPath = path.join(cwd, '.git', 'index.lock');
+  try {
+    if (!fs.existsSync(lockPath)) return false;
+    const stat = fs.statSync(lockPath);
+    const age = Date.now() - stat.mtimeMs;
+    if (age > LOCK_STALE_THRESHOLD_MS) {
+      fs.unlinkSync(lockPath);
+      debugLog(`[Lock] Cleaned stale index.lock (age: ${Math.round(age / 1000)}s) at ${cwd}`);
+      return true;
+    } else {
+      debugLog(`[Lock] index.lock exists but fresh (age: ${Math.round(age / 1000)}s), not cleaning`);
+      return false;
+    }
+  } catch (e) {
+    debugLog(`[Lock] Error checking/cleaning stale lock: ${e.message}`);
+    return false;
+  }
+}
+
+/**
+ * 获取 VCP 进程级文件锁 (零依赖，基于 fs.openSync exclusive create)
+ * @returns {boolean} 是否成功获取锁
+ */
+function acquireVCPLock(cwd) {
+  const vcpLockPath = path.join(cwd, '.git', 'vcp-git.lock');
+  for (let attempt = 0; attempt < LOCK_MAX_RETRIES; attempt++) {
+    try {
+      const fd = fs.openSync(vcpLockPath, 'wx');
+      fs.writeFileSync(vcpLockPath, JSON.stringify({
+        pid: process.pid,
+        timestamp: Date.now(),
+        date: new Date().toISOString()
+      }));
+      fs.closeSync(fd);
+      debugLog(`[Lock] Acquired VCP lock (attempt ${attempt + 1}) at ${cwd}`);
+      return true;
+    } catch (e) {
+      if (e.code === 'EEXIST') {
+        // 锁已存在，检查是否是残留锁
+        try {
+          const stat = fs.statSync(vcpLockPath);
+          const age = Date.now() - stat.mtimeMs;
+          if (age > LOCK_STALE_THRESHOLD_MS) {
+            fs.unlinkSync(vcpLockPath);
+            debugLog(`[Lock] Cleaned stale VCP lock (age: ${Math.round(age / 1000)}s)`);
+            continue; // 重试获取
+          }
+        } catch (statErr) {
+          // 锁文件可能已被其它进程释放，继续重试
+        }
+        if (attempt < LOCK_MAX_RETRIES - 1) {
+          // 同步等待
+          const waitStart = Date.now();
+          while (Date.now() - waitStart < LOCK_RETRY_INTERVAL_MS) {
+            // busy wait (同步插件，无法用 setTimeout)
+          }
+        }
+      } else {
+        debugLog(`[Lock] Unexpected error acquiring lock: ${e.message}`);
+        return true; // 非 EEXIST 错误（如权限问题），不阻塞执行
+      }
+    }
+  }
+  debugLog(`[Lock] Failed to acquire VCP lock after ${LOCK_MAX_RETRIES} attempts at ${cwd}`);
+  return false; // 超时未获取到锁
+}
+
+/**
+ * 释放 VCP 进程级文件锁
+ */
+function releaseVCPLock(cwd) {
+  const vcpLockPath = path.join(cwd, '.git', 'vcp-git.lock');
+  try {
+    if (fs.existsSync(vcpLockPath)) {
+      fs.unlinkSync(vcpLockPath);
+      debugLog(`[Lock] Released VCP lock at ${cwd}`);
+    }
+  } catch (e) {
+    debugLog(`[Lock] Error releasing VCP lock: ${e.message}`);
+  }
+}
+
+// --- 危险操作配置表 ---
+
+const DANGEROUS_COMMANDS = {
+  ForcePush: { requireAuth: true },
+  ResetHard: { requireAuth: true },
+  BranchDelete: { requireAuth: true },
+  Rebase: { requireAuth: true },
+  CherryPick: { requireAuth: true }
+};
+
+async function validateDangerousOperation(command, args, profileName) {
+  const config = DANGEROUS_COMMANDS[command];
+  if (!config) return { allowed: true };
+
+  if (!args.requireAdmin) {
+    auditLog(command, profileName, 'REJECTED', 'missing requireAdmin');
+    return { allowed: false, error: `"${command}" 是危险操作，需要 requireAdmin 验证码。` };
+  }
+
+  const codePath = path.join(__dirname, '..', 'UserAuth', 'code.bin');
+  const realCode = await getAuthCode(codePath);
+  if (!realCode) {
+    auditLog(command, profileName, 'FAILED', 'cannot read auth code file');
+    return { allowed: false, error: '无法读取认证码文件，拒绝执行危险操作。' };
+  }
+  if (String(args.requireAdmin).trim() !== realCode) {
+    auditLog(command, profileName, 'FAILED', 'invalid captcha');
+    return { allowed: false, error: '验证码错误，拒绝执行危险操作。' };
+  }
+
+  auditLog(command, profileName, 'AUTHORIZED', 'captcha verified');
+  return { allowed: true };
 }
 
 function resolveProfile(args, repos) {
@@ -98,17 +236,54 @@ function validateWorkPath(localPath, envConfig) {
     return resolved;
   });
   const resolvedLocal = path.resolve(localPath);
-  return allowedPaths.some(ap => resolvedLocal.startsWith(ap));
+  const isAllowed = allowedPaths.some(ap => resolvedLocal.startsWith(ap));
+  if (!isAllowed) {
+    debugLog(`[Security] Path validation failed: ${resolvedLocal} not in allowed paths: ${allowedPaths.join(', ')}`);
+  }
+  return isAllowed;
 }
 
-function execGit(cmd, cwd, token) {
+function execGit(cmd, cwd, token, options = {}) {
+  const defaultOptions = {
+    timeout: 25000,
+    maxBuffer: 5 * 1024 * 1024,
+    ...options
+  };
+
+  // --- Stale Lock 清理 + VCP 进程锁 ---
+  cleanStaleLock(cwd);
+  const lockAcquired = acquireVCPLock(cwd);
+  if (!lockAcquired) {
+    debugLog(`[execGit] WARNING: Could not acquire VCP lock for ${cwd}, proceeding anyway`);
+  }
+
   try {
-    const result = execSync(cmd, { cwd, encoding: 'utf8', timeout: 25000, maxBuffer: 1024 * 1024 * 5 });
-    return { ok: true, output: sanitizeOutput(result.trim(), token) };
+    const result = execSync(cmd, {
+      cwd,
+      encoding: 'utf8',
+      ...defaultOptions
+    });
+
+    debugLog(`[execGit] OK: ${cmd.substring(0, 100)}`);
+    return {
+      ok: true,
+      output: sanitizeOutput(result.trim(), token),
+      code: 0
+    };
   } catch (e) {
-    const stderr = e.stderr ? e.stderr.toString() : '';
-    const stdout = e.stdout ? e.stdout.toString() : '';
-    return { ok: false, output: sanitizeOutput(stderr || stdout || e.message, token) };
+    const stderr = e.stderr?.toString() || '';
+    const stdout = e.stdout?.toString() || '';
+    const errorMsg = stderr || stdout || e.message;
+
+    debugLog(`[execGit] FAIL: ${cmd.substring(0, 100)} | ${errorMsg.substring(0, 200)}`);
+    return {
+      ok: false,
+      output: sanitizeOutput(errorMsg, token),
+      code: e.status || 1,
+      isGitError: !!stderr
+    };
+  } finally {
+    releaseVCPLock(cwd);
   }
 }
 
@@ -315,7 +490,24 @@ function cmdCheckout(args, profile, envConfig) {
 function cmdMerge(args, profile, envConfig) {
   if (!args.branch) return error('Merge 需要 "branch" 参数（源分支名）。');
   const { ok, output } = execGit(`git merge ${args.branch}`, profile.localPath, profile.token);
-  if (!ok) return error(`git merge 失败: ${output}`);
+  if (!ok) {
+    execGit('git merge --abort', profile.localPath, profile.token);
+    const conflictR = execGit('git diff --name-only --diff-filter=U', profile.localPath, profile.token);
+    const conflictFiles = conflictR.ok && conflictR.output.trim() ? conflictR.output.trim().split('\n') : [];
+    if (conflictFiles.length > 0) {
+      return success({
+        command: 'Merge', status: 'conflict', branch: args.branch,
+        conflictFiles,
+        suggestions: [
+          `git diff --check 查看具体冲突位置`,
+          `手动解决冲突后执行: git add . && git commit`,
+          `放弃合并: git merge --abort`
+        ],
+        rawOutput: output
+      });
+    }
+    return error(`git merge 失败: ${output}`);
+  }
   success({ command: 'Merge', branch: args.branch, output });
 }
 
@@ -333,63 +525,7 @@ function cmdClone(args) {
   success({ command: 'Clone', output: output || 'cloned successfully' });
 }
 
-function cmdSyncUpstream(args, profile, envConfig) {
-  const pullRemote = profile.pullRemote || 'upstream';
-  const pullBranch = profile.pullBranch || 'main';
-  const pushRemote = profile.pushRemote || 'origin';
-  const pushBranch = profile.pushBranch || 'main';
-  const strategy = profile.mergeStrategy || 'merge';
-  const cwd = profile.localPath;
-  const token = profile.token;
-  const steps = [];
 
-  // Step 1: fetch upstream
-  let r = execGit(`git fetch ${pullRemote}`, cwd, token);
-  steps.push({ step: 'fetch', ok: r.ok, output: r.output });
-  if (!r.ok) return error(`SyncUpstream 失败 (fetch): ${r.output}`);
-
-  // Step 2: stash if dirty
-  const statusR = execGit('git status --porcelain', cwd, token);
-  const isDirty = statusR.ok && statusR.output.trim().length > 0;
-  if (isDirty) {
-    r = execGit('git stash push -m "VCP-auto-stash"', cwd, token);
-    steps.push({ step: 'stash', ok: r.ok, output: r.output });
-    if (!r.ok) return error(`SyncUpstream 失败 (stash): ${r.output}`);
-  }
-
-  // Step 3: merge or rebase
-  const mergeCmd = strategy === 'rebase'
-    ? `git rebase ${pullRemote}/${pullBranch}`
-    : `git merge ${pullRemote}/${pullBranch}`;
-  r = execGit(mergeCmd, cwd, token);
-  steps.push({ step: strategy, ok: r.ok, output: r.output });
-  if (!r.ok) {
-    // abort on conflict
-    execGit(strategy === 'rebase' ? 'git rebase --abort' : 'git merge --abort', cwd, token);
-    if (isDirty) execGit('git stash pop', cwd, token);
-    const conflictR = execGit('git diff --name-only --diff-filter=U', cwd, token);
-    return error(`SyncUpstream 冲突! 已自动中止。冲突文件: ${conflictR.output || '(unknown)'}。请手动解决。`);
-  }
-
-  // Step 4: stash pop
-  if (isDirty) {
-    r = execGit('git stash pop', cwd, token);
-    steps.push({ step: 'stash-pop', ok: r.ok, output: r.output });
-  }
-
-  // Step 5: push to origin
-  const pushUrl = profile.pushUrl;
-  let pushCmd;
-  if (pushUrl && token) {
-    pushCmd = `git push ${injectCredentials(pushUrl, token)} HEAD:${pushBranch}`;
-  } else {
-    pushCmd = `git push ${pushRemote} ${pushBranch}`;
-  }
-  r = execGit(pushCmd, cwd, token);
-  steps.push({ step: 'push', ok: r.ok, output: sanitizeOutput(r.output, token) });
-
-  success({ command: 'SyncUpstream', steps });
-}
 
 // --- 危险操作 ---
 
@@ -426,7 +562,21 @@ function cmdRebase(args, profile, envConfig) {
   if (!args.onto) return error('Rebase 需要 "onto" 参数。');
   const { ok, output } = execGit(`git rebase ${args.onto}`, profile.localPath, profile.token);
   if (!ok) {
+    const conflictR = execGit('git diff --name-only --diff-filter=U', profile.localPath, profile.token);
+    const conflictFiles = conflictR.ok && conflictR.output.trim() ? conflictR.output.trim().split('\n') : [];
     execGit('git rebase --abort', profile.localPath, profile.token);
+    if (conflictFiles.length > 0) {
+      return success({
+        command: 'Rebase', status: 'conflict', onto: args.onto,
+        conflictFiles,
+        suggestions: [
+          `git diff --check 查看具体冲突位置`,
+          `手动解决冲突后执行: git add . && git rebase --continue`,
+          `放弃变基: git rebase --abort`
+        ],
+        rawOutput: output
+      });
+    }
     return error(`Rebase 失败 (已自动 abort): ${output}`);
   }
   success({ command: 'Rebase', onto: args.onto, output });
@@ -436,7 +586,21 @@ function cmdCherryPick(args, profile, envConfig) {
   if (!args.commitHash) return error('CherryPick 需要 "commitHash" 参数。');
   const { ok, output } = execGit(`git cherry-pick ${args.commitHash}`, profile.localPath, profile.token);
   if (!ok) {
+    const conflictR = execGit('git diff --name-only --diff-filter=U', profile.localPath, profile.token);
+    const conflictFiles = conflictR.ok && conflictR.output.trim() ? conflictR.output.trim().split('\n') : [];
     execGit('git cherry-pick --abort', profile.localPath, profile.token);
+    if (conflictFiles.length > 0) {
+      return success({
+        command: 'CherryPick', status: 'conflict', commitHash: args.commitHash,
+        conflictFiles,
+        suggestions: [
+          `git diff --check 查看具体冲突位置`,
+          `手动解决冲突后执行: git add . && git cherry-pick --continue`,
+          `放弃摘取: git cherry-pick --abort`
+        ],
+        rawOutput: output
+      });
+    }
     return error(`CherryPick 失败 (已自动 abort): ${output}`);
   }
   success({ command: 'CherryPick', commitHash: args.commitHash, output });
@@ -534,19 +698,10 @@ async function dispatchCommand(command, args, repos, envConfig) {
     return error(`安全限制: "${profile.localPath}" 不在允许的工作路径内。请检查 .env 的 PLUGIN_WORK_PATHS。`);
   }
 
-  // 危险操作需要 requireAdmin
-  const dangerousCmds = ['ForcePush', 'ResetHard', 'BranchDelete', 'Rebase', 'CherryPick'];
-  if (dangerousCmds.includes(command)) {
-    if (!args.requireAdmin) return error(`"${command}" 是危险操作，需要 requireAdmin 验证码。`);
-    // ★ P0 Fix: 读取真实验证码并校验（不再只检查存在性）
-    const codePath = path.join(__dirname, '..', 'UserAuth', 'code.bin');
-    const realCode = await getAuthCode(codePath);
-    if (!realCode) {
-      return error('无法读取认证码文件，拒绝执行危险操作。');
-    }
-    if (String(args.requireAdmin).trim() !== realCode) {
-      return error('验证码错误，拒绝执行危险操作。');
-    }
+  // 危险操作统一验证
+  if (DANGEROUS_COMMANDS[command]) {
+    const validation = await validateDangerousOperation(command, args, profileName);
+    if (!validation.allowed) return error(validation.error);
   }
 
   switch (command) {
@@ -565,12 +720,12 @@ async function dispatchCommand(command, args, repos, envConfig) {
     case 'BranchCreate': return cmdBranchCreate(args, profile, envConfig);
     case 'Checkout': return cmdCheckout(args, profile, envConfig);
     case 'Merge': return cmdMerge(args, profile, envConfig);
-    case 'SyncUpstream': return cmdSyncUpstream(args, profile, envConfig);
-    case 'ForcePush': return cmdForcePush(args, profile, envConfig);
-    case 'ResetHard': return cmdResetHard(args, profile, envConfig);
-    case 'BranchDelete': return cmdBranchDelete(args, profile, envConfig);
-    case 'Rebase': return cmdRebase(args, profile, envConfig);
-    case 'CherryPick': return cmdCherryPick(args, profile, envConfig);
+    
+    case 'ForcePush': { cmdForcePush(args, profile, envConfig); auditLog('ForcePush', profileName, 'EXECUTED'); return; }
+    case 'ResetHard': { cmdResetHard(args, profile, envConfig); auditLog('ResetHard', profileName, 'EXECUTED', `target=${args.target || 'HEAD'}`); return; }
+    case 'BranchDelete': { cmdBranchDelete(args, profile, envConfig); auditLog('BranchDelete', profileName, 'EXECUTED', `branch=${args.branchName}`); return; }
+    case 'Rebase': { cmdRebase(args, profile, envConfig); auditLog('Rebase', profileName, 'EXECUTED', `onto=${args.onto}`); return; }
+    case 'CherryPick': { cmdCherryPick(args, profile, envConfig); auditLog('CherryPick', profileName, 'EXECUTED', `commit=${args.commitHash}`); return; }
     default: return error(`未知指令: "${command}"。`);
   }
 }
@@ -586,6 +741,16 @@ function main() {
       const input = JSON.parse(inputData.trim());
 
       const envConfig = loadEnvConfig();
+
+      // 注入代理环境变量到当前进程，使子进程自动继承
+      const proxyKeys = ['HTTP_PROXY', 'HTTPS_PROXY', 'ALL_PROXY', 'NO_PROXY', 'http_proxy', 'https_proxy', 'all_proxy', 'no_proxy'];
+      for (const key of proxyKeys) {
+        if (envConfig[key]) {
+          process.env[key] = envConfig[key];
+          debugLog(`[Proxy] Injected env var: ${key}=${envConfig[key]}`);
+        }
+      }
+
       const repos = loadRepos();
 
       const serialCommands = parseSerialCommands(input);
