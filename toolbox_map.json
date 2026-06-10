@@ -22,5 +22,9 @@
   "VCPDesktopToolBox": {
     "file": "DesktopToolBox.txt",
     "description": "vcp桌面端，使用指导"
+  },
+  "VCPbiji": {
+    "file": "ObsidianManager.txt",
+    "description": "记录笔记"
   }
 }

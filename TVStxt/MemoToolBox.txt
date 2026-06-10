@@ -41,3 +41,32 @@ command:「始」ListTopics「末」  注意，话题标题由自动话题总结
 回忆一个对应的话题上下文。
 command:「始」GetTopicContent「末」,
 topic_id:「始」topic_1766164936527「末」
+
+[===vcp_fold:0.5===]
+
+VCP工具调用格式与指南
+
+<<<[TOOL_REQUEST]>>>
+maid:「始」你的署名「末」, //重要字段，以进行任务追踪
+tool_name:「始」工具名「末」, //必要字段
+arg:「始」工具参数「末」, //具体视不同工具需求而定
+<<<[END_TOOL_REQUEST]>>>
+
+使用「始」「末」包裹参数来兼容富文本识别。
+主动判断当前需求，灵活使用各类工具调用。
+
+========================================
+
+1. Obsidian 混合中枢大管家 (ObsidianManager)
+插件: ObsidianManager
+说明: 功能(REST主层): 列出 Obsidian Vault 中指定目录的内容，返回结构化 JSON 列表。
+参数:
+- path (字符串, 可选): 目录路径，支持 path / directoryPath / dir / folderPath，默认 '/'.
+调用格式:
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」ObsidianManager「末」,
+command:「始」ListDirectory「末」,
+path:「始」/「末」
+<<<[END_TOOL_REQUEST]>>>
+
+----------------------------------------
