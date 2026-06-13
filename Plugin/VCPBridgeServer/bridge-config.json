@@ -1,0 +1,22 @@
+{
+  "port": 3100,
+  "upstreamUrl": "http://127.0.0.1:6005",
+  "upstreamKey": "",
+  "upstreamType": "chat",
+  "defaultModel": "gpt-4.1-mini",
+  "systemPrompt": "",
+  "hijackMode": "off",
+  "modelMap": {},
+  "debugMode": false,
+  "description": {
+    "port": "Bridge Server 监听端口（独立于主服务器）。端口修改需要重启插件/主服务后生效。",
+    "upstreamUrl": "上游 API 地址。留空时自动指向本机 VCP 主服务器。",
+    "upstreamKey": "上游 API Key。留空时使用主服务 Key 或透传下游 Authorization Bearer。",
+    "upstreamType": "上游 API 类型：chat / anthropic / gemini。",
+    "defaultModel": "默认模型名。下游请求未指定 model 时使用。",
+    "systemPrompt": "注入的 System Prompt。支持填写插件目录下的 .txt 文件名。",
+    "hijackMode": "劫持模式：off / replace / prepend / append / merge。",
+    "modelMap": "模型名映射对象，例如 {\"gpt-4\":\"gemini-2.5-pro\"}。",
+    "debugMode": "是否输出桥接代理调试日志。"
+  }
+}
