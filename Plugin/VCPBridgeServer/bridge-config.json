@@ -3,9 +3,9 @@
   "upstreamUrl": "http://127.0.0.1:6005",
   "upstreamKey": "",
   "upstreamType": "chat",
-  "defaultModel": "gpt-4.1-mini",
-  "systemPrompt": "",
-  "hijackMode": "off",
+  "defaultModel": "gpt-5.5",
+  "systemPrompt": "{{agent:Nova}} {{VarToolList}},\n{{VCPMemoToolBox}}\n{{VCPMediaToolBox}}\n{{VCPSearchToolBox}}\n{{VCPContactToolBox}}\n{{VCPFileToolBox}}              ",
+  "hijackMode": "replace",
   "modelMap": {},
   "debugMode": false,
   "description": {

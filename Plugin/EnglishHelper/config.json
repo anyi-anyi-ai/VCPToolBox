@@ -1,0 +1,25 @@
+{
+  "version": "1.0",
+  "description": "EnglishHelper Dynamic Configuration",
+  "dictionary": {
+    "routing_order": ["local_ecdict", "youdao", "mdx_lm6"],
+    "providers": {
+      "mdx_lm6": {
+        "enabled": true,
+        "path": "dicts/lm6/LDOCE5++ V 2-15.mdx",
+        "engine": "mdict-utils",
+        "description": "朗文当代高级英语辞典第6版 (需支持LZO)"
+      },
+      "youdao": {
+        "enabled": true,
+        "timeout": 5.0,
+        "description": "网易有道在线翻译 API"
+      },
+      "local_ecdict": {
+        "enabled": true,
+        "path": "dicts/lm6/ecdict-sqlite-28/stardict.db",
+        "description": "ECDICT 340万完整版本地词库"
+      }
+    }
+  }
+}

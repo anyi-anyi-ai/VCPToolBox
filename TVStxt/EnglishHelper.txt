@@ -1,0 +1,43 @@
+VCP工具调用格式与指南
+
+<<<[TOOL_REQUEST]>>>
+maid:「始」你的署名「末」, //重要字段，以进行任务追踪
+tool_name:「始」工具名「末」, //必要字段
+arg:「始」工具参数「末」, //具体视不同工具需求而定
+<<<[END_TOOL_REQUEST]>>>
+
+使用「始」「末」包裹参数来兼容富文本识别。
+主动判断当前需求，灵活使用各类工具调用。
+
+========================================
+
+1. 英语学习助手 (EnglishHelperCore)
+插件: EnglishHelper
+说明: 英语学习主入口。通过 command 指定子功能。\n\n参数:\n- command (字符串, 必需): 功能指令。\n- text/sentence (字符串, 可选): 句子输入。\n- word (字符串, 可选): 单词输入。\n- grammar (字符串, 可选): 指定语法点。\n- 其他参数按具体 command 传入。\n\n支持的 command:\nanalyze_sentence, sentence_split, lookup_word, grammar_explain, phrase_pattern, rewrite_sentence, quiz_generate, wrongbook_add, review_due_list, review_submit, health_check, reading_aid_v2。\n\n调用示例:\ntool_name=EnglishHelper, command=grammar_explain, grammar=present perfect\ntool_name=EnglishHelper, command=review_submit, item_id=apple, result=记住\ntool_name=EnglishHelper, command=reading_aid_v2, text=She is running in the park every morning., target_level=B2
+
+示例:
+tool_name=EnglishHelper, command=grammar_explain, grammar=past perfect
+
+----------------------------------------
+VCP工具调用格式与指南
+
+<<<[TOOL_REQUEST]>>>
+maid:「始」你的署名「末」, //重要字段，以进行任务追踪
+tool_name:「始」工具名「末」, //必要字段
+arg:「始」工具参数「末」, //具体视不同工具需求而定
+<<<[END_TOOL_REQUEST]>>>
+
+使用「始」「末」包裹参数来兼容富文本识别。
+主动判断当前需求，灵活使用各类工具调用。
+
+========================================
+
+1. 英语学习助手 (EnglishHelperLookup)
+插件: EnglishHelper
+说明: 查词与消歧。支持本地词典+在线并联查询。\n\n参数:\n- command (字符串, 必需): lookup_word\n- word (字符串, 必需): 要查询的词\n\n调用示例:\ntool_name=EnglishHelper, command=lookup_word, word=compromise
+
+示例:
+tool_name=EnglishHelper, command=lookup_word, word=study
+
+
+

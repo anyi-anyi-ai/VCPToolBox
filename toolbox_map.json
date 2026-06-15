@@ -26,5 +26,9 @@
   "VCPbiji": {
     "file": "ObsidianManager.txt",
     "description": "记录笔记"
+  },
+  "VCPEnglishHelper": {
+    "file": "EnglishHelper.txt",
+    "description": "英语学习"
   }
 }

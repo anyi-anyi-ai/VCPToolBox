@@ -1,7 +1,7 @@
 {
   "enabled": true,
   "approveAll": false,
-  "timeoutMinutes": 5,
+  "timeoutMinutes": 6,
   "fuzzyToolMatching": true,
   "approvalList": [
     "PowerShellExecutor",
