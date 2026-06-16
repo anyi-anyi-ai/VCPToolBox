@@ -311,9 +311,10 @@ def push_to_anki(word, definition):
         urllib.request.urlopen(urllib.request.Request('http://localhost:8765', data=deck_payload), timeout=2)
         note_payload = json.dumps({
             "action": "addNote", "version": 6, "params": {
-                "note": {"deckName": "VCP_English", "modelName": "Basic", "fields": {"Front": word, "Back": definition}, "options": {"allowDuplicate": False}, "tags": ["VCP_Auto"]}
+                "note": {"deckName": "VCP_English", "modelName": "问答题", "fields": {"正面": word, "背面": definition}, "options": {"allowDuplicate": False}, "tags": ["VCP_Auto"]}
             }
         }).encode('utf-8')
+        urllib.request.urlopen(urllib.request.Request('http://localhost:8765', data=note_payload), timeout=2)
         urllib.request.urlopen(urllib.request.Request('http://localhost:8765', data=note_payload), timeout=2)
     except Exception:
         pass
