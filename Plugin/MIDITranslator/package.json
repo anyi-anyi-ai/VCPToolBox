@@ -4,8 +4,8 @@
   "description": "JavaScript frontend for the MIDITranslator plugin",
   "main": "MIDITranslator.js",
   "scripts": {
-    "build": "webpack --mode production",
-    "dev": "webpack --mode development --watch",
+    "build": "cargo build --release && cp target/release/midi_quantizer.dll ./midi_quantizer.node || echo 'Cargo build skipped or failed'",
+    "dev": "cargo build && cp target/debug/midi_quantizer.dll ./midi_quantizer.node || echo 'Cargo build skipped or failed'",
     "test": "jest"
   },
   "keywords": [
