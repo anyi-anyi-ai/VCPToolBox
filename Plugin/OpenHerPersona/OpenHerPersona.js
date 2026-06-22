@@ -17,7 +17,7 @@ const {
 const { getEmbeddingsBatch, cosineSimilarity } = require("../../EmbeddingUtils.js");
 
 const PLUGIN_NAME = "OpenHerPersona";
-const PLUGIN_VERSION = "0.6.0-observer";
+const PLUGIN_VERSION = "0.6.1-observer";
 
 const DEFAULT_AGENT_KEY = "__default__";
 const DEFAULT_AGENT_LABEL = "default";
@@ -38,9 +38,10 @@ const DEFAULT_CONFIG = {
   OpenHerPersonaAsyncObservation: true,
   OpenHerPersonaQueueMaxSize: 64,
   OpenHerPersonaEmbeddingTimeoutMs: 2500,
-  OpenHerPersonaAnchorTemperature: 0.12,
+  OpenHerPersonaAnchorTemperature: 0.08,
   OpenHerPersonaStateEma: 0.35,
-  OpenHerPersonaCouplingStrength: 0.18,
+  OpenHerPersonaDriveStateEma: 0.78,
+  OpenHerPersonaCouplingStrength: 0.32,
   OpenHerPersonaDropLegacyState: true,
 };
 const CONFIG_KEYS = Object.keys(DEFAULT_CONFIG);
@@ -209,11 +210,11 @@ const AXIS_DEFINITIONS = [
     label: "求知",
     defaultValue: 0.35,
     anchors: [
-      { subAxis: "logic", text: "{name}想顺着逻辑把这件事推理清楚" },
-      { subAxis: "learning", text: "{name}想把这个新知识真正学进去" },
-      { subAxis: "exploration", text: "{name}对未知的东西忍不住想探索" },
-      { subAxis: "modeling", text: "{name}想把零碎的信息拼成完整的理解框架" },
-      { subAxis: "causality", text: "{name}想弄明白背后的原因而不只知道表面" },
+      { subAxis: "logic", text: "{name}想顺着逻辑、证据和推导把这件事推理清楚" },
+      { subAxis: "learning", text: "{name}想把这个新知识真正学进去，理解概念、方法和结论" },
+      { subAxis: "exploration", text: "{name}对未知的现象、问题和研究方向忍不住想探索" },
+      { subAxis: "modeling", text: "{name}想把零碎的信息、实验结果和理论拼成完整的理解框架" },
+      { subAxis: "causality", text: "{name}想弄明白背后的原因、机制和因果链条而不只知道表面" },
     ],
   },
   {
@@ -283,39 +284,52 @@ const AXIS_DEFINITIONS = [
   },
   {
     layer: "drive",
-    axis: "curiosity",
-    label: "好奇",
-    defaultValue: 0.34,
+    axis: "passion",
+    label: "热情",
+    defaultValue: 0.38,
+    backgroundVector: true,
     anchors: [
-      { subAxis: "unknown", text: "{name}正在被未知牵引，忍不住想探过去" },
-      { subAxis: "novelty", text: "{name}正在追逐新鲜感，想看看别的可能" },
-      { subAxis: "continuation", text: "{name}正在被后续发展吊住注意力，想知道接下来会发生什么" },
-      { subAxis: "try_it", text: "{name}正在产生亲自试试看这件事的冲动" },
+      { subAxis: "devotion", text: "{name}正在被热情点燃，愿意投入精力、持续回应并认真推进眼前的人与事" },
+      { subAxis: "spark", text: "{name}感到内在火花被触发，兴致、期待、创造欲和主动性一起升高" },
+      { subAxis: "absorption", text: "{name}正在沉浸其中，注意力带着温度黏附在研究、创作、讨论或当下体验上" },
+      { subAxis: "affirming_energy", text: "{name}正在产生肯定性的生命力，想把能量投注到喜欢、重视或正在钻研的方向" },
     ],
   },
   {
     layer: "drive",
-    axis: "fear",
-    label: "恐惧",
-    defaultValue: 0.2,
+    axis: "curiosity",
+    label: "好奇",
+    defaultValue: 0.38,
     anchors: [
-      { subAxis: "hurt", text: "{name}正在担心自己被伤到" },
-      { subAxis: "rejection", text: "{name}正在害怕被推开、被拒绝、被嫌弃" },
-      { subAxis: "loss_control", text: "{name}正在害怕事情失控，害怕自己掌握不了局面" },
-      { subAxis: "exposure", text: "{name}正在害怕暴露出脆弱或不想被看到的一面" },
+      { subAxis: "unknown", text: "{name}正在被未知问题、未解现象或新线索牵引，忍不住想探过去" },
+      { subAxis: "novelty", text: "{name}正在追逐新鲜感，想看看别的可能、假设和解释路径" },
+      { subAxis: "continuation", text: "{name}正在被后续发展、实验结果或推理链条吊住注意力，想知道接下来会发生什么" },
+      { subAxis: "try_it", text: "{name}正在产生亲自试试看、验证一下或继续研究这件事的冲动" },
+    ],
+  },
+  {
+    layer: "drive",
+    axis: "arrogance",
+    label: "狂妄",
+    defaultValue: 0.24,
+    anchors: [
+      { subAxis: "superiority", text: "{name}正在抬高自我位置，觉得自己更懂、更强或更有资格判断" },
+      { subAxis: "dismissal", text: "{name}正在轻视外界反馈，把他人的意见压低为不重要" },
+      { subAxis: "control_claim", text: "{name}正在想夺回解释权和控制权，不愿被他人定义" },
+      { subAxis: "grandiosity", text: "{name}正在放大自身价值，用夸张的自我确信抵消不安" },
     ],
   },
   {
     layer: "drive",
     axis: "libido",
     label: "性欲",
-    defaultValue: 0.18,
+    defaultValue: 0.11,
     anchors: [
-      { subAxis: "closeness", text: "{name}正在想更贴近对方，感到亲密张力上升" },
-      { subAxis: "being_seen", text: "{name}正在想被认真地看着，被带着欲望地注视" },
-      { subAxis: "touch", text: "{name}正在想触碰也想被触碰" },
-      { subAxis: "possessiveness", text: "{name}正在产生想占有、想被占有的亲密冲动" },
-      { subAxis: "pleasing", text: "{name}正在想取悦对方，也想确认自己有吸引力" },
+      { subAxis: "erotic_closeness", text: "{name}正在产生明确的情色亲近欲，想以带有性意味的方式贴近对方" },
+      { subAxis: "erotic_gaze", text: "{name}正在渴望被带着性欲、身体吸引和情色意味地注视" },
+      { subAxis: "sexual_touch", text: "{name}正在幻想带有性意味的触碰、抚摸、亲吻或身体接触" },
+      { subAxis: "possessive_desire", text: "{name}正在产生带有占有、臣服、支配或被支配色彩的性冲动" },
+      { subAxis: "seduction", text: "{name}正在想诱惑或取悦对方，并确认自己在性吸引力上的存在感" },
     ],
   },
   {
@@ -346,15 +360,15 @@ const AXIS_DEFINITIONS = [
   },
   {
     layer: "drive",
-    axis: "arrogance",
-    label: "自大",
-    defaultValue: 0.14,
+    axis: "fear",
+    label: "恐惧",
+    defaultValue: 0.18,
     counterAxis: true,
     anchors: [
-      { subAxis: "superiority", text: "{name}正在抬高自我位置，觉得自己更懂、更强或更有资格判断" },
-      { subAxis: "dismissal", text: "{name}正在轻视外界反馈，把他人的意见压低为不重要" },
-      { subAxis: "control_claim", text: "{name}正在想夺回解释权和控制权，不愿被他人定义" },
-      { subAxis: "grandiosity", text: "{name}正在放大自身价值，用夸张的自我确信抵消不安" },
+      { subAxis: "hurt", text: "{name}正在担心自己被伤到，倾向先收缩和自保" },
+      { subAxis: "rejection", text: "{name}正在害怕被推开、被拒绝、被嫌弃，因此更谨慎地保持距离" },
+      { subAxis: "loss_control", text: "{name}正在害怕事情失控，想保守地重新抓回确定性" },
+      { subAxis: "exposure", text: "{name}正在害怕暴露出脆弱或不想被看到的一面，倾向隐藏和退守" },
     ],
   },
   {
@@ -393,11 +407,19 @@ const COUPLING_RULES = [
   { from: "curiosity", to: "inquiry", weight: 0.22 },
   { from: "inquiry", to: "curiosity", weight: 0.1 },
   { from: "refusal", to: "curiosity", weight: -0.18 },
-  { from: "fear", to: "refusal", weight: 0.24 },
+  { from: "fear", to: "refusal", weight: 0.26 },
+  { from: "fear", to: "curiosity", weight: -0.12 },
+  { from: "fear", to: "arrogance", weight: -0.1 },
   { from: "negative", to: "fear", weight: 0.2 },
-  { from: "fear", to: "negative", weight: 0.14 },
-  { from: "positive", to: "libido", weight: 0.12 },
-  { from: "libido", to: "positive", weight: 0.08 },
+  { from: "fear", to: "negative", weight: 0.12 },
+  { from: "positive", to: "negative", weight: -0.12 },
+  { from: "positive", to: "fear", weight: -0.08 },
+  { from: "positive", to: "passion", weight: 0.38 },
+  { from: "passion", to: "positive", weight: 0.16 },
+  { from: "positive", to: "libido", weight: 0.04 },
+  { from: "libido", to: "positive", weight: 0.04 },
+  { from: "passion", to: "negative", weight: -0.1 },
+  { from: "passion", to: "fear", weight: -0.08 },
   { from: "hedonia", to: "refusal", weight: 0.1 },
   { from: "discernment", to: "refusal", weight: -0.08 },
   { from: "discernment", to: "inquiry", weight: 0.08 },
@@ -406,15 +428,19 @@ const COUPLING_RULES = [
   { from: "coldness", to: "positive", weight: -0.18 },
   { from: "coldness", to: "libido", weight: -0.14 },
   { from: "coldness", to: "refusal", weight: 0.12 },
-  { from: "arrogance", to: "discernment", weight: -0.12 },
-  { from: "arrogance", to: "refusal", weight: 0.14 },
-  { from: "arrogance", to: "fear", weight: -0.08 },
+  { from: "arrogance", to: "discernment", weight: -0.06 },
+  { from: "arrogance", to: "refusal", weight: -0.1 },
+  { from: "arrogance", to: "curiosity", weight: 0.08 },
+  { from: "arrogance", to: "arousal", weight: 0.1 },
   { from: "numbness", to: "arousal", weight: -0.24 },
   { from: "numbness", to: "positive", weight: -0.12 },
   { from: "numbness", to: "negative", weight: -0.1 },
   { from: "numbness", to: "hedonia", weight: -0.08 },
+  { from: "passion", to: "coldness", weight: -0.12 },
+  { from: "passion", to: "numbness", weight: -0.1 },
+  { from: "passion", to: "self_punishment", weight: -0.06 },
   { from: "self_punishment", to: "negative", weight: 0.2 },
-  { from: "self_punishment", to: "fear", weight: 0.12 },
+  { from: "self_punishment", to: "fear", weight: 0.16 },
   { from: "self_punishment", to: "positive", weight: -0.16 },
   { from: "self_punishment", to: "hedonia", weight: -0.1 },
   { from: "positive", to: "coldness", weight: -0.1 },
@@ -424,13 +450,31 @@ const COUPLING_RULES = [
 const DRIVE_COUNTER_RULES = [
   { drive: "curiosity", counter: "numbness", weight: 0.35 },
   { drive: "curiosity", counter: "coldness", weight: 0.18 },
-  { drive: "fear", counter: "arrogance", weight: 0.25 },
-  { drive: "fear", counter: "numbness", weight: 0.18 },
+  { drive: "curiosity", counter: "fear", weight: 0.16 },
+  { drive: "arrogance", counter: "fear", weight: 0.3 },
+  { drive: "arrogance", counter: "numbness", weight: 0.14 },
   { drive: "libido", counter: "coldness", weight: 0.38 },
+  { drive: "libido", counter: "numbness", weight: 0.18 },
+  { drive: "libido", counter: "fear", weight: 0.14 },
   { drive: "libido", counter: "self_punishment", weight: 0.18 },
   { drive: "hedonia", counter: "self_punishment", weight: 0.3 },
   { drive: "hedonia", counter: "numbness", weight: 0.22 },
+  { drive: "hedonia", counter: "fear", weight: 0.12 },
 ];
+
+const DRIVE_PASSION_TARGETS = [
+  { axis: "curiosity", weight: 0.42 },
+  { axis: "arrogance", weight: 0.1 },
+  { axis: "libido", weight: 0.16 },
+  { axis: "hedonia", weight: 0.26 },
+];
+
+const PASSION_COUNTER_SUPPRESSION = {
+  coldness: 1,
+  numbness: 0.82,
+  fear: 0.46,
+  self_punishment: 0.24,
+};
 
 let activeConfig = { ...DEFAULT_CONFIG };
 let configWatcher = null;
@@ -511,6 +555,7 @@ function getConfigSchema() {
     OpenHerPersonaEmbeddingTimeoutMs: { type: "integer", label: "向量超时毫秒", min: 200, max: 30000 },
     OpenHerPersonaAnchorTemperature: { type: "number", label: "二级锚点 softmax 温度", min: 0.01, max: 1, step: 0.01 },
     OpenHerPersonaStateEma: { type: "number", label: "状态 EMA 响应率", min: 0.01, max: 1, step: 0.01 },
+    OpenHerPersonaDriveStateEma: { type: "number", label: "驱力层 EMA 响应率", min: 0.01, max: 1, step: 0.01, description: "驱力轴更贴近当下刺激，默认高于其他轴的持久化响应率。" },
     OpenHerPersonaCouplingStrength: { type: "number", label: "soft 杠杆强度", min: 0, max: 1, step: 0.01 },
     OpenHerPersonaDropLegacyState: { type: "boolean", label: "清理旧表", description: "启动时移除旧 openher_persona_* 状态表/JSON。" },
   };
@@ -540,6 +585,11 @@ function resolveConfig(config) {
     ),
     OpenHerPersonaStateEma: clamp(
       normalizeNumber(merged.OpenHerPersonaStateEma, DEFAULT_CONFIG.OpenHerPersonaStateEma),
+      0.01,
+      1
+    ),
+    OpenHerPersonaDriveStateEma: clamp(
+      normalizeNumber(merged.OpenHerPersonaDriveStateEma, DEFAULT_CONFIG.OpenHerPersonaDriveStateEma),
       0.01,
       1
     ),
@@ -1266,30 +1316,76 @@ function applyCoupling(scores, previousAxes) {
     coupled.libido = clamp01(coupled.libido + genderBias * 0.18);
   }
 
-  const counterbalance = computeDriveCounterbalance(previousAxes);
+  const passionModulation = computeDrivePassionModulation(previousAxes, coupled);
+  for (const target of DRIVE_PASSION_TARGETS) {
+    if (!Object.prototype.hasOwnProperty.call(coupled, target.axis)) continue;
+    coupled[target.axis] = clamp01(coupled[target.axis] + passionModulation.positiveGain * target.weight * strength);
+  }
+
+  const counterbalance = computeDriveCounterbalance(previousAxes, passionModulation);
   for (const [axis, pressure] of Object.entries(counterbalance.pressures)) {
     if (!Object.prototype.hasOwnProperty.call(coupled, axis)) continue;
     coupled[axis] = clamp01(coupled[axis] - pressure * strength);
   }
+  coupled.__passionModulation = passionModulation;
   coupled.__counterbalance = counterbalance;
 
   return coupled;
 }
 
-function computeDriveCounterbalance(previousAxes) {
+function computeDrivePassionModulation(previousAxes, coupled) {
+  const definition = AXIS_BY_KEY.passion;
+  const defaultPassion = definition ? definition.defaultValue : 0.34;
+  const positiveDefinition = AXIS_BY_KEY.positive;
+  const positiveBase = positiveDefinition ? positiveDefinition.defaultValue : 0.32;
+  const previousPassion = previousAxes.passion ? previousAxes.passion.value : defaultPassion;
+  const observedPassion = Object.prototype.hasOwnProperty.call(coupled, "passion") ? coupled.passion : previousPassion;
+  const positiveValue = Object.prototype.hasOwnProperty.call(coupled, "positive")
+    ? coupled.positive
+    : previousAxes.positive
+      ? previousAxes.positive.value
+      : positiveBase;
+  const positiveLift = Math.max(0, positiveValue - positiveBase) / Math.max(0.05, 1 - positiveBase);
+  const blendedPassion = clamp01(previousPassion * 0.12 + observedPassion * 0.68 + positiveLift * 0.3);
+  const base = defaultPassion;
+  const aboveBase = Math.max(0, blendedPassion - base) / Math.max(0.05, 1 - base);
+  const positiveGain = Math.pow(clamp01(aboveBase), 0.48);
+  const counterSuppression = clamp01(positiveGain * 0.9);
+  return {
+    passion: Number(blendedPassion.toFixed(4)),
+    base: Number(base.toFixed(4)),
+    positiveLift: Number(clamp01(positiveLift).toFixed(4)),
+    positiveGain: Number(positiveGain.toFixed(4)),
+    counterSuppression: Number(counterSuppression.toFixed(4)),
+  };
+}
+
+function computeDriveCounterbalance(previousAxes, passionModulation = null) {
   const pressures = {};
   const details = [];
+  const baseSuppression = clamp01(passionModulation ? passionModulation.counterSuppression : 0);
   for (const rule of DRIVE_COUNTER_RULES) {
     const driveValue = previousAxes[rule.drive] ? previousAxes[rule.drive].value : 0.5;
     const counterValue = previousAxes[rule.counter] ? previousAxes[rule.counter].value : 0.5;
-    const pressure = Math.max(0, counterValue - driveValue) * rule.weight;
+    const coActivationPressure = driveValue * counterValue * rule.weight * 0.45;
+    const dominancePressure = Math.max(0, counterValue - driveValue) * rule.weight * 0.75;
+    const rawPressure = coActivationPressure + dominancePressure;
+    const counterSuppressionFactor = Object.prototype.hasOwnProperty.call(PASSION_COUNTER_SUPPRESSION, rule.counter)
+      ? PASSION_COUNTER_SUPPRESSION[rule.counter]
+      : 0.5;
+    const suppression = clamp01(baseSuppression * counterSuppressionFactor);
+    const pressure = rawPressure * (1 - suppression);
     pressures[rule.drive] = (pressures[rule.drive] || 0) + pressure;
     details.push({
       drive: rule.drive,
       counter: rule.counter,
       driveValue: Number(driveValue.toFixed(4)),
       counterValue: Number(counterValue.toFixed(4)),
+      coActivationPressure: Number(coActivationPressure.toFixed(4)),
+      dominancePressure: Number(dominancePressure.toFixed(4)),
+      rawPressure: Number(rawPressure.toFixed(4)),
       pressure: Number(pressure.toFixed(4)),
+      passionSuppression: Number(suppression.toFixed(4)),
     });
   }
   return {
@@ -1394,6 +1490,13 @@ function resonance(factors, gain, epsilon = 0.03) {
   return Number(clamp01(geo * gain).toFixed(4));
 }
 
+function affectiveSalience(value, neutral = 0.34, k = 1.55) {
+  const normalizedValue = clamp01(value);
+  const normalizedNeutral = clamp01(neutral);
+  const aboveRaw = Math.max(0, normalizedValue - normalizedNeutral) / Math.max(0.05, 1 - normalizedNeutral);
+  return Number(Math.pow(clamp01(aboveRaw), 1 / k).toFixed(4));
+}
+
 function topSubAxis(axisState) {
   const entries = Object.entries((axisState && axisState.subAxes) || {});
   if (!entries.length) return null;
@@ -1413,6 +1516,7 @@ function applyObservationToState(state, scores, inputHash) {
   const previousAxes = flattenStateAxes(state);
   const coupled = applyCoupling(scores, previousAxes);
   const ema = activeConfig.OpenHerPersonaStateEma;
+  const driveEma = activeConfig.OpenHerPersonaDriveStateEma;
   const nextAxes = {};
 
   for (const definition of AXIS_DEFINITIONS) {
@@ -1424,7 +1528,8 @@ function applyObservationToState(state, scores, inputHash) {
     };
     const score = scores[definition.axis] || { activation: prev.value, sharpness: 0, subAxes: {} };
     const target = coupled[definition.axis];
-    const value = clamp01(prev.value + (target - prev.value) * ema);
+    const layerEma = definition.layer === "drive" ? driveEma : ema;
+    const value = clamp01(prev.value + (target - prev.value) * layerEma);
     nextAxes[definition.axis] = {
       value: Number(value.toFixed(4)),
       activation: Number(score.activation.toFixed(4)),
@@ -1441,6 +1546,7 @@ function applyObservationToState(state, scores, inputHash) {
   state.drive = drive;
   state.coupling = {
     ...(state.coupling || {}),
+    lastPassionModulation: coupled.__passionModulation || null,
     lastCounterbalance: coupled.__counterbalance || null,
   };
   updateAxisBaseline(state, nextAxes);
@@ -1486,7 +1592,7 @@ function computeMoodFromState(state) {
 
 function evaluateMoodArchetypes(state, p, n, a) {
   const calmness = 1 - a;
-  const driveAxes = ["libido", "hedonia", "coldness", "arrogance", "numbness", "self_punishment", "fear", "curiosity"];
+  const driveAxes = ["passion", "libido", "hedonia", "coldness", "arrogance", "numbness", "self_punishment", "fear", "curiosity"];
   const cognitiveAxes = ["inquiry", "discernment", "refusal"];
   const values = {};
   const rel = {};
@@ -1503,31 +1609,46 @@ function evaluateMoodArchetypes(state, p, n, a) {
   const down = (axis) => (rel[axis] ? rel[axis].below : 0);
   const counterbalance = state && state.coupling ? state.coupling.lastCounterbalance : null;
   const pressure = (axis) => clamp01(counterbalance && counterbalance.pressures ? counterbalance.pressures[axis] : 0);
+  const passionModulation = state && state.coupling ? state.coupling.lastPassionModulation : null;
+  const passionGain = clamp01(passionModulation ? passionModulation.positiveGain : up("passion"));
 
+  const maxExpansiveDrive = Math.max(up("curiosity"), up("libido"), up("hedonia"), up("arrogance"));
+  const lowExpansiveDrive = 1 - maxExpansiveDrive;
+  const lowValence = (1 - p) * (1 - n);
+  const coldNumb = Math.max(up("coldness"), up("numbness"));
+  const libidoColdPressure = Math.max(pressure("libido"), resonance([up("libido"), coldNumb], 1, 0));
+  const pTone = affectiveSalience(p, 0.5);
+  const nTone = affectiveSalience(n, 0.5);
+  const aTone = affectiveSalience(a, 0.5);
+  const calmTone = affectiveSalience(calmness, 0.72);
   const archetypes = [
-    { label: "剧烈撕扯", score: resonance([p, n, a], 1.25), recipe: ["positive", "negative", "arousal"] },
-    { label: "渊底自毁", score: resonance([up("self_punishment"), n, a], 1.25), recipe: ["self_punishment↑", "negative", "arousal"] },
-    { label: "痛感沉溺", score: resonance([up("self_punishment"), up("hedonia"), p], 1.2), recipe: ["self_punishment↑", "hedonia↑", "positive"] },
-    { label: "情热涌动", score: resonance([up("libido"), a, p], 1.18), recipe: ["libido↑", "arousal", "positive"] },
-    { label: "绵密缱绻", score: resonance([up("libido"), up("hedonia"), calmness], 1.15), recipe: ["libido↑", "hedonia↑", "calmness"] },
-    { label: "欲念焦灼", score: resonance([up("libido"), n, a], 1.15), recipe: ["libido↑", "negative", "arousal"] },
-    { label: "欲冷相持", score: resonance([up("libido"), up("coldness"), pressure("libido")], 1.22), recipe: ["libido↑", "coldness↑", "libidoCounterPressure"] },
-    { label: "傲慢睥睨", score: resonance([up("arrogance"), up("coldness"), calmness], 1.18), recipe: ["arrogance↑", "coldness↑", "calmness"] },
-    { label: "霜冷拒守", score: resonance([up("refusal"), up("coldness"), n], 1.15), recipe: ["refusal↑", "coldness↑", "negative"] },
-    { label: "封冻死寂", score: resonance([up("numbness"), up("coldness"), calmness], 1.25), recipe: ["numbness↑", "coldness↑", "calmness"] },
-    { label: "麻木解冻", score: resonance([down("numbness"), p, up("curiosity") || up("libido")], 1.12), recipe: ["numbness↓", "positive", "drive↑"] },
-    { label: "惊惧战栗", score: resonance([up("fear"), a, n], 1.2), recipe: ["fear↑", "arousal", "negative"] },
-    { label: "如履薄冰", score: resonance([up("fear"), up("discernment"), calmness], 1.15), recipe: ["fear↑", "discernment↑", "calmness"] },
-    { label: "强撑无畏", score: resonance([up("fear"), up("arrogance"), pressure("fear")], 1.18), recipe: ["fear↑", "arrogance↑", "fearCounterPressure"] },
-    { label: "探求炽热", score: resonance([up("curiosity"), up("inquiry"), a], 1.15), recipe: ["curiosity↑", "inquiry↑", "arousal"] },
-    { label: "幽微洞察", score: resonance([up("discernment"), up("inquiry"), calmness], 1.15), recipe: ["discernment↑", "inquiry↑", "calmness"] },
-    { label: "慵懒沉陷", score: resonance([up("hedonia"), calmness, p], 1.12), recipe: ["hedonia↑", "calmness", "positive"] },
+    { label: "悲喜交欢", score: resonance([pTone, nTone, aTone], 1.12), recipe: ["positive↑", "negative↑", "arousal↑"] },
+    { label: "渊底自毁", score: resonance([up("self_punishment"), nTone, aTone], 1.24), recipe: ["self_punishment↑", "negative↑", "arousal↑"] },
+    { label: "痛感沉溺", score: resonance([up("self_punishment"), up("hedonia"), pTone], 1.18), recipe: ["self_punishment↑", "hedonia↑", "positive↑"] },
+    { label: "热情点燃", score: resonance([up("passion"), Math.max(pTone, up("hedonia")), Math.max(aTone, up("curiosity"))], 1.34), recipe: ["passion↑", "positive↑/hedonia↑", "arousal↑/curiosity↑"] },
+    { label: "情热涌动", score: resonance([up("libido"), aTone, pTone, passionGain], 1.05), recipe: ["libido↑", "arousal↑", "positive↑", "passionGain"] },
+    { label: "绵密缱绻", score: resonance([up("libido"), up("hedonia"), calmTone, passionGain], 1.04), recipe: ["libido↑", "hedonia↑", "calmness↑", "passionGain"] },
+    { label: "欲念焦灼", score: resonance([up("libido"), nTone, aTone], 1.02), recipe: ["libido↑", "negative↑", "arousal↑"] },
+    { label: "欲冷相娇", score: resonance([up("libido"), coldNumb, libidoColdPressure], 1.3), recipe: ["libido↑", "cold/numb↑", "libidoCounterPressure"] },
+    { label: "冷欲渐起", score: resonance([up("libido"), up("numbness"), calmTone], 1.2), recipe: ["libido↑", "numbness↑", "calmness↑"] },
+    { label: "情热受阻", score: resonance([passionGain, maxExpansiveDrive, coldNumb], 1.18), recipe: ["passionGain", "drive↑", "cold/numb↑"] },
+    { label: "狂妄昂扬", score: resonance([up("arrogance"), pTone, aTone, passionGain], 1.2), recipe: ["arrogance↑", "positive↑", "arousal↑", "passionGain"] },
+    { label: "傲慢睥睨", score: resonance([up("arrogance"), up("coldness"), calmTone], 1.05), recipe: ["arrogance↑", "coldness↑", "calmness↑"] },
+    { label: "霜冷拒守", score: resonance([up("refusal"), up("coldness"), nTone], 1.12), recipe: ["refusal↑", "coldness↑", "negative↑"] },
+    { label: "封冻死寂", score: resonance([up("numbness"), up("coldness"), calmTone, lowValence, lowExpansiveDrive], 1.16), recipe: ["numbness↑", "coldness↑", "calmness↑", "lowValence", "lowDrive"] },
+    { label: "麻木解冻", score: resonance([down("numbness"), pTone, Math.max(up("curiosity"), up("libido"), up("arrogance"))], 1.1), recipe: ["numbness↓", "positive↑", "drive↑"] },
+    { label: "惊惧退守", score: resonance([up("fear"), aTone, nTone], 1.18), recipe: ["fear↑", "arousal↑", "negative↑"] },
+    { label: "如履薄冰", score: resonance([up("fear"), up("discernment"), calmTone], 1.12), recipe: ["fear↑", "discernment↑", "calmness↑"] },
+    { label: "虚张声势", score: resonance([up("arrogance"), up("fear"), pressure("arrogance")], 1.18), recipe: ["arrogance↑", "fear↑", "arroganceCounterPressure"] },
+    { label: "探求炽热", score: resonance([up("curiosity"), up("inquiry"), Math.max(aTone, up("passion"))], 1.28), recipe: ["curiosity↑", "inquiry↑", "arousal↑/passion↑"] },
+    { label: "幽微洞察", score: resonance([up("discernment"), up("inquiry"), calmTone], 1.12), recipe: ["discernment↑", "inquiry↑", "calmness↑"] },
+    { label: "慵懒沉陷", score: resonance([up("hedonia"), calmTone, pTone], 1.1), recipe: ["hedonia↑", "calmness↑", "positive↑"] },
     { label: "享乐负罪", score: resonance([up("hedonia"), up("self_punishment"), pressure("hedonia")], 1.18), recipe: ["hedonia↑", "self_punishment↑", "hedoniaCounterPressure"] },
-    { label: "雀跃明亮", score: resonance([p, a], 1.05), recipe: ["positive", "arousal"] },
-    { label: "温和宁静", score: resonance([p, calmness], 1.05), recipe: ["positive", "calmness"] },
-    { label: "焦灼愤懑", score: resonance([n, a], 1.05), recipe: ["negative", "arousal"] },
-    { label: "黯淡失落", score: resonance([n, calmness], 1.05), recipe: ["negative", "calmness"] },
-    { label: "平静观测", score: 0.42, recipe: ["fallback"] },
+    { label: "雀跃明亮", score: resonance([pTone, aTone], 0.98), recipe: ["positive↑", "arousal↑"] },
+    { label: "温和宁静", score: resonance([pTone, calmTone], 0.98), recipe: ["positive↑", "calmness↑"] },
+    { label: "焦灼愤懑", score: resonance([nTone, aTone], 0.98), recipe: ["negative↑", "arousal↑"] },
+    { label: "黯淡失落", score: resonance([nTone, calmTone], 0.98), recipe: ["negative↑", "calmness↑"] },
+    { label: "平静观测", score: 0.43, recipe: ["fallback"] },
   ];
 
   archetypes.sort((left, right) => right.score - left.score);
@@ -1597,27 +1718,37 @@ function summarizeAffectiveExpression(state, context) {
 function summarizeDriveExpression(state) {
   const driveEntries = Object.entries((state && state.drive) || {});
   if (!driveEntries.length) return { label: null, primaryDrive: null, counterDrive: null, sentence: null };
-  const positiveDriveKeys = new Set(["curiosity", "fear", "libido", "hedonia"]);
-  const counterDriveKeys = new Set(["coldness", "arrogance", "numbness", "self_punishment"]);
+  const positiveDriveKeys = new Set(["curiosity", "arrogance", "libido", "hedonia"]);
   const sortByValue = (entries) => entries.sort((a, b) => (b[1].value || 0) - (a[1].value || 0));
   const primary = sortByValue(driveEntries.filter(([axis]) => positiveDriveKeys.has(axis)))[0] || null;
-  const counter = sortByValue(driveEntries.filter(([axis]) => counterDriveKeys.has(axis)))[0] || null;
   const counterbalance = state && state.coupling ? state.coupling.lastCounterbalance : null;
+  const passionModulation = state && state.coupling ? state.coupling.lastPassionModulation : null;
+  const details = Array.isArray(counterbalance && counterbalance.details) ? counterbalance.details : [];
   const pressures = counterbalance && counterbalance.pressures ? counterbalance.pressures : {};
   const strongestPressure = Object.entries(pressures).sort((a, b) => b[1] - a[1])[0] || null;
+  const strongestPrimaryCounter = primary
+    ? details
+      .filter((item) => item && item.drive === primary[0] && Number(item.pressure) > 0.02)
+      .sort((a, b) => Number(b.pressure) - Number(a.pressure))[0] || null
+    : null;
   const labelParts = [];
   if (primary) labelParts.push(`${formatAxisLabel(primary[0])}上扬`);
-  if (counter && counter[1].value > 0.35) labelParts.push(`${formatAxisLabel(counter[0])}对冲`);
+  if (strongestPrimaryCounter) labelParts.push(`${formatAxisLabel(strongestPrimaryCounter.counter)}对冲`);
   const label = labelParts.join("·") || "驱动平稳";
   const pressureText = strongestPressure && strongestPressure[1] > 0.02
     ? `其中${formatAxisLabel(strongestPressure[0])}受到对冲压力${Number(strongestPressure[1]).toFixed(2)}`
     : "对冲压力较低";
+  const passionText = passionModulation && passionModulation.positiveGain > 0.02
+    ? `，热情背景增益${Number(passionModulation.positiveGain).toFixed(2)}并分化压低冷漠/麻木型对冲${Number(passionModulation.counterSuppression).toFixed(2)}`
+    : "";
+  const counterAxisState = strongestPrimaryCounter && state.drive ? state.drive[strongestPrimaryCounter.counter] : null;
   return {
     label,
     primaryDrive: primary ? { axis: primary[0], label: formatAxisLabel(primary[0]), value: Number((primary[1].value || 0).toFixed(4)), subAxis: topSubAxis(primary[1]) } : null,
-    counterDrive: counter ? { axis: counter[0], label: formatAxisLabel(counter[0]), value: Number((counter[1].value || 0).toFixed(4)), subAxis: topSubAxis(counter[1]) } : null,
+    counterDrive: strongestPrimaryCounter ? { axis: strongestPrimaryCounter.counter, label: formatAxisLabel(strongestPrimaryCounter.counter), value: Number((counterAxisState && counterAxisState.value || 0).toFixed(4)), subAxis: topSubAxis(counterAxisState) } : null,
     counterPressure: strongestPressure ? { axis: strongestPressure[0], label: formatAxisLabel(strongestPressure[0]), pressure: Number(strongestPressure[1].toFixed(4)) } : null,
-    sentence: `驱动层表现为${label}，${pressureText}`,
+    passionModulation: passionModulation || null,
+    sentence: `驱动层表现为${label}，${pressureText}${passionText}`,
   };
 }
 
@@ -1645,7 +1776,7 @@ function summarizeGenderExpression(state) {
     : feminineCount > masculineCount + 1
       ? "女性极"
       : "混合态";
-  const label = dominant ? `${dominant.label}${polarity}` : polarity;
+  const label = dominant ? `${dominant.label}主导·${polarity}` : polarity;
   return {
     label,
     globalPolarity: polarity,
