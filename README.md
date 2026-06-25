@@ -2,7 +2,7 @@
 
 ![VCP Logo](docs/image/VCPLogo.png)
 
-**官网：[www.vcptoolbox.com](https://www.vcptoolbox.com)**
+**VCP官网：[通过官网迅速了解 VCP | VCPToolBox.com](https://www.vcptoolbox.com)**
 
 [English](README_en.md) | [日本語](README_ja.md) | [Русский](README_ru.md)
 
@@ -135,6 +135,10 @@ VCP 的终极愿景，从来不是"让人类更高效地使用 AI"。而是构�
 ## 项目一瞥
 
 这些图不用于证明 VCP 有多复杂，只是给第一次来到这里的人一个直观入口：它已经不是停留在概念层的实验，而是一套可管理、可观察、可交互、可长期运行的完整系统。
+
+| 官方Agent - 可爱人气的拓扑女仆 · 看板娘 Nova |
+|:---:|
+[![VCP看板娘](docs/image/vcp-nova.png)](https://www.vcptoolbox.com/nova)
 
 | 管理与配置 | Agent 与变量 |
 |:---:|:---:|
