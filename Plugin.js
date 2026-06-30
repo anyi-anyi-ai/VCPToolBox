@@ -987,6 +987,7 @@ class PluginManager extends EventEmitter {
 
             // 发送审核请求到管理面板
             if (this.webSocketServer) {
+                const approvalTtlMs = this.toolApprovalManager.getTimeoutMs();
                 const approvalRequest = {
                     type: 'tool_approval_request',
                     data: {
@@ -994,7 +995,8 @@ class PluginManager extends EventEmitter {
                         toolName,
                         maid: maidNameFromArgs,
                         args: pluginSpecificArgs,
-                        timestamp: _getFormattedLocalTimestamp()
+                        timestamp: _getFormattedLocalTimestamp(),
+                        approvalTtlMs // 同步给 VCPLog 补发缓存使用,确保超时后能自动清除
                     }
                 };
                 this.webSocketServer.broadcast(approvalRequest, 'VCPLog');
@@ -1118,6 +1120,20 @@ class PluginManager extends EventEmitter {
             }
 
             // --- 通用结果处理 ---
+            // 兼容 direct/hybrid 插件主动返回 stdio 风格的 { status, result } 包装。
+            // stdio 插件会在上方被解包到 pluginOutput.result；direct 插件没有这一步，
+            // 因此这里补齐一次，使 direct 插件也能返回与 VSearch 相同的
+            // { status: "success", result: { content: [...] } } 形态。
+            if (
+                resultFromPlugin &&
+                typeof resultFromPlugin === 'object' &&
+                resultFromPlugin.status === 'success' &&
+                resultFromPlugin.result &&
+                typeof resultFromPlugin.result === 'object'
+            ) {
+                resultFromPlugin = resultFromPlugin.result;
+            }
+
             let finalResultObject = (typeof resultFromPlugin === 'object' && resultFromPlugin !== null) ? resultFromPlugin : { original_plugin_output: resultFromPlugin };
 
             if (maidNameFromArgs) {
@@ -1461,6 +1477,15 @@ class PluginManager extends EventEmitter {
         if (approval) {
             this.pendingApprovals.delete(requestId);
             clearTimeout(approval.timeoutId);
+
+            // 用户已经响应,把对应的 VCPLog 缓存条目清除,避免后续重连时把已处理的审核请求补发
+            try {
+                if (this.webSocketServer && typeof this.webSocketServer.cancelVcpLogApprovalCache === 'function') {
+                    this.webSocketServer.cancelVcpLogApprovalCache(requestId);
+                }
+            } catch (e) {
+                if (this.debugMode) console.warn(`[PluginManager] cancelVcpLogApprovalCache failed for ${requestId}: ${e.message}`);
+            }
 
             const normalizedReason = typeof reason === 'string' ? reason.trim() : '';
 
