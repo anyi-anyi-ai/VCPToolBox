@@ -5,9 +5,9 @@
       {
         "key": "6d9c34ca-cc07-4cd7-a5d5-ebea93636d0e",
         "active": true,
-        "errorCount": 1,
+        "errorCount": 2,
         "maxErrors": 3,
-        "lastError": "2026-06-19T11:18:43.133Z",
+        "lastError": "2026-07-08T09:42:46.830Z",
         "lastErrorType": "api_error",
         "lastSuccess": "2026-05-31T03:26:08.695Z"
       }
