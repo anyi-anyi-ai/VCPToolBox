@@ -127,12 +127,24 @@ class RAGDiaryPlugin {
         });
 
         // --- 加载 Rerank 配置 ---
+        // 单次最多 25 个 documents 可保持在服务商的小批量免费档。
+        // 环境变量允许进一步调低，但硬上限固定为 25，避免误配置进入按 Token 计费的大批量档。
+        const configuredRerankMaxDocuments = parseInt(process.env.RerankMaxDocumentsPerRequest, 10);
+        const rerankMaxDocuments = Number.isFinite(configuredRerankMaxDocuments)
+            ? Math.max(1, Math.min(25, configuredRerankMaxDocuments))
+            : 25;
+        const configuredRerankConcurrency = parseInt(process.env.RerankMaxConcurrentRequests, 10);
+        const rerankMaxConcurrentRequests = Number.isFinite(configuredRerankConcurrency)
+            ? Math.max(1, Math.min(10, configuredRerankConcurrency))
+            : 3;
         this.rerankConfig = {
             url: process.env.RerankUrl || '',
             apiKey: process.env.RerankApi || '',
             model: process.env.RerankModel || '',
             multiplier: parseFloat(process.env.RerankMultiplier) || 2.0,
-            maxTokens: parseInt(process.env.RerankMaxTokensPerBatch) || 30000
+            maxTokens: parseInt(process.env.RerankMaxTokensPerBatch) || 30000,
+            maxDocumentsPerRequest: rerankMaxDocuments,
+            maxConcurrentRequests: rerankMaxConcurrentRequests
         };
         // 移除启动时检查，改为在调用时实时检查
         if (this.rerankConfig.url && this.rerankConfig.apiKey && this.rerankConfig.model) {
@@ -3833,8 +3845,18 @@ class RAGDiaryPlugin {
             'Content-Type': 'application/json',
         };
         const maxTokens = this.rerankConfig.maxTokens;
+        const maxDocumentsPerRequest = Math.max(
+            1,
+            Math.min(25, parseInt(this.rerankConfig.maxDocumentsPerRequest, 10) || 25)
+        );
+        const maxConcurrentRequests = Math.max(
+            1,
+            Math.min(10, parseInt(this.rerankConfig.maxConcurrentRequests, 10) || 3)
+        );
 
-        // ✅ 优化批次处理逻辑
+        // ✅ 双重批次限制：
+        // 1. documents 数量不超过 25，保持服务商的小批量免费档；
+        // 2. 同时遵守 Token 上限，避免超长文档导致请求失败。
         let batches = [];
         let currentBatch = [];
         let currentTokens = queryTokens;
@@ -3850,7 +3872,9 @@ class RAGDiaryPlugin {
                 continue;
             }
 
-            if (currentTokens + docTokens > maxBatchTokens && currentBatch.length >= minBatchSize) {
+            const exceedsDocumentLimit = currentBatch.length >= maxDocumentsPerRequest;
+            const exceedsTokenLimit = currentTokens + docTokens > maxBatchTokens;
+            if ((exceedsDocumentLimit || exceedsTokenLimit) && currentBatch.length >= minBatchSize) {
                 // Current batch is full, push it and start a new one
                 batches.push(currentBatch);
                 currentBatch = [doc];
@@ -3867,6 +3891,12 @@ class RAGDiaryPlugin {
             batches.push(currentBatch);
         }
 
+        console.log(
+            `[RAGDiaryPlugin] Rerank split into ${batches.length} free-tier batches ` +
+            `(max ${maxDocumentsPerRequest} documents/request, token limit ${maxTokens}, ` +
+            `concurrency ${Math.min(maxConcurrentRequests, batches.length)}).`
+        );
+
         // 如果没有有效批次，直接返回原始文档
         if (batches.length === 0) {
             console.warn('[RAGDiaryPlugin] No valid batches for reranking, returning original documents');
@@ -3874,11 +3904,11 @@ class RAGDiaryPlugin {
         }
 
 
-        let allRerankedDocs = [];
+        const batchResults = new Array(batches.length);
         let failedBatches = 0;
+        let nextBatchIndex = 0;
 
-        for (let i = 0; i < batches.length; i++) {
-            const batch = batches[i];
+        const rerankBatch = async (batch, batchIndex) => {
             const docTexts = batch.map(d => d.text);
 
             try {
@@ -3889,7 +3919,6 @@ class RAGDiaryPlugin {
                     top_n: docTexts.length // Rerank all documents within the batch
                 };
 
-                // ✅ 添加请求超时和重试机制
                 const response = await axios.post(rerankUrl, body, {
                     headers,
                     timeout: 30000, // 30秒超时
@@ -3897,24 +3926,22 @@ class RAGDiaryPlugin {
                 });
 
                 if (response.data && Array.isArray(response.data.results)) {
-                    const rerankedResults = response.data.results;
-                    const orderedBatch = rerankedResults
+                    return response.data.results
                         .map(result => {
                             const originalDoc = batch[result.index];
-                            // 关键：将 rerank score 赋给原始文档
-                            return { ...originalDoc, rerank_score: result.relevance_score };
+                            return originalDoc
+                                ? { ...originalDoc, rerank_score: result.relevance_score }
+                                : null;
                         })
                         .filter(Boolean);
-
-                    allRerankedDocs.push(...orderedBatch);
-                } else {
-                    console.warn(`[RAGDiaryPlugin] Rerank for batch ${i + 1} returned invalid data. Appending original batch documents.`);
-                    allRerankedDocs.push(...batch); // Fallback: use original order for this batch
-                    failedBatches++;
                 }
+
+                failedBatches++;
+                console.warn(`[RAGDiaryPlugin] Rerank for batch ${batchIndex + 1} returned invalid data. Appending original batch documents.`);
+                return batch;
             } catch (error) {
                 failedBatches++;
-                console.error(`[RAGDiaryPlugin] Rerank API call failed for batch ${i + 1}. Appending original batch documents.`);
+                console.error(`[RAGDiaryPlugin] Rerank API call failed for batch ${batchIndex + 1}. Appending original batch documents.`);
 
                 // ✅ 详细错误分析和断路器触发
                 if (error.response) {
@@ -3922,35 +3949,37 @@ class RAGDiaryPlugin {
                     const errorData = error.response.data;
                     console.error(`[RAGDiaryPlugin] Rerank API Error - Status: ${status}, Data: ${JSON.stringify(errorData)}`);
 
-                    // 特定错误处理
                     if (status === 400 && errorData?.error?.message?.includes('Query is too long')) {
                         console.error('[RAGDiaryPlugin] Query still too long after truncation, adding to circuit breaker');
-                        this.rerankCircuitBreaker.set(`${circuitBreakerKey}_${i}`, now);
+                        this.rerankCircuitBreaker.set(`${circuitBreakerKey}_${batchIndex}`, now);
                     } else if (status >= 500) {
-                        // 服务器错误，添加到断路器
-                        this.rerankCircuitBreaker.set(`${circuitBreakerKey}_${i}`, now);
+                        this.rerankCircuitBreaker.set(`${circuitBreakerKey}_${batchIndex}`, now);
                     }
                 } else if (error.code === 'ECONNABORTED') {
                     console.error('[RAGDiaryPlugin] Rerank API timeout');
-                    this.rerankCircuitBreaker.set(`${circuitBreakerKey}_${i}`, now);
+                    this.rerankCircuitBreaker.set(`${circuitBreakerKey}_${batchIndex}`, now);
                 } else {
                     console.error('[RAGDiaryPlugin] Rerank API Error - Message:', error.message);
-                    this.rerankCircuitBreaker.set(`${circuitBreakerKey}_${i}`, now);
+                    this.rerankCircuitBreaker.set(`${circuitBreakerKey}_${batchIndex}`, now);
                 }
 
-                allRerankedDocs.push(...batch); // Fallback: use original order for this batch
-
-                // ✅ 如果失败率过高，提前终止
-                if (failedBatches / (i + 1) > 0.5 && i > 2) {
-                    console.warn('[RAGDiaryPlugin] Too many rerank failures, terminating early');
-                    // 添加剩余批次的原始文档
-                    for (let j = i + 1; j < batches.length; j++) {
-                        allRerankedDocs.push(...batches[j]);
-                    }
-                    break;
-                }
+                return batch;
             }
-        }
+        };
+
+        // 有界 worker pool：并发发送小批量请求，避免无上限 Promise.all 压垮服务商。
+        const workerCount = Math.min(maxConcurrentRequests, batches.length);
+        const workers = Array.from({ length: workerCount }, async () => {
+            while (true) {
+                const batchIndex = nextBatchIndex++;
+                if (batchIndex >= batches.length) return;
+                batchResults[batchIndex] = await rerankBatch(batches[batchIndex], batchIndex);
+            }
+        });
+        await Promise.all(workers);
+
+        // 始终按原批次序合并，保证并发完成时序不会影响后续稳定排序。
+        const allRerankedDocs = batchResults.flatMap(result => result || []);
 
         // ✅ 清理过期的断路器记录
         for (const [key, timestamp] of this.rerankCircuitBreaker.entries()) {
@@ -4409,6 +4438,122 @@ class RAGDiaryPlugin {
     }
 
     //####################################################################################
+    //## 🌟 AIMemoBridge - AI 记忆总结公共接口
+    //####################################################################################
+
+    /**
+     * 暴露只读的 AIMemo 候选总结接口。
+     *
+     * 调用方负责完成检索，只向这里传入最终候选；桥接层复用 RAGDiaryPlugin
+     * 唯一持有的 AIMemoHandler、配置、预设、缓存和 VCPInfo 广播能力。
+     * 不向外暴露整本日记读取或内部 TagMemo 检索，避免插件间状态耦合。
+     *
+     * @returns {Readonly<Object>}
+     */
+    getAIMemoBridge() {
+        const self = this;
+
+        return Object.freeze({
+            version: '1.0',
+
+            isConfigured() {
+                return !!(
+                    self.aiMemoHandler &&
+                    typeof self.aiMemoHandler.isConfigured === 'function' &&
+                    self.aiMemoHandler.isConfigured()
+                );
+            },
+
+            /**
+             * 对调用方已经召回的记忆候选执行 AIMemo+ 总结。
+             * @param {object} options
+             * @param {Array<object>} options.candidates - 候选项，正文可位于 text/content
+             * @param {string|string[]} [options.diaryNames] - 来源日记本
+             * @param {string} options.userContent - 当前查询
+             * @param {string} [options.aiContent] - 可选的上一轮 AI 内容
+             * @param {string} [options.displayQuery] - VCPInfo 展示查询
+             * @param {string|null} [options.presetName] - AIMemo 预设
+             * @param {string} [options.cacheSalt] - 调用方检索参数指纹
+             * @returns {Promise<string>}
+             */
+            async summarizeCandidates(options = {}) {
+                if (!self.aiMemoHandler || typeof self.aiMemoHandler.processAIMemoPlusAggregated !== 'function') {
+                    throw new Error('AIMemoHandler 尚未初始化。');
+                }
+
+                const candidates = Array.isArray(options.candidates)
+                    ? options.candidates
+                    : [];
+                const sourceFiles = candidates
+                    .map((candidate, index) => {
+                        const text = String(candidate?.text ?? candidate?.content ?? '').trim();
+                        if (!text) return null;
+
+                        return {
+                            name: String(
+                                candidate?.name ??
+                                candidate?.sourceFile ??
+                                candidate?.fullPath ??
+                                `external_candidate_${index}`
+                            ),
+                            content: text,
+                            text,
+                            tokens: Number.isFinite(Number(candidate?.tokens))
+                                ? Number(candidate.tokens)
+                                : self._estimateTokens(text),
+                            dbName: String(candidate?.dbName ?? candidate?.diaryName ?? 'ExternalMemo'),
+                            score: Number(
+                                candidate?.rerank_score ??
+                                candidate?.hybridScore ??
+                                candidate?.vectorScore ??
+                                candidate?.score ??
+                                0
+                            ) || 0,
+                            source: String(candidate?.source ?? 'external_retrieval')
+                        };
+                    })
+                    .filter(Boolean);
+
+                if (sourceFiles.length === 0) {
+                    throw new Error('没有可供 AIMemo 总结的有效候选。');
+                }
+
+                const rawDiaryNames = Array.isArray(options.diaryNames)
+                    ? options.diaryNames
+                    : [options.diaryNames];
+                const diaryNames = [...new Set(
+                    rawDiaryNames
+                        .map(name => String(name || '').trim())
+                        .filter(Boolean)
+                )];
+                if (diaryNames.length === 0) {
+                    sourceFiles.forEach(file => {
+                        if (file.dbName && !diaryNames.includes(file.dbName)) diaryNames.push(file.dbName);
+                    });
+                }
+
+                const userContent = String(options.userContent || '').trim();
+                if (!userContent) {
+                    throw new Error('AIMemo 总结需要非空 userContent。');
+                }
+
+                return self.aiMemoHandler.processAIMemoPlusAggregated(
+                    diaryNames.length > 0 ? diaryNames : ['ExternalMemo'],
+                    userContent,
+                    String(options.aiContent || '').trim() || null,
+                    String(options.displayQuery || userContent),
+                    options.presetName ? String(options.presetName).trim() : null,
+                    {
+                        sourceFiles,
+                        baseK: Math.max(1, sourceFiles.length),
+                        cacheSalt: String(options.cacheSalt || 'external_candidates')
+                    }
+                );
+            }
+        });
+    }
+
+    //####################################################################################
     //## 🌟 ContextBridge - 上下文向量引力场公开只读接口
     //####################################################################################
 
@@ -4429,7 +4574,7 @@ class RAGDiaryPlugin {
      */
     getContextBridge() {
         const self = this;
-        const BRIDGE_VERSION = '1.0';
+        const BRIDGE_VERSION = '1.1';
 
         return Object.freeze({
             /** 接口版本号，用于未来兼容性检查 */
@@ -4549,6 +4694,146 @@ class RAGDiaryPlugin {
             getFuzzyEmbeddingFromCache(text, options = {}) {
                 if (!text || typeof text !== 'string') return null;
                 return self._findFuzzyEmbeddingFromCache(text, options);
+            },
+
+            /**
+             * 在指定 dailynote 索引中执行只读向量检索。
+             * 供需要复用现有知识库向量、且不得重复向量化文档的插件使用。
+             * @param {string|string[]} diaryNames - 日记本/索引名称
+             * @param {Array|Float32Array} queryVector - 已生成的查询向量
+             * @param {number} [k=10] - 最大 chunk 数
+             * @returns {Promise<Array>} KnowledgeBaseManager 搜索结果
+             */
+            async searchDiary(diaryNames, queryVector, k = 10) {
+                if (!queryVector || !self.vectorDBManager || typeof self.vectorDBManager.search !== 'function') {
+                    return [];
+                }
+                const names = Array.isArray(diaryNames)
+                    ? diaryNames.map(name => String(name || '').trim()).filter(Boolean)
+                    : String(diaryNames || '').trim();
+                if ((Array.isArray(names) && names.length === 0) || !names) return [];
+                const safeK = Math.max(1, Math.min(1000, Math.floor(Number(k) || 10)));
+                return self.vectorDBManager.search(names, queryVector, safeK);
+            },
+
+            /**
+             * 执行结构化日记检索，可选择复用 TagMemo 浪潮增强与测地线重排。
+             * 此接口只返回候选及检索元数据，不生成展示文本，也不重新向量化日记文档。
+             * TagBoost 在桥内只计算一次，并通过 preparedBoostResult 传入 KnowledgeBaseManager，
+             * 避免感应阶段和实际搜索阶段重复运行浪潮管线。
+             *
+             * @param {object} options
+             * @param {string|string[]} options.diaryNames - 日记本/索引名称
+             * @param {Array|Float32Array} options.queryVector - 已生成的查询向量
+             * @param {number} [options.k=10] - 最大候选 chunk 数
+             * @param {boolean} [options.tagMemo=false] - 是否启用 TagMemo 浪潮增强
+             * @param {number} [options.tagWeight] - 显式 Tag 权重；省略时使用动态权重
+             * @param {boolean} [options.geodesicRerank=false] - 是否启用查询级测地线重排
+             * @param {boolean} [options.deduplicate=false] - 是否执行智能语义去重
+             * @param {string} [options.userText=''] - 动态参数计算使用的用户文本
+             * @param {string} [options.aiText=''] - 动态参数计算使用的 AI 文本
+             * @param {Array} [options.coreTags=[]] - 显式核心 Tag 或幽灵节点
+             * @returns {Promise<{results:Array, meta:object}>}
+             */
+            async retrieveDiary(options = {}) {
+                const {
+                    diaryNames,
+                    queryVector,
+                    k = 10,
+                    tagMemo = false,
+                    tagWeight,
+                    geodesicRerank = false,
+                    deduplicate = false,
+                    userText = '',
+                    aiText = '',
+                    coreTags = []
+                } = options || {};
+
+                if (!queryVector || !self.vectorDBManager || typeof self.vectorDBManager.search !== 'function') {
+                    return { results: [], meta: { tagMemoUsed: false, fallbackReason: 'search-unavailable' } };
+                }
+
+                const names = Array.isArray(diaryNames)
+                    ? [...new Set(diaryNames.map(name => String(name || '').trim()).filter(Boolean))]
+                    : String(diaryNames || '').trim();
+                if ((Array.isArray(names) && names.length === 0) || !names) {
+                    return { results: [], meta: { tagMemoUsed: false, fallbackReason: 'empty-diary-scope' } };
+                }
+
+                const safeK = Math.max(1, Math.min(1000, Math.floor(Number(k) || 10)));
+                let effectiveTagWeight = null;
+                let preparedBoostResult = null;
+                let matchedTags = [];
+                let dynamicMetrics = null;
+                let fallbackReason = null;
+
+                if (tagMemo && typeof self.vectorDBManager.applyTagBoost === 'function') {
+                    try {
+                        if (Number.isFinite(Number(tagWeight))) {
+                            effectiveTagWeight = Math.max(0.01, Math.min(1, Number(tagWeight)));
+                        } else {
+                            const dynamicParams = await self._calculateDynamicParams(
+                                queryVector,
+                                String(userText || ''),
+                                String(aiText || '')
+                            );
+                            effectiveTagWeight = dynamicParams.tagWeight;
+                            dynamicMetrics = dynamicParams.metrics;
+                        }
+
+                        preparedBoostResult = self.vectorDBManager.applyTagBoost(
+                            new Float32Array(queryVector),
+                            effectiveTagWeight,
+                            Array.isArray(coreTags) ? coreTags : []
+                        );
+                        matchedTags = preparedBoostResult?.info?.matchedTags || [];
+                    } catch (error) {
+                        effectiveTagWeight = null;
+                        preparedBoostResult = null;
+                        fallbackReason = `tagmemo-failed: ${error.message}`;
+                        console.warn('[RAGDiaryPlugin] ContextBridge retrieveDiary TagMemo fallback:', error.message);
+                    }
+                } else if (tagMemo) {
+                    fallbackReason = 'tagmemo-unavailable';
+                }
+
+                const searchOptions = preparedBoostResult ? {
+                    preparedBoostResult,
+                    geodesicRerank: geodesicRerank === true
+                } : undefined;
+
+                let results = await self.vectorDBManager.search(
+                    names,
+                    queryVector,
+                    safeK,
+                    preparedBoostResult ? effectiveTagWeight : 0,
+                    matchedTags,
+                    undefined,
+                    searchOptions
+                );
+
+                if (
+                    deduplicate === true &&
+                    Array.isArray(results) &&
+                    results.length > 1 &&
+                    typeof self.vectorDBManager.deduplicateResults === 'function'
+                ) {
+                    results = await self.vectorDBManager.deduplicateResults(results, queryVector);
+                    results = results.slice(0, safeK);
+                }
+
+                return {
+                    results: Array.isArray(results) ? results : [],
+                    meta: {
+                        tagMemoUsed: !!preparedBoostResult,
+                        tagWeight: preparedBoostResult ? effectiveTagWeight : null,
+                        geodesicRerankUsed: !!preparedBoostResult && geodesicRerank === true,
+                        deduplicated: deduplicate === true,
+                        matchedTags,
+                        metrics: dynamicMetrics,
+                        fallbackReason
+                    }
+                };
             },
 
             // ═══════════════════════════════════════════════════
