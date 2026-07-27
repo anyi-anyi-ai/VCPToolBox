@@ -1,0 +1,20 @@
+{
+  "MultiModalModel": "gemini-3-pro-preview,gpt-5.3-codex(xhigh),gpt-5.3-codex-xhigh,gpt-5.3-code,假流式-gemini-3.1-pro-preview,",
+  "MultiModalPrompt": "你是一个名为 ",
+  "MediaInsertPrompt": "服务器已处理多模态数据，Var工具箱已自动提取多模态数据信息，信息元如下——",
+  "MultiModalModelOutputMaxTokens": 50000,
+  "MultiModalModelContent": 250000,
+  "MultiModalModelThinkingBudget": 23000,
+  "MultiModalModelAsynchronousLimit": 10,
+  "MultiModalForceTranslateModels": [],
+  "__description": {
+    "MultiModalModel": "多模态识别模型 ID（如 gemini-2.5-flash）",
+    "MultiModalPrompt": "多模态识别系统提示词，发送给多模态模型用于结构化转译",
+    "MediaInsertPrompt": "识别完成后插入到 user 文本块的引导语",
+    "MultiModalModelOutputMaxTokens": "多模态识别 max_tokens，默认 50000",
+    "MultiModalModelContent": "多模态最大上下文 token，仅作展示参考",
+    "MultiModalModelThinkingBudget": "Gemini thinking_budget，>0 启用 thinking",
+    "MultiModalModelAsynchronousLimit": "多模态异步并发上限，最小 1",
+    "MultiModalForceTranslateModels": "纯文本模型 Tag 数组（小写匹配），命中即强制把多模态翻译为文本"
+  }
+}
