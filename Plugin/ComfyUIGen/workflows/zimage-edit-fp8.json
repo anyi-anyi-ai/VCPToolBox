@@ -1,0 +1,172 @@
+{
+  "displayName": "Z-Image Turbo fp8 图像修改",
+  "description": "Z-Image Turbo fp8, 图像修改/编辑, denoise=1.0",
+  "version": "2.0",
+  "workflow": {
+    "4": {
+      "inputs": {
+        "seed": 6090791541018,
+        "steps": 2,
+        "cfg": 1,
+        "sampler_name": "euler",
+        "scheduler": "simple",
+        "denoise": 1,
+        "model": [
+          "34",
+          0
+        ],
+        "positive": [
+          "35",
+          0
+        ],
+        "negative": [
+          "35",
+          1
+        ],
+        "latent_image": [
+          "35",
+          2
+        ]
+      },
+      "class_type": "KSampler",
+      "_meta": {
+        "title": "K采样器"
+      }
+    },
+    "5": {
+      "inputs": {
+        "text": "闭着一只眼睛的女人正面肖像",
+        "clip": [
+          "28",
+          0
+        ]
+      },
+      "class_type": "CLIPTextEncode",
+      "_meta": {
+        "title": "CLIP文本编码"
+      }
+    },
+    "6": {
+      "inputs": {
+        "conditioning": [
+          "5",
+          0
+        ]
+      },
+      "class_type": "ConditioningZeroOut",
+      "_meta": {
+        "title": "条件零化"
+      }
+    },
+    "8": {
+      "inputs": {
+        "samples": [
+          "4",
+          0
+        ],
+        "vae": [
+          "27",
+          0
+        ]
+      },
+      "class_type": "VAEDecode",
+      "_meta": {
+        "title": "VAE解码"
+      }
+    },
+    "24": {
+      "inputs": {
+        "filename_prefix": "ComfyUI",
+        "images": [
+          "8",
+          0
+        ]
+      },
+      "class_type": "SaveImage",
+      "_meta": {
+        "title": "保存图像"
+      }
+    },
+    "25": {
+      "inputs": {
+        "unet_name": "z-image\\z-image-turbo-fp8-e4m3fn.safetensors",
+        "weight_dtype": "default"
+      },
+      "class_type": "UNETLoader",
+      "_meta": {
+        "title": "GGUF Loader"
+      }
+    },
+    "27": {
+      "inputs": {
+        "vae_name": "Qwen\\ae.safetensors"
+      },
+      "class_type": "VAELoader",
+      "_meta": {
+        "title": "加载VAE"
+      }
+    },
+    "28": {
+      "inputs": {
+        "clip_name": "qwen_3_4b.safetensors",
+        "type": "qwen_image",
+        "device": "default"
+      },
+      "class_type": "CLIPLoader",
+      "_meta": {
+        "title": "CLIPLoader (GGUF)"
+      }
+    },
+    "32": {
+      "inputs": {
+        "image": "example.png"
+      },
+      "class_type": "LoadImage",
+      "_meta": {
+        "title": "加载图像"
+      }
+    },
+    "34": {
+      "inputs": {
+        "strength": 0.9,
+        "model": [
+          "25",
+          0
+        ]
+      },
+      "class_type": "DifferentialDiffusion",
+      "_meta": {
+        "title": "差异扩散DifferentialDiffusion"
+      }
+    },
+    "35": {
+      "inputs": {
+        "noise_mask": true,
+        "positive": [
+          "5",
+          0
+        ],
+        "negative": [
+          "6",
+          0
+        ],
+        "vae": [
+          "27",
+          0
+        ],
+        "pixels": [
+          "32",
+          0
+        ],
+        "mask": [
+          "32",
+          1
+        ]
+      },
+      "class_type": "InpaintModelConditioning",
+      "_meta": {
+        "title": "内补模型条件"
+      }
+    }
+  }
+}

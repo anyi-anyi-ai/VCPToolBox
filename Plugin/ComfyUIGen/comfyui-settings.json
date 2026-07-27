@@ -1,0 +1,21 @@
+{
+  "serverUrl": "http://127.0.0.1:8818",
+  "apiKey": "",
+  "workflow": "zimage-t2i-fp8",
+  "defaultModel": "z-image\\z-image-turbo-fp8-e4m3fn.safetensors",
+  "defaultWidth": 1920,
+  "defaultHeight": 1080,
+  "defaultSteps": 9,
+  "defaultCfg": 1.0,
+  "defaultSampler": "euler",
+  "defaultScheduler": "simple",
+  "defaultSeed": -1,
+  "defaultBatchSize": 1,
+  "defaultDenoise": 1.0,
+  "defaultLoRA": "Z-INGM\\lora\\zit_fdpo_v1.safetensors",
+  "qualityTags": "",
+  "defaultLoRAStrength": 0.6,
+  "negativePrompt": "",
+  "version": "1.0.0",
+  "lastUpdated": "2026-07-26T13:00:00Z"
+}

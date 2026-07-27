@@ -1,0 +1,180 @@
+{
+  "displayName": "Z-Image Turbo bf16 NSFW 文生图",
+  "description": "Z-Image Turbo bf16 NSFW版, 质量更高",
+  "version": "2.0",
+  "workflow": {
+    "79": {
+      "inputs": {
+        "unet_name": "z-image\\z_image_turbo_bf16_nsfw.safetensors",
+        "weight_dtype": "default"
+      },
+      "class_type": "UNETLoader",
+      "_meta": {
+        "title": "UNet加载器"
+      }
+    },
+    "80": {
+      "inputs": {
+        "clip_name": "qwen_3_4b.safetensors",
+        "type": "lumina2",
+        "device": "default"
+      },
+      "class_type": "CLIPLoader",
+      "_meta": {
+        "title": "加载CLIP"
+      }
+    },
+    "81": {
+      "inputs": {
+        "seed": 1120463824867030,
+        "steps": 9,
+        "cfg": 1,
+        "sampler_name": "euler",
+        "scheduler": "simple",
+        "denoise": 1,
+        "model": [
+          "108",
+          0
+        ],
+        "positive": [
+          "85",
+          0
+        ],
+        "negative": [
+          "93",
+          0
+        ],
+        "latent_image": [
+          "84",
+          0
+        ]
+      },
+      "class_type": "KSampler",
+      "_meta": {
+        "title": "K采样器"
+      }
+    },
+    "82": {
+      "inputs": {
+        "samples": [
+          "81",
+          0
+        ],
+        "vae": [
+          "86",
+          0
+        ]
+      },
+      "class_type": "VAEDecode",
+      "_meta": {
+        "title": "VAE解码"
+      }
+    },
+    "84": {
+      "inputs": {
+        "width": [
+          "89",
+          0
+        ],
+        "height": [
+          "91",
+          0
+        ],
+        "batch_size": 1
+      },
+      "class_type": "EmptyLatentImage",
+      "_meta": {
+        "title": "空Latent图像"
+      }
+    },
+    "85": {
+      "inputs": {
+        "text": "{{POSITIVE_PROMPT}}",
+        "clip": [
+          "107",
+          0
+        ]
+      },
+      "class_type": "CLIPTextEncode",
+      "_meta": {
+        "title": "CLIP文本编码"
+      }
+    },
+    "86": {
+      "inputs": {
+        "vae_name": "Qwen\\ae.safetensors"
+      },
+      "class_type": "VAELoader",
+      "_meta": {
+        "title": "加载VAE"
+      }
+    },
+    "89": {
+      "inputs": {
+        "value": 1920
+      },
+      "class_type": "ImpactInt",
+      "_meta": {
+        "title": "整数"
+      }
+    },
+    "91": {
+      "inputs": {
+        "value": 1080
+      },
+      "class_type": "ImpactInt",
+      "_meta": {
+        "title": "整数"
+      }
+    },
+    "93": {
+      "inputs": {
+        "conditioning": [
+          "85",
+          0
+        ]
+      },
+      "class_type": "ConditioningZeroOut",
+      "_meta": {
+        "title": "条件零化"
+      }
+    },
+    "107": {
+      "inputs": {
+        "clip_name": "QWEN\\Qwen3-4B-Q6_K.gguf",
+        "type": "lumina2"
+      },
+      "class_type": "CLIPLoaderGGUF",
+      "_meta": {
+        "title": "CLIP加载器 (GGUF)"
+      }
+    },
+    "108": {
+      "inputs": {
+        "lora_name": "Z-INGM\\lora\\zit_fdpo_v1.safetensors",
+        "strength_model": 0.6,
+        "model": [
+          "79",
+          0
+        ]
+      },
+      "class_type": "LoraLoaderModelOnly",
+      "_meta": {
+        "title": "LoRA加载器（仅模型）"
+      }
+    },
+    "122": {
+      "inputs": {
+        "filename_prefix": "ComfyUI",
+        "images": [
+          "82",
+          0
+        ]
+      },
+      "class_type": "SaveImage",
+      "_meta": {
+        "title": "保存图像"
+      }
+    }
+  }
+}

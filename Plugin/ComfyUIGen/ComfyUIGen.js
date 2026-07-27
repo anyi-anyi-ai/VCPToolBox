@@ -63,8 +63,10 @@ function debugLog(...args) {
 // Helper to validate input arguments
 function isValidComfyUIGenArgs(args) {
     if (!args || typeof args !== 'object') return false;
-    if (typeof args.prompt !== 'string' || !args.prompt.trim()) return false;
-    return true;
+    // 对于图生图，prompt 可以为空，但需要有 image
+    if (typeof args.prompt === 'string' && args.prompt.trim()) return true;
+    if (args.image) return true; // 图生图模式
+    return false;
 }
 
 // 加载工作流模板
@@ -81,6 +83,7 @@ async function loadWorkflowTemplate(templateName = 'text2img_basic') {
 
 
 const { randomBytes } = require('crypto');
+const FormData = require('form-data'); // 需要 npm install form-data
 
 // 生成合法随机种子（0..2^32-1）使用加密学安全源，避免 Math.random 偏差
 function generateRandomSeed() {
@@ -164,7 +167,11 @@ function fillWorkflowParameters(workflow, args, config) {
         '{{FD_MAX_SIZE}}': settings.faceDetailerMaxSize || 1024,
         '{{FD_SAM_DILATION}}': settings.faceDetailerSamDilation || 0,
         '{{FD_SAM_DETECTION_HINT}}': settings.faceDetailerSamDetectionHint || 'center-1',
-        '{{FD_GUIDE_SIZE}}': settings.faceDetailerGuideSize || 512
+        '{{FD_GUIDE_SIZE}}': settings.faceDetailerGuideSize || 512,
+        
+        // 图片输入占位符（用于图生图/重绘）
+        '{{IMAGE}}': args._uploadedImage || '',
+        '{{MASK}}': args._uploadedMask || ''
     };
     
     // 安全的JSON替换 - 先解析为对象，然后递归替换
@@ -209,6 +216,96 @@ function buildLoRAsString(loras) {
             return `<lora:${lora.name}:${strength}:${clipStrength}>`;
         })
         .join(', ');
+}
+
+// 提交工作流到ComfyUI队列
+// 上传图片到 ComfyUI
+async function uploadImageToComfyUI(imagePath, config, filename = null) {
+    const comfyuiAxios = axios.create({
+        baseURL: config.COMFYUI_BASE_URL,
+        headers: config.COMFYUI_API_KEY ? { 'Authorization': `Bearer ${config.COMFYUI_API_KEY}` } : {},
+        timeout: 60000
+    });
+    
+    try {
+        // 读取图片文件
+        const imageBuffer = await fs.readFile(imagePath);
+        const imageFilename = filename || path.basename(imagePath);
+        
+        // 创建 FormData
+        const formData = new FormData();
+        formData.append('image', imageBuffer, {
+            filename: imageFilename,
+            contentType: 'image/png' // 或根据文件扩展名判断
+        });
+        formData.append('type', 'input');
+        formData.append('overwrite', 'true');
+        
+        debugLog('Uploading image to ComfyUI:', imageFilename);
+        
+        const response = await comfyuiAxios.post('/upload/image', formData, {
+            headers: {
+                ...formData.getHeaders()
+            }
+        });
+        
+        debugLog('Image uploaded successfully:', response.data);
+        return response.data;
+    } catch (error) {
+        debugLog('Image upload failed:', error.message);
+        throw new Error(`Failed to upload image to ComfyUI: ${error.message}`);
+    }
+}
+
+// 从 URL 或本地路径获取图片并上传到 ComfyUI
+async function prepareImageForComfyUI(imageSource, config) {
+    let tempFilePath = null;
+    
+    try {
+        if (imageSource.startsWith('http://') || imageSource.startsWith('https://')) {
+            // 从 URL 下载图片
+            debugLog('Downloading image from URL:', imageSource);
+            const response = await axios({
+                method: 'get',
+                url: imageSource,
+                responseType: 'arraybuffer',
+                timeout: 30000
+            });
+            
+            // 保存到临时文件
+            const tempDir = path.join(config.PROJECT_BASE_PATH, 'temp');
+            await fs.mkdir(tempDir, { recursive: true });
+            tempFilePath = path.join(tempDir, `temp_${Date.now()}.png`);
+            await fs.writeFile(tempFilePath, response.data);
+        } else if (imageSource.startsWith('data:')) {
+            // 处理 base64 图片
+            debugLog('Processing base64 image');
+            const base64Data = imageSource.split(',')[1];
+            const buffer = Buffer.from(base64Data, 'base64');
+            
+            const tempDir = path.join(config.PROJECT_BASE_PATH, 'temp');
+            await fs.mkdir(tempDir, { recursive: true });
+            tempFilePath = path.join(tempDir, `temp_${Date.now()}.png`);
+            await fs.writeFile(tempFilePath, buffer);
+        } else {
+            // 本地文件路径
+            debugLog('Using local file path:', imageSource);
+            tempFilePath = imageSource;
+        }
+        
+        // 上传到 ComfyUI
+        const uploadResult = await uploadImageToComfyUI(tempFilePath, config);
+        return uploadResult.name;
+    } finally {
+        // 清理临时文件（只清理下载的临时文件，不清理用户指定的本地文件）
+        if (tempFilePath && (imageSource.startsWith('http') || imageSource.startsWith('data:'))) {
+            try {
+                await fs.unlink(tempFilePath);
+            } catch (e) {
+                debugLog('Warning: Failed to clean up temp file:', e.message);
+            }
+        }
+    }
 }
 
 // 提交工作流到ComfyUI队列
@@ -363,6 +460,34 @@ async function generateImageAndSave(args) {
     }
 
     debugLog('Starting image generation with args:', args);
+
+    // 处理图片输入（用于图生图/重绘）
+    let uploadedImageName = null;
+    let uploadedMaskName = null;
+    
+    if (args.image) {
+        debugLog('Processing input image:', args.image);
+        try {
+            uploadedImageName = await prepareImageForComfyUI(args.image, config);
+            debugLog('Image uploaded to ComfyUI as:', uploadedImageName);
+        } catch (error) {
+            throw new Error(`ComfyUI Plugin Error: Failed to process input image: ${error.message}`);
+        }
+    }
+    
+    if (args.mask) {
+        debugLog('Processing input mask:', args.mask);
+        try {
+            uploadedMaskName = await prepareImageForComfyUI(args.mask, config);
+            debugLog('Mask uploaded to ComfyUI as:', uploadedMaskName);
+        } catch (error) {
+            throw new Error(`ComfyUI Plugin Error: Failed to process input mask: ${error.message}`);
+        }
+    }
+    
+    // 将图片信息添加到 args 中，供 fillWorkflowParameters 使用
+    args._uploadedImage = uploadedImageName;
+    args._uploadedMask = uploadedMaskName;
 
     // 通用回退序列
     const userPrompt = args.prompt || '';

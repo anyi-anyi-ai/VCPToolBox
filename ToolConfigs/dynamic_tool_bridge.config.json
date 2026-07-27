@@ -16,8 +16,8 @@
     "descriptionOverrides": {}
   },
   "smallModel": {
-    "enabled": true,
-    "useMainConfig": true,
+    "enabled": false,
+    "useMainConfig": false,
     "endpoint": "",
     "model": "gpt-5.6-luna"
   }
