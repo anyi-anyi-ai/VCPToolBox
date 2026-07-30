@@ -5,12 +5,12 @@
   "workflow": {
     "4": {
       "inputs": {
-        "seed": 6090791541018,
-        "steps": 2,
-        "cfg": 1,
-        "sampler_name": "euler",
-        "scheduler": "simple",
-        "denoise": 1,
+        "seed": "{{SEED}}",
+        "steps": "{{STEPS}}",
+        "cfg": "{{CFG}}",
+        "sampler_name": "{{SAMPLER}}",
+        "scheduler": "{{SCHEDULER}}",
+        "denoise": "{{DENOISE}}",
         "model": [
           "34",
           0
@@ -35,7 +35,7 @@
     },
     "5": {
       "inputs": {
-        "text": "闭着一只眼睛的女人正面肖像",
+        "text": "{{POSITIVE_PROMPT}}",
         "clip": [
           "28",
           0

@@ -149,12 +149,12 @@
     },
     "16": {
       "inputs": {
-        "seed": 356898000131522,
-        "steps": 10,
-        "cfg": 1,
-        "sampler_name": "euler",
-        "scheduler": "simple",
-        "denoise": 0.7,
+        "seed": "{{SEED}}",
+        "steps": "{{STEPS}}",
+        "cfg": "{{CFG}}",
+        "sampler_name": "{{SAMPLER}}",
+        "scheduler": "{{SCHEDULER}}",
+        "denoise": "{{DENOISE}}",
         "model": [
           "19",
           0

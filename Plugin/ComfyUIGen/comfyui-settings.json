@@ -5,7 +5,7 @@
   "defaultModel": "z-image\\z-image-turbo-fp8-e4m3fn.safetensors",
   "defaultWidth": 1920,
   "defaultHeight": 1080,
-  "defaultSteps": 9,
+  "defaultSteps": 8,
   "defaultCfg": 1.0,
   "defaultSampler": "euler",
   "defaultScheduler": "simple",
@@ -17,5 +17,5 @@
   "defaultLoRAStrength": 0.6,
   "negativePrompt": "",
   "version": "1.0.0",
-  "lastUpdated": "2026-07-26T13:00:00Z"
+  "lastUpdated": "2026-07-27T11:56:53Z"
 }
