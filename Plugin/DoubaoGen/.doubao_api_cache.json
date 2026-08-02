@@ -4,10 +4,10 @@
     "keys": [
       {
         "key": "6d9c34ca-cc07-4cd7-a5d5-ebea93636d0e",
-        "active": false,
-        "errorCount": 3,
+        "active": true,
+        "errorCount": 2,
         "maxErrors": 3,
-        "lastError": "2026-07-15T07:39:36.186Z",
+        "lastError": "2026-07-31T12:23:58.508Z",
         "lastErrorType": "api_error",
         "lastSuccess": "2026-05-31T03:26:08.695Z"
       }
