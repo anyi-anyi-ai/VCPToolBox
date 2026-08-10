@@ -22,6 +22,9 @@ let redactSensitiveDom = true; // 浏览器内隐私开关：默认开启，用�
 let heartbeatIntervalId = null;
 let latestPageInfo = null;
 let currentActiveTabId = null;
+const pageImageCache = new Map();
+const PAGE_IMAGE_CACHE_MAX_ENTRIES = 24;
+const PAGE_IMAGE_CACHE_TTL_MS = 10 * 60 * 1000;
 const HEARTBEAT_INTERVAL = 30 * 1000;
 const defaultServerUrl = 'ws://localhost:8088';
 const defaultVcpKey = 'your_secret_key';
@@ -29,6 +32,7 @@ let runtimeIdentity = {
     protocolVersion: 3,
     clientKind: 'user',
     managedRuntime: false,
+    manualManagedSelection: false,
     managedToken: null,
     managedTokenCreatedAt: 0,
     stageGeneration: null,
@@ -43,7 +47,8 @@ let runtimeIdentity = {
         'structuredErrors', 'screenshot', 'stableSnapshotHash', 'actionVerification',
         'sensitiveDomRedaction', 'cdpInput', 'occlusionCheck', 'sendKeys', 'setValue',
         'selectOption', 'hover', 'check', 'waitFor', 'unifiedPageGraph',
-        'groundedMarkdown', 'interactionTree', 'scrollContext', 'snapshotDiff'
+        'groundedMarkdown', 'interactionTree', 'scrollContext', 'snapshotDiff',
+        'pageImages', 'pageImageCapture'
     ]
 };
 
@@ -100,10 +105,15 @@ async function executeLegacyCommandThroughCore(commandData = {}) {
 function applyRuntimeConfig(config, source = 'unknown') {
     if (!config || config.managedRuntime !== true || !config.managedToken) return null;
 
+    // 用户在 Popup 中明确选择的模式优先；自动 staging 配置只能补全自动模式，
+    // 不能在 MV3 service worker 重启后覆盖人工选择。
+    if (runtimeIdentity.manualManagedSelection) return null;
+
     runtimeIdentity = {
         ...runtimeIdentity,
         clientKind: 'managed',
         managedRuntime: true,
+        manualManagedSelection: false,
         managedToken: String(config.managedToken),
         managedTokenCreatedAt: Number(config.tokenCreatedAt) || 0,
         stageGeneration: config.stageGeneration || null,
@@ -124,6 +134,7 @@ function applyRuntimeConfig(config, source = 'unknown') {
         vcpKey: runtimeConnectionConfig.vcpKey,
         clientKind: 'managed',
         managedRuntime: true,
+        manualManagedSelection: false,
         managedToken: runtimeIdentity.managedToken,
         managedTokenCreatedAt: runtimeIdentity.managedTokenCreatedAt,
         stageGeneration: runtimeIdentity.stageGeneration,
@@ -208,6 +219,7 @@ function sendClientHello() {
                 redactSensitiveDom
             },
             managedRuntime: runtimeIdentity.managedRuntime,
+            manualManagedSelection: runtimeIdentity.manualManagedSelection,
             managedToken: runtimeIdentity.managedToken,
             managedTokenCreatedAt: runtimeIdentity.managedTokenCreatedAt,
             stageGeneration: runtimeIdentity.stageGeneration,
@@ -484,21 +496,54 @@ function updateIcon() {
     chrome.action.setBadgeBackgroundColor({ color: isConnected ? '#00C853' : '#FF5252' });
 }
 
-function applyClientMode(mode) {
+async function applyClientMode(mode) {
     const normalizedMode = String(mode || '').trim().toLowerCase();
-    const clientKind = normalizedMode === 'agent' ? 'agent' : 'user';
-    runtimeIdentity = {
-        ...runtimeIdentity,
-        clientKind,
-        managedRuntime: false
-    };
-    connectionEnabled = clientKind === 'agent' ? true : connectionEnabled;
-    chrome.storage.local.set({
-        clientKind,
-        agentMode: clientKind === 'agent',
-        managedRuntime: false,
-        connectionEnabled
-    });
+
+    if (normalizedMode === 'managed') {
+        // 人工 Managed 是用户在扩展 UI 中的明确授权，不依赖 Chromium
+        // 是否允许读取动态 staging 文件或接受 Profile storage 预注入。
+        runtimeIdentity = {
+            ...runtimeIdentity,
+            clientKind: 'managed',
+            managedRuntime: true,
+            manualManagedSelection: true,
+            managedToken: null,
+            managedTokenCreatedAt: 0
+        };
+        connectionEnabled = true;
+        isMonitoringEnabled = true;
+        await chrome.storage.local.set({
+            clientKind: 'managed',
+            agentMode: false,
+            managedRuntime: true,
+            manualManagedSelection: true,
+            managedToken: null,
+            managedTokenCreatedAt: 0,
+            isMonitoringEnabled: true,
+            connectionEnabled: true
+        });
+    } else {
+        const clientKind = normalizedMode === 'agent' ? 'agent' : 'user';
+        runtimeIdentity = {
+            ...runtimeIdentity,
+            clientKind,
+            managedRuntime: false,
+            manualManagedSelection: false,
+            managedToken: null,
+            managedTokenCreatedAt: 0
+        };
+        connectionEnabled = clientKind === 'agent' ? true : connectionEnabled;
+        await chrome.storage.local.set({
+            clientKind,
+            agentMode: clientKind === 'agent',
+            managedRuntime: false,
+            manualManagedSelection: false,
+            managedToken: null,
+            managedTokenCreatedAt: 0,
+            connectionEnabled
+        });
+    }
+
     if (reconnectTimerId && !shouldAutoReconnect()) {
         clearTimeout(reconnectTimerId);
         reconnectTimerId = null;
@@ -508,9 +553,12 @@ function applyClientMode(mode) {
     } else if (shouldAutoReconnect()) {
         connect();
     }
+    broadcastMonitoringStatusToTabs();
     broadcastStatusUpdate();
     return {
+        success: true,
         clientKind: runtimeIdentity.clientKind,
+        managedRuntime: runtimeIdentity.managedRuntime,
         agentMode: runtimeIdentity.clientKind === 'agent',
         isConnected
     };
@@ -567,7 +615,15 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         sendResponse({ isMonitoringEnabled: isMonitoringEnabled });
         return true;
     } else if (request.type === 'SET_CLIENT_MODE') {
-        sendResponse(applyClientMode(request.mode));
+        applyClientMode(request.mode)
+            .then(sendResponse)
+            .catch(error => sendResponse({
+                success: false,
+                error: error.message || String(error),
+                clientKind: runtimeIdentity.clientKind,
+                managedRuntime: runtimeIdentity.managedRuntime,
+                isConnected
+            }));
         return true;
     } else if (request.type === 'PRIVACY_SETTINGS_CHANGED') {
         redactSensitiveDom = request.redactSensitiveDom !== false;
@@ -630,6 +686,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             scrollContext: request.data.scrollContext || null,
             snapshotDiff: request.data.snapshotDiff || null,
             pageGraph: request.data.pageGraph || null,
+            images: Array.isArray(request.data.images) ? request.data.images : [],
+            imageCount: Number(request.data.imageCount) || (Array.isArray(request.data.images) ? request.data.images.length : 0),
             agentView: request.data.agentView || {
                 format: 'grounded-markdown-v1',
                 mode: 'auto',
@@ -672,7 +730,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             groundedMarkdownLength: groundedMarkdown.length,
             timestamp: Date.now()
         };
-
         latestPageInfo = {
             ...pageInfoSummary,
             markdown: groundedMarkdown,
@@ -680,6 +737,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             interactionTree: outboundPageInfo.interactionTree,
             scrollContext: outboundPageInfo.scrollContext,
             snapshotDiff: outboundPageInfo.snapshotDiff,
+            images: outboundPageInfo.images,
+            imageCount: outboundPageInfo.imageCount,
             agentView: outboundPageInfo.agentView
         };
         console.log('[VCP Background] 📄 已缓存 Grounded 页面信息:', pageInfoSummary);
@@ -841,6 +900,8 @@ function isSafeContentScriptRetryCommand(command) {
     return new Set([
         'wait_for',
         'get_page_info',
+        'get_page_image',
+        'page_get_image',
         'query_html',
         'query_js',
         'page_code_search'
@@ -1258,8 +1319,239 @@ async function executeCdpAction(commandData, tabId) {
     };
 }
 
+async function blobToDataUrl(blob) {
+    const bytes = new Uint8Array(await blob.arrayBuffer());
+    const chunkSize = 0x8000;
+    let binary = '';
+    for (let offset = 0; offset < bytes.length; offset += chunkSize) {
+        binary += String.fromCharCode(...bytes.subarray(offset, offset + chunkSize));
+    }
+    return `data:${blob.type || 'application/octet-stream'};base64,${btoa(binary)}`;
+}
+
+async function captureResolvedPageImage(tab, resolved, commandData = {}) {
+    const rect = resolved?.viewportRect;
+    if (!rect || rect.width <= 0 || rect.height <= 0) {
+        const error = new Error('页面图片没有有效的视口矩形');
+        error.code = 'IMAGE_INVALID_RECT';
+        throw error;
+    }
+
+    const requestedFormat = String(commandData.format || commandData.imageFormat || 'jpeg').toLowerCase();
+    const format = requestedFormat === 'png' ? 'png' : 'jpeg';
+    const quality = parseNumberParam(commandData.quality, 85, 1, 100);
+    const screenshotDataUrl = await chrome.tabs.captureVisibleTab(
+        tab.windowId,
+        format === 'jpeg' ? { format: 'jpeg', quality } : { format: 'png' }
+    );
+    if (!screenshotDataUrl) {
+        const error = new Error('Chrome 未返回页面截图');
+        error.code = 'PAGE_IMAGE_CAPTURE_FAILED';
+        throw error;
+    }
+
+    const sourceBlob = await (await fetch(screenshotDataUrl)).blob();
+    const bitmap = await createImageBitmap(sourceBlob);
+    const dpr = Math.max(0.1, Number(resolved.devicePixelRatio) || 1);
+    const sourceX = Math.max(0, Math.round(rect.x * dpr));
+    const sourceY = Math.max(0, Math.round(rect.y * dpr));
+    const sourceWidth = Math.min(bitmap.width - sourceX, Math.max(1, Math.round(rect.width * dpr)));
+    const sourceHeight = Math.min(bitmap.height - sourceY, Math.max(1, Math.round(rect.height * dpr)));
+
+    if (sourceWidth <= 0 || sourceHeight <= 0) {
+        bitmap.close();
+        const error = new Error('图片区域超出当前可视截图范围');
+        error.code = 'IMAGE_OUTSIDE_CAPTURE';
+        throw error;
+    }
+
+    const maxWidth = parseNumberParam(commandData.maxWidth, 1600, 64, 4096);
+    const resizeScale = Math.min(1, maxWidth / sourceWidth);
+    const outputWidth = Math.max(1, Math.round(sourceWidth * resizeScale));
+    const outputHeight = Math.max(1, Math.round(sourceHeight * resizeScale));
+    const canvas = new OffscreenCanvas(outputWidth, outputHeight);
+    const context = canvas.getContext('2d', { alpha: format === 'png' });
+    context.drawImage(
+        bitmap,
+        sourceX,
+        sourceY,
+        sourceWidth,
+        sourceHeight,
+        0,
+        0,
+        outputWidth,
+        outputHeight
+    );
+    bitmap.close();
+
+    const outputBlob = await canvas.convertToBlob({
+        type: `image/${format}`,
+        quality: format === 'jpeg' ? quality / 100 : undefined
+    });
+    const dataUrl = await blobToDataUrl(outputBlob);
+    return {
+        dataUrl,
+        mimeType: outputBlob.type || `image/${format}`,
+        format,
+        byteLength: outputBlob.size,
+        width: outputWidth,
+        height: outputHeight,
+        sourceWidth,
+        sourceHeight,
+        capturedAt: new Date().toISOString()
+    };
+}
+
+function prunePageImageCache() {
+    const now = Date.now();
+    for (const [key, entry] of pageImageCache) {
+        if (now - entry.cachedAt > PAGE_IMAGE_CACHE_TTL_MS) {
+            pageImageCache.delete(key);
+        }
+    }
+    while (pageImageCache.size > PAGE_IMAGE_CACHE_MAX_ENTRIES) {
+        const oldestKey = pageImageCache.keys().next().value;
+        if (oldestKey === undefined) break;
+        pageImageCache.delete(oldestKey);
+    }
+}
+
+function getCachedPageImage(cacheKey) {
+    prunePageImageCache();
+    const entry = pageImageCache.get(cacheKey);
+    if (!entry) return null;
+    pageImageCache.delete(cacheKey);
+    pageImageCache.set(cacheKey, entry);
+    return {
+        ...entry.value,
+        cache: {
+            hit: true,
+            cachedAt: new Date(entry.cachedAt).toISOString(),
+            ttlMs: PAGE_IMAGE_CACHE_TTL_MS
+        }
+    };
+}
+
+function cachePageImage(cacheKey, value) {
+    pageImageCache.delete(cacheKey);
+    pageImageCache.set(cacheKey, {
+        cachedAt: Date.now(),
+        value
+    });
+    prunePageImageCache();
+}
+
+async function executePageImageCommand(commandData = {}) {
+    const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+    const tab = tabs[0];
+    if (!tab?.id) {
+        const error = new Error('没有活动的标签页');
+        error.code = 'NO_ACTIVE_TAB';
+        throw error;
+    }
+
+    const resolvedResponse = await chrome.tabs.sendMessage(tab.id, {
+        type: 'EXECUTE_CORE_COMMAND',
+        data: {
+            command: 'page_get_image',
+            imageId: commandData.imageId || commandData.target,
+            runtimeInstanceId: commandData.runtimeInstanceId,
+            documentGeneration: commandData.documentGeneration,
+            snapshotId: commandData.snapshotId,
+            strict: commandData.strict === true
+        }
+    });
+    if (!resolvedResponse || resolvedResponse.status === 'error') {
+        const error = new Error(resolvedResponse?.error || '页面图片解析失败');
+        error.code = resolvedResponse?.code || 'PAGE_IMAGE_RESOLVE_FAILED';
+        error.details = resolvedResponse?.details || null;
+        throw error;
+    }
+
+    const resolved = resolvedResponse.result;
+    const strictImageId = resolved.strictImageId || resolved.resolvedImageId;
+    const format = String(commandData.format || commandData.imageFormat || 'jpeg').toLowerCase() === 'png'
+        ? 'png'
+        : 'jpeg';
+    const quality = parseNumberParam(commandData.quality, 85, 1, 100);
+    const maxWidth = parseNumberParam(commandData.maxWidth, 1600, 64, 4096);
+    const cacheKey = [
+        tab.id,
+        resolved.runtimeInstanceId,
+        resolved.documentGeneration,
+        strictImageId,
+        format,
+        quality,
+        maxWidth
+    ].join('|');
+    const cached = getCachedPageImage(cacheKey);
+    if (cached) {
+        return {
+            status: 'success',
+            code: 'PAGE_IMAGE_CACHE_HIT',
+            message: `已从缓存获取页面图片 ${resolved.imageId || commandData.imageId || commandData.target}`,
+            result: cached
+        };
+    }
+
+    const captured = await captureResolvedPageImage(tab, resolved, {
+        ...commandData,
+        format,
+        quality,
+        maxWidth
+    });
+    const result = {
+        ...captured,
+        imageId: resolved.imageId,
+        strictImageId,
+        kind: resolved.kind,
+        alt: resolved.alt,
+        caption: resolved.caption,
+        headingPath: resolved.headingPath,
+        contentBlockId: resolved.contentBlockId,
+        runtimeInstanceId: resolved.runtimeInstanceId,
+        documentGeneration: resolved.documentGeneration,
+        snapshotId: resolved.snapshotId,
+        sourceMode: 'rendered',
+        cache: {
+            hit: false,
+            ttlMs: PAGE_IMAGE_CACHE_TTL_MS
+        }
+    };
+    cachePageImage(cacheKey, result);
+    return {
+        status: 'success',
+        code: 'PAGE_IMAGE_CAPTURED',
+        message: `已获取页面图片 ${resolved.imageId || commandData.imageId || commandData.target}`,
+        result
+    };
+}
+
 async function handleIncomingCommand(commandData) {
     const { command, requestId, sourceClientId } = commandData;
+
+    if (command === 'get_page_image' || command === 'page_get_image') {
+        try {
+            const result = await executePageImageCommand(commandData);
+            sendResponseToWs({
+                type: 'command_result',
+                data: { requestId, sourceClientId, ...result }
+            });
+        } catch (error) {
+            sendResponseToWs({
+                type: 'command_result',
+                data: {
+                    requestId,
+                    sourceClientId,
+                    status: 'error',
+                    code: error.code || 'PAGE_IMAGE_CAPTURE_FAILED',
+                    error: error.message,
+                    details: error.details || null
+                }
+            });
+        }
+        return;
+    }
 
     const cdpInputCommands = new Set(['click', 'type', 'set_value', 'send_keys', 'hover', 'scroll']);
     const wantsCdpInput = cdpInputCommands.has(command) &&
@@ -1540,9 +1832,12 @@ chrome.tabs.onActivated.addListener((activeInfo) => {
 
 // 监听标签页URL变化或加载状态变化
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-    // 主框架导航开始即提升文档代次；旧文档句柄不得跨代恢复。
+    // 主框架导航开始即提升文档代次；旧文档句柄与缓存不得跨代恢复。
     if (changeInfo.status === 'loading') {
         chromeWebAgentAdapter.noteDocumentGeneration(tabId, 'chrome.tabs.onUpdated:loading');
+        for (const key of pageImageCache.keys()) {
+            if (key.startsWith(`${tabId}|`)) pageImageCache.delete(key);
+        }
     }
     // 当导航开始时，清除内容脚本的状态以防止内容累积
     if (changeInfo.status === 'loading' && tab.active) {
@@ -1622,10 +1917,21 @@ if (chrome.alarms && chrome.alarms.onAlarm) {
     });
 }
 
-// 尝试加载 managed runtime 配置，然后按连接开关/Agent保活策略连接。
-chrome.storage.local.get(['connectionEnabled', 'clientKind'], (result) => {
+// 恢复用户明确选择的模式。人工 Managed 优先于自动 staging 探测。
+chrome.storage.local.get(['connectionEnabled', 'clientKind', 'managedRuntime', 'manualManagedSelection'], (result) => {
     if (result.connectionEnabled !== undefined) connectionEnabled = result.connectionEnabled === true;
     if (result.clientKind === 'agent') runtimeIdentity.clientKind = 'agent';
+    if (
+        result.clientKind === 'managed' &&
+        result.managedRuntime === true &&
+        result.manualManagedSelection === true
+    ) {
+        runtimeIdentity.clientKind = 'managed';
+        runtimeIdentity.managedRuntime = true;
+        runtimeIdentity.manualManagedSelection = true;
+        runtimeIdentity.managedToken = null;
+        runtimeIdentity.managedTokenCreatedAt = 0;
+    }
 
     loadManagedRuntimeConfig().finally(() => {
         if (runtimeIdentity.managedRuntime || runtimeIdentity.clientKind === 'agent') {

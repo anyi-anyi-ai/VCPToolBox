@@ -22,6 +22,7 @@ const files = {
     popupHtml: path.join(root, 'Plugin', 'ChromeBridge', 'VCPChrome', 'popup.html'),
     pluginManifest: path.join(root, 'Plugin', 'ChromeBridge', 'plugin-manifest.json'),
     extensionManifest: path.join(root, 'Plugin', 'ChromeBridge', 'VCPChrome', 'manifest.json'),
+    managedSetup: path.join(root, 'scripts', 'open_managed_browser_setup.js'),
     fixture: path.join(root, 'tests', 'chromeBridge', 'pages', 'basic-actions.html')
 };
 
@@ -45,7 +46,8 @@ const checkedJavaScriptFiles = [
     files.adapterContract,
     files.chromeAdapter,
     files.coreIndex,
-    files.popup
+    files.popup,
+    files.managedSetup
 ];
 for (const file of checkedJavaScriptFiles) {
     checkJavaScriptSyntax(file);
@@ -66,9 +68,10 @@ const chromeAdapter = read(files.chromeAdapter);
 const coreIndex = read(files.coreIndex);
 const popup = read(files.popup);
 const popupHtml = read(files.popupHtml);
+const managedSetup = read(files.managedSetup);
 const fixture = read(files.fixture);
 
-assert.strictEqual(pluginManifest.version, '2.3.0');
+assert.strictEqual(pluginManifest.version, '2.4.0');
 assert.strictEqual(extensionManifest.manifest_version, 3);
 
 assert.match(background, /protocolVersion:\s*3/);
@@ -92,7 +95,7 @@ assert.match(background, /formatLegacyChromeResult/);
 assert.match(background, /function isSafeContentScriptRetryCommand/);
 assert.match(background, /function sendSafeCommandAfterNavigation/);
 assert.match(background, /CONTENT_SCRIPT_NOT_READY_AFTER_NAVIGATION/);
-for (const command of ['wait_for', 'get_page_info', 'query_html', 'query_js', 'page_code_search']) {
+for (const command of ['wait_for', 'get_page_info', 'get_page_image', 'query_html', 'query_js', 'page_code_search']) {
     assert.match(background, new RegExp(`['"]${command}['"]`), `缺少导航后安全重试命令: ${command}`);
 }
 assert.doesNotMatch(
@@ -107,7 +110,20 @@ assert.match(background, /groundedMarkdown/);
 assert.match(background, /interactionTree/);
 assert.match(background, /scrollContext/);
 assert.match(background, /snapshotDiff/);
+assert.match(background, /pageImages/);
+assert.match(background, /pageImageCapture/);
+assert.match(background, /executePageImageCommand/);
+assert.match(background, /captureResolvedPageImage/);
+assert.match(background, /command:\s*'page_get_image'/);
+assert.match(background, /command === 'get_page_image' \|\| command === 'page_get_image'/);
+assert.match(background, /OffscreenCanvas/);
+assert.match(background, /PAGE_IMAGE_CAPTURED/);
+assert.match(background, /data:image|blobToDataUrl/);
 assert.match(background, /if\s*\(!runtimeIdentity\.managedRuntime\)/);
+assert.match(background, /manualManagedSelection/);
+assert.match(background, /normalizedMode === 'managed'/);
+assert.match(background, /SET_CLIENT_MODE/);
+assert.doesNotMatch(background, /managedPairingToken|manual_pairing/);
 assert.match(background, /noteDocumentGeneration/);
 assert.match(background, /updateDocumentState/);
 
@@ -122,6 +138,8 @@ assert.match(protocolCore, /sensitiveResult/);
 assert.match(protocolCore, /function isRetryAllowed/);
 assert.match(protocolCore, /runtime_execute_script/);
 assert.match(protocolCore, /network_get_response_body/);
+assert.match(protocolCore, /\['page_get_image',\s*'page',\s*Risk\.READ,\s*false,\s*true,\s*false,\s*\['page',\s*'screenshot'\]\]/);
+assert.match(protocolCore, /get_page_image:\s*'page_get_image'/);
 
 assert.match(adapterContract, /class WebAgentAdapter/);
 assert.match(adapterContract, /sendDebuggerCommand/);
@@ -153,6 +171,18 @@ assert.match(runtime, /runtimeInstanceId/);
 assert.match(runtime, /lastCloseReason/);
 assert.match(runtime, /previousPid/);
 
+assert.match(managedSetup, /function buildOpenChromeToolRequest/);
+assert.match(managedSetup, /function postHumanTool/);
+assert.match(managedSetup, /path:\s*'\/v1\/human\/tool'/);
+assert.match(managedSetup, /'Authorization':\s*`Bearer \$\{key\}`/);
+assert.match(managedSetup, /'Content-Type':\s*'text\/plain;charset=UTF-8'/);
+assert.match(managedSetup, /tool_name:「始」ChromeBridge「末」/);
+assert.match(managedSetup, /command:「始」open_chrome「末」/);
+assert.match(managedSetup, /interactiveSetup:「始」true「末」/);
+assert.doesNotMatch(managedSetup, /browserRuntimeManager|ensureManagedBrowser|DevToolsActivePort|waitForManagedBrowserExit/);
+assert.match(bridge, /const interactiveSetup = parseBoolean\(params\.interactiveSetup, false\)/);
+assert.match(bridge, /idleTimeoutMs:\s*24 \* 60 \* 60 \* 1000/);
+
 assert.match(content, /VCPWebAgentPageRuntimeCore/);
 assert.match(content, /createWebAgentPageRuntime/);
 assert.match(content, /pageRuntime\.snapshot\(\)/);
@@ -161,6 +191,7 @@ assert.match(content, /pageRuntime\.invalidateDocument/);
 assert.match(content, /GET_GROUNDED_PAGE_INFO/);
 assert.match(content, /EXECUTE_CORE_COMMAND/);
 assert.match(content, /EXECUTE_COMMAND/);
+assert.match(content, /get_page_image:\s*'page_get_image'/);
 assert.doesNotMatch(content, /function validateEntry/);
 assert.doesNotMatch(content, /function dispatchClick/);
 assert.doesNotMatch(content, /function selectOption/);
@@ -191,10 +222,27 @@ assert.match(pageRuntimeCore, /ELEMENT_HANDLE_NOT_REGISTERED/);
 assert.match(pageRuntimeCore, /source:\s*'registry-exact'/);
 assert.match(pageRuntimeCore, /recoveryUsed:\s*false/);
 assert.match(pageRuntimeCore, /queryRootType/);
+assert.match(pageRuntimeCore, /STRICT_IMAGE_ID_PATTERN/);
+assert.match(pageRuntimeCore, /function scoreContentImage/);
+assert.match(pageRuntimeCore, /function registerPageImage/);
+assert.match(pageRuntimeCore, /function resolvePageImage/);
+assert.match(pageRuntimeCore, /PAGE_IMAGE_RESOLVED/);
+assert.match(pageRuntimeCore, /data-vcp-image-id/);
 
 assert.match(popupHtml, /id="redactSensitiveDom"\s+checked/);
 assert.match(popupHtml, /type="password"\s+id="vcpKey"/);
+assert.doesNotMatch(popupHtml, /id="managedToken"/);
+assert.match(popupHtml, /id="client-mode-error"/);
+assert.match(popupHtml, /id="selectUserMode"/);
+assert.match(popupHtml, /id="selectAgentMode"/);
+assert.match(popupHtml, /id="selectManagedMode"/);
+assert.doesNotMatch(popupHtml, /id="toggleClientMode"/);
 assert.match(popup, /result\.redactSensitiveDom\s*!==\s*false/);
+assert.match(popup, /selectClientMode\('user'\)/);
+assert.match(popup, /selectClientMode\('agent'\)/);
+assert.match(popup, /selectClientMode\('managed'\)/);
+assert.doesNotMatch(popup, /currentClientKind === 'agent'\s*\?\s*'managed'/);
+assert.doesNotMatch(popup, /managedPairingToken|managedTokenInput/);
 assert.match(popup, /PRIVACY_SETTINGS_CHANGED/);
 assert.match(popupHtml, /id="copyGroundedMarkdown"/);
 assert.match(popupHtml, /复制当前页面 MD 操作图全文/);
@@ -221,9 +269,35 @@ assert.match(bridge, /pageContentMarkdown/);
 assert.match(bridge, /interactionTree/);
 assert.match(bridge, /scrollContext/);
 assert.match(bridge, /snapshotDiff/);
+assert.match(bridge, /imageId/);
+assert.match(bridge, /maxWidth/);
+assert.match(bridge, /function getImageDataUrl/);
+assert.match(bridge, /type:\s*'image_url'/);
+assert.match(bridge, /url:\s*imageDataUrl/);
 assert.match(bridge, /当前页面 Grounded Markdown/);
 assert.match(bridge, /function controlsManagedRuntime/);
 assert.match(bridge, /touchManagedRuntimeForCommand/);
+assert.match(bridge, /function isTrustedManagedClient/);
+assert.match(
+    bridge,
+    /entry\?\.clientKind === 'managed'[\s\S]*?entry\.managedTokenValid === true \|\| entry\.manualManagedSelection === true/,
+    'managed 目标必须由 token 自动认证或 Popup 人工明确选择'
+);
+assert.doesNotMatch(
+    bridge.match(/async function waitForManagedClient[\s\S]*?\n}/)?.[0] || '',
+    /clientKind === 'agent'/,
+    '远端 agent 不得满足本机 managed 启动等待条件'
+);
+assert.doesNotMatch(
+    bridge.match(/function controlsManagedRuntime[\s\S]*?\n}/)?.[0] || '',
+    /clientKind === 'agent'/,
+    '远端 agent 不得控制或续租本机 managed 运行时'
+);
+assert.match(
+    bridge.match(/function controlsManagedRuntime[\s\S]*?\n}/)?.[0] || '',
+    /isTrustedManagedClient/,
+    '本机运行时控制应统一接受自动或人工 Managed'
+);
 assert.match(bridge, /getRuntimeReplacementDetails/);
 assert.match(bridge, /RUNTIME_RESTARTED/);
 assert.match(bridge, /shouldUseTrustedKeyboard/);
@@ -239,13 +313,15 @@ const commandDescriptions = new Map(
     pluginManifest.capabilities.invocationCommands.map(item => [item.command, item.description])
 );
 for (const command of [
-    'browser_status', 'type', 'click', 'scroll', 'get_page_info',
+    'browser_status', 'type', 'click', 'scroll', 'get_page_info', 'get_page_image',
     'send_keys', 'set_value', 'select_option', 'hover', 'check', 'wait_for'
 ]) {
     assert(commandDescriptions.has(command), `缺少 manifest 指令说明: ${command}`);
 }
 assert.match(commandDescriptions.get('type'), /ACTION_VERIFICATION_FAILED/);
 assert.match(commandDescriptions.get('scroll'), /SCROLL_BOUNDARY_REACHED/);
+assert.match(commandDescriptions.get('get_page_image'), /image_url\.url=data:image/);
+assert.match(commandDescriptions.get('get_page_image'), /IMG1/);
 
 assert.match(commandDescriptions.get('hover'), /ELEMENT_OCCLUDED/);
 assert.match(commandDescriptions.get('wait_for'), /dom_stable/);
@@ -279,7 +355,7 @@ console.log(JSON.stringify({
     navigationRetry: 'read-only-commands-only',
     fixture: path.relative(root, files.fixture),
     webAgentProtocolVersion: 1,
-    pageRuntimeVersion: '0.2.1',
+    pageRuntimeVersion: '0.3.0',
     coreCapabilityCount: 71,
     checkedJavaScriptFiles: checkedJavaScriptFiles.length
 }, null, 2));

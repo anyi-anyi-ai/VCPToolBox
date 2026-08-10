@@ -197,7 +197,6 @@ Plugin/RAGDiaryPlugin/semantic_groups.edit.json
 Plugin/RAGDiaryPlugin/semantic_vectors/
 Plugin/TavilySearch/.vcptoolbox_tavily_cache.json
 Plugin/UserAuth/code.bin
-Plugin/VCPTavern/access_logs.json
 Plugin/VCPLog/log/VCPlog.txt
 Plugin/WeatherReporter/weather_cache.json
 Plugin/WeatherReporter/weather_cache.txt
@@ -287,7 +286,7 @@ Thumbs.db
 # ===== 编译产物 =====
 rust-vexus-lite/target/
 Plugin/DailyNoteSearcher/src/target/
-Plugin/MIDITranslator/target/
+Plugin/CodeSearcher/src/target/
 
 # ==== 分布式开发 ====
 VCPDistributedServer
