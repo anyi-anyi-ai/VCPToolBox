@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "0.2.0",
+  "name": "ChKSzMusicFetch",
+  "version": "1.0.0",
+  "description": "基于 ChKSz API 的多平台音乐检索与解析插件",
+  "author": "Aemeath",
+  "pluginType": "hybridservice",
+  "communication": { "protocol": "direct" },
+  "capabilities": {
+    "invocationCommands": [
+      {
+        "commandIdentifier": "search_music",
+        "description": "搜索音乐(支持163/qq/kugou)",
+        "arguments": {
+          "platform": { "type": "string", "description": "平台: 163, qq, kugou" },
+          "keyword": { "type": "string", "description": "搜索关键词" }
+        }
+      },
+      {
+        "commandIdentifier": "get_music_url",
+        "description": "获取音乐直链",
+        "arguments": {
+          "platform": { "type": "string", "description": "平台: 163, qq, kugou" },
+          "id": { "type": "string", "description": "歌曲ID(网易云)或关键词(QQ/酷狗)" },
+          "n": { "type": "string", "description": "序号(QQ/酷狗点歌用，网易云留空)" }
+        }
+      }
+    ]
+  }
+}

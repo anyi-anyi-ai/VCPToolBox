@@ -23,3 +23,8 @@ task_id:「始」task-1779106560000-650e398d「末」,
 action:「始」cancel「末」 // (可选),输入该字段代表取消一个未来调用的任务以避免其被执行。
 <<<[END_TOOL_REQUEST]>>>
 
+多平台音乐检索 (ChKSzMusicFetch):
+    功能: 基于 ChKSz API 进行网易云、QQ音乐、酷狗音乐的搜索与直链解析。
+    调用格式:
+    <<<[TOOL_REQUEST]>>>
+    tool_name:「始」ChKSzMusicFetch
