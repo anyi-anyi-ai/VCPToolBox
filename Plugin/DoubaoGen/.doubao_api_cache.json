@@ -5,11 +5,11 @@
       {
         "key": "6d9c34ca-cc07-4cd7-a5d5-ebea93636d0e",
         "active": true,
-        "errorCount": 2,
+        "errorCount": 0,
         "maxErrors": 3,
-        "lastError": "2026-07-31T12:23:58.508Z",
+        "lastError": "2026-08-11T07:14:33.699Z",
         "lastErrorType": "api_error",
-        "lastSuccess": "2026-05-31T03:26:08.695Z"
+        "lastSuccess": "2026-08-11T07:32:57.720Z"
       }
     ]
   },
@@ -34,7 +34,7 @@
       },
       "name": "doubao-seedream-3-0-t2i",
       "object": "model",
-      "status": "Retiring",
+      "status": "Shutdown",
       "task_type": [
         "TextToImage"
       ],
@@ -124,7 +124,51 @@
       ],
       "token_limits": {},
       "version": "260128"
+    },
+    {
+      "created": 1776349840,
+      "domain": "ImageGeneration",
+      "features": {
+        "structured_outputs": {
+          "json_object": false,
+          "json_schema": false
+        }
+      },
+      "id": "doubao-seedream-4-0-20260415",
+      "modalities": {},
+      "name": "doubao-seedream-4-0",
+      "object": "model",
+      "token_limits": {},
+      "version": "20260415"
+    },
+    {
+      "created": 1782821774,
+      "domain": "ImageGeneration",
+      "features": {
+        "structured_outputs": {
+          "json_object": false,
+          "json_schema": false
+        }
+      },
+      "id": "doubao-seedream-5-0-pro-260628",
+      "modalities": {
+        "input_modalities": [
+          "text",
+          "image"
+        ],
+        "output_modalities": [
+          "image"
+        ]
+      },
+      "name": "doubao-seedream-5-0-pro",
+      "object": "model",
+      "task_type": [
+        "ImageToImage",
+        "TextToImage"
+      ],
+      "token_limits": {},
+      "version": "260628"
     }
   ],
-  "modelsCachedAt": 1780196497049
+  "modelsCachedAt": 1786432450639
 }
