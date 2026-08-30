@@ -1,0 +1,159 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "NovelEngineering",
+  "displayName": "流浪小说工程 (VCPNovelManager)",
+  "version": "1.0.0",
+  "description": "流浪小说工程管理插件 Phase 1 MVP — 面向 Obsidian 世界树的只读扫描、SQLite 结构化索引、多维分类、10 种异常/冲突检测与 9 大核心指令。",
+  "author": "VCP / NovelEngineering Team",
+  "license": "MIT",
+  "pluginType": "synchronous",
+  "entryPoint": {
+    "command": "node NovelEngineering.js",
+    "timeout": 180000
+  },
+  "communication": {
+    "protocol": "stdio",
+    "timeout": 180000
+  },
+  "configSchema": {
+    "VAULT_ROOT": {
+      "type": "string",
+      "default": "",
+      "description": "目标 Obsidian 世界树根目录绝对路径（只读扫描目标）"
+    },
+    "DEFAULT_WORLDTREE_PATH": {
+      "type": "string",
+      "default": "",
+      "description": "默认 Obsidian 世界树根目录绝对路径（只读扫描目标）"
+    },
+    "DATABASE_FILE": {
+      "type": "string",
+      "default": "data/novel_index.db",
+      "description": "本地 SQLite 数据库文件路径（写权限仅限本插件目录）"
+    },
+    "NOVEL_DB_PATH": {
+      "type": "string",
+      "default": "data/novel_index.db",
+      "description": "本地 SQLite 数据库索引文件存储路径"
+    },
+    "SCAN_CONCURRENCY": {
+      "type": "integer",
+      "default": 8,
+      "description": "文件扫描与 Frontmatter 解析最大并发数"
+    },
+    "SCAN_BATCH_SIZE": {
+      "type": "integer",
+      "default": 500,
+      "description": "扫描处理批次大小"
+    },
+    "BATCH_SIZE": {
+      "type": "integer",
+      "default": 500,
+      "description": "SQLite 批量插入/更新的事务批次大小"
+    },
+    "HASH_ALGORITHM": {
+      "type": "string",
+      "default": "sha256",
+      "description": "文件内容哈希算法 (sha256 / md5)"
+    },
+    "MAX_FILE_SIZE_BYTES": {
+      "type": "integer",
+      "default": 10485760,
+      "description": "允许读取并解析的最大单个文件大小（默认 10MB）"
+    },
+    "PLACEHOLDER_SIZE_THRESHOLD_BYTES": {
+      "type": "integer",
+      "default": 100,
+      "description": "占位文件（30B/空模板）判定的字节阈值（默认 100 字节）"
+    },
+    "AUTO_MIGRATION": {
+      "type": "boolean",
+      "default": true,
+      "description": "启动时是否自动执行 SQLite 数据库表结构迁移与初始化"
+    },
+    "ENABLE_WAL_MODE": {
+      "type": "boolean",
+      "default": true,
+      "description": "是否开启 SQLite WAL (Write-Ahead Logging) 提升并发读写性能"
+    },
+    "CACHE_TTL_SEC": {
+      "type": "integer",
+      "default": 300,
+      "description": "内存索引元数据缓存存活时间（秒）"
+    },
+    "DEBUG_MODE": {
+      "type": "boolean",
+      "default": false,
+      "description": "是否输出详细调试日志至 stderr"
+    }
+  },
+  "capabilities": {
+    "invocationCommands": [
+      {
+        "command": "ScanWorldTree",
+        "description": "功能: 对目标 Obsidian 世界树目录执行严格只读扫描，提取 Frontmatter 元数据与内容哈希，并在本地 SQLite 建立增量结构化索引。\n参数:\n- `vaultPath` (字符串, 可选): 世界树根目录绝对路径。未提供时使用 config.env 中的 VAULT_ROOT。\n- `mode` (字符串, 可选, 默认 'incremental'): 扫描模式，可选 'incremental'（根据修改时间与哈希增量更新）或 'full'（全量重建）。\n- `forceRehash` (布尔值, 可选, 默认 false): 是否强制重新计算所有文件的 SHA-256 哈希。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」ScanWorldTree「末」,\nvaultPath:「始」H:\\Obsidian\\WorldTree「末」,\nmode:「始」incremental「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」ScanWorldTree「末」,\nmode:「始」incremental「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "BuildSourceManifest",
+        "description": "功能: 生成当前世界树中全部已索引源文件的完整清单报表，支持按分类 (source_category)、状态 (status) 和审核状态 (review_status) 过滤及分页。\n参数:\n- `vaultPath` (字符串, 可选): 目标世界树路径过滤。\n- `sourceCategory` (字符串, 可选): 源文件分类过滤 (如: 'entity', 'timeline', 'setting', 'chapter', 'meta', 'trash')。\n- `status` (字符串, 可选): 状态过滤 (如: 'active', 'stub', 'deprecated', 'draft')。\n- `reviewStatus` (字符串, 可选): 审核状态过滤 (如: 'confirmed', 'ai_generated', 'pending')。\n- `limit` (整数, 可选, 默认 100): 返回最大文件记录数。\n- `offset` (整数, 可选, 默认 0): 分页偏移量。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」BuildSourceManifest「末」,\nsourceCategory:「始」entity「末」,\nlimit:「始」50「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」BuildSourceManifest「末」,\nlimit:「始」100「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "ClassifySourceFiles",
+        "description": "功能: 对指定路径模式或目录下的文件执行多维分类与特征提取规则预览，返回分类统计与标签明细。\n参数:\n- `targetPath` (字符串, 可选): 待分类的目标相对路径或 glob 模式。\n- `categoryHint` (字符串, 可选): 分类提示词或优先规则。\n- `limit` (整数, 可选, 默认 50): 最大分析文件数。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」ClassifySourceFiles「末」,\ntargetPath:「始」01_Entities/**「末」,\nlimit:「始」30「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」ClassifySourceFiles「末」,\nlimit:「始」50「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "DetectPlaceholderFiles",
+        "description": "功能: 扫描并检测世界树中约 30B 大小的占位文件、空模板草稿与零字节文件 (ANOM_004)，生成占位清单。\n参数:\n- `maxSizeBytes` (整数, 可选, 默认 100): 占位文件判定的最大字节数上限。\n- `vaultPath` (字符串, 可选): 过滤世界树路径。\n- `limit` (整数, 可选, 默认 100): 最大返回数量。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」DetectPlaceholderFiles「末」,\nmaxSizeBytes:「始」100「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」DetectPlaceholderFiles「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "DetectDuplicateEntities",
+        "description": "功能: 针对实体库执行同名不同编号 (ANOM_001)、同编号多实体 (ANOM_002) 及别名碰撞 (ANOM_008) 等实体冲突检测。\n参数:\n- `entityType` (字符串, 可选): 过滤实体类型 (如: 'planet', 'character', 'organization', 'technology')。\n- `strictAlias` (布尔值, 可选, 默认 true): 是否严格检测别名表中的冲突碰撞。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」DetectDuplicateEntities「末」,\nentityType:「始」planet「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」DetectDuplicateEntities「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "DetectLegacyIdConflicts",
+        "description": "功能: 检测历史版本残留的旧版编码格式、已废弃 ID (ANOM_005) 以及与新版标准 ID 体系之间的冲突与映射断链。\n参数:\n- `idPattern` (字符串, 可选): 自定义旧版 ID 的匹配正则表达式。\n- `vaultPath` (字符串, 可选): 过滤世界树路径。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」DetectLegacyIdConflicts「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」DetectLegacyIdConflicts「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "GetSourceFile",
+        "description": "功能: 根据相对路径或文件 ID 精确检索单个源文件的结构化索引详情，包括 Frontmatter、分类标签、提取的实体特征与关联引用。\n参数:\n- `filePath` (字符串, 可选*): 文件的相对或绝对路径 (与 fileId 二选一)。\n- `fileId` (整数/字符串, 可选*): 数据库中的源文件记录 ID。\n- `includeRawContent` (布尔值, 可选, 默认 false): 是否包含原始 Markdown 文本内容。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」GetSourceFile「末」,\nfilePath:「始」01_Entities/Planets/Terra_001.md「末」,\nincludeRawContent:「始」true「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」GetSourceFile「末」,\nfilePath:「始」01_Entities/Planets/Terra_001.md「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "QueryEntities",
+        "description": "功能: 按名称、别名、实体类型、归属星球或关键词检索索引中的实体元数据与关联文件。\n参数:\n- `query` (字符串, 可选): 关键词检索 (匹配名称、别名、描述)。\n- `entityType` (字符串, 可选): 实体分类 (如: 'character', 'planet', 'organization', 'technology', 'event')。\n- `planet` (字符串, 可选): 关联所属星球名称或 ID。\n- `status` (字符串, 可选): 实体状态 (如: 'active', 'draft', 'deprecated')。\n- `limit` (整数, 可选, 默认 20): 返回记录数。\n- `offset` (整数, 可选, 默认 0): 分页偏移量。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」QueryEntities「末」,\nquery:「始」星云基地「末」,\nentityType:「始」location「末」,\nlimit:「始」10「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」QueryEntities「末」,\nquery:「始」地球「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "ExportImportReport",
+        "description": "功能: 导出当前世界树扫描索引、多维分类统计及全部 10 种异常/冲突检测结果的综合分析报告 (Markdown + 结构化 JSON)。\n参数:\n- `scanId` (整数/字符串, 可选): 指定扫描任务 ID，缺省时使用最近一次扫描结果。\n- `includeAnomalies` (布尔值, 可选, 默认 true): 是否包含全部异常冲突明细列表。\n- `format` (字符串, 可选, 默认 'both'): 报告输出格式，可选 'markdown', 'json', 'both'。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」ExportImportReport「末」,\nincludeAnomalies:「始」true「末」,\nformat:「始」both「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」ExportImportReport「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "GetChapterContext",
+        "description": "功能: 聚合指定篇章的上下文信息，包括篇章基础设定、焦点实体关联设定全文、世界观底层法则、开放伏笔线索与编年史时间线事件。\n参数:\n- `projectId` (字符串, 可选): 项目标识符。\n- `chapterId` (字符串/整数, 可选*): 篇章 ID、编号或标题。\n- `focusEntities` (字符串数组/逗号分隔字符串, 必填): 需要召回上下文的焦点实体名称、ID 或别名列表。\n- `includeWorldRules` (布尔值, 可选, 默认 true): 是否自动包含底层世界观法则。\n- `includeRawContent` (布尔值, 可选, 默认 true): 是否挂载实体源文件 Markdown 全文。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」GetChapterContext「末」,\nchapterId:「始」1「末」,\nfocusEntities:「始」[\"泰拉\", \"林远\"]「末」,\nincludeWorldRules:「始」true「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」GetChapterContext「末」,\nchapterId:「始」1「末」,\nfocusEntities:「始」[\"泰拉\"]「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "SaveChapterDraft",
+        "description": "功能: 将小说篇章草稿安全写入受控隔离目录 (13_小说工程插件/篇章草稿/)，严禁修改 01~12 源设定目录，并在 SQLite 数据库中同步记录 (status='draft', canon=0)。\n参数:\n- `projectId` (字符串, 可选): 项目标识符。\n- `chapterId` (字符串/整数, 必填): 篇章唯一代码 (如: 'CH-001')。\n- `title` (字符串, 必填): 篇章标题。\n- `content` (字符串, 必填): 草稿 Markdown 正文。\n- `summary` (字符串, 可选): 篇章概要。\n- `volumeNumber` (整数, 可选, 默认 1): 卷号/分卷编号。\n- `chapterNumber` (浮点数/整数, 可选): 章节序号 (如: 1, 2.5)。\n- `povEntityId` (整数, 可选): 视角角色 (POV) 实体 ID。\n- `vaultRoot` (字符串, 可选): 目标世界树根目录。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」SaveChapterDraft「末」,\nchapterId:「始」CH-001「末」,\ntitle:「始」第1章 启航之日「末」,\ncontent:「始」# 第1章 启航之日\\n\\n等离子烈焰划破夜空...「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」SaveChapterDraft「末」,\nchapterId:「始」CH-001「末」,\ntitle:「始」第1章 启航之日「末」,\ncontent:「始」草稿正文「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "ManageForeshadowing",
+        "description": "功能: 管理叙事伏笔与暗线状态追踪，支持新增伏笔线索、回收闭环伏笔以及多维度检索伏笔列表。\n参数:\n- `action` (字符串, 必填): 操作类型，可选 'add' (新增伏笔), 'resolve' (回收伏笔), 'list' (查询列表)。\n- `thread_key` (字符串, add/resolve必填): 伏笔标识代码 (如: 'FS-001')。\n- `title` (字符串, add必填): 伏笔标题。\n- `description` (字符串, add必填): 伏笔具体内容或设定描述。\n- `importance_level` (字符串, 可选): 重要级别 ('minor', 'medium', 'major', 'core_climax')。\n- `resolution_snippet` (字符串, resolve可选): 伏笔回收/对应段落摘录。\n- `status` (字符串, list可选): 过滤状态 ('open', 'closed', 'abandoned', 'all')。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」ManageForeshadowing「末」,\naction:「始」add「末」,\nthread_key:「始」FS-001「末」,\ntitle:「始」第三货舱暗门「末」,\ndescription:「始」货舱底层有未知量子反应「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」ManageForeshadowing「末」,\naction:「始」list「末」,\nstatus:「始」open「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "ManageTimeline",
+        "description": "功能: 管理世界观编年史与事件时间线，支持添加历史大事件以及按时间顺序或涉及实体检索事件列表。\n参数:\n- `action` (字符串, 必填): 操作类型，可选 'add' (添加事件), 'query' (查询事件)。\n- `event_name` (字符串, add必填): 事件名称。\n- `time_point` (数值/字符串, add必填): 事件排序时间戳 (如: 2042.0815, -5000)。\n- `era_epoch` (字符串, 可选, 默认 'CE'): 纪元/纪历 (如: '旧历', '新历', '星际纪元', 'CE')。\n- `description` (字符串, 可选): 事件详细叙事。\n- `involved_entities` (数组/字符串, 可选): 参与或关联的实体名称/ID 列表。\n- `min_order` (数值, query可选): 起始时间戳过滤。\n- `max_order` (数值, query可选): 截止时间戳过滤。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」ManageTimeline「末」,\naction:「始」add「末」,\nevent_name:「始」太阳系联合防线建立「末」,\ntime_point:「始」2042.0815「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」ManageTimeline「末」,\naction:「始」query「末」\n<<<[END_TOOL_REQUEST]>>>"
+      }
+    ]
+  }
+}
