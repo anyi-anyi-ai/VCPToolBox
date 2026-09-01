@@ -22,30 +22,36 @@ class SourceFileRepo {
    * @private
    */
   _normalizeRecord(data) {
-    const frontmatterJson = typeof data.frontmatter_json === 'object' && data.frontmatter_json !== null
-      ? JSON.stringify(data.frontmatter_json)
-      : (data.frontmatter_json || null);
+    const rawFm = data.frontmatter_json !== undefined ? data.frontmatter_json : data.frontmatterJson;
+    const frontmatterJson = typeof rawFm === 'object' && rawFm !== null
+      ? JSON.stringify(rawFm)
+      : (rawFm || null);
+
+    const rawFilePath = data.file_path !== undefined && data.file_path !== null ? data.file_path : data.filePath;
+    const rawRelPath = data.relative_path !== undefined && data.relative_path !== null ? data.relative_path : data.relativePath;
+    const rawFileName = data.file_name !== undefined && data.file_name !== null ? data.file_name : data.fileName;
 
     return {
-      file_path: data.file_path,
-      relative_path: data.relative_path,
-      file_name: data.file_name || (data.relative_path ? data.relative_path.split('/').pop() : ''),
-      extension: data.extension || (data.file_name ? `.${data.file_name.split('.').pop()}` : '.md'),
-      size_bytes: Number(data.size_bytes) || 0,
-      mtime_ms: Number(data.mtime_ms) || 0,
-      sha256_hash: data.sha256_hash || '',
-      source_category: data.source_category || data.category || 'unclassified',
+      file_path: rawFilePath,
+      relative_path: rawRelPath,
+      file_name: rawFileName || (rawRelPath ? rawRelPath.split('/').pop() : ''),
+      extension: data.extension || (rawFileName ? `.${rawFileName.split('.').pop()}` : '.md'),
+      size_bytes: Number(data.size_bytes !== undefined && data.size_bytes !== null ? data.size_bytes : data.sizeBytes) || 0,
+      mtime_ms: Number(data.mtime_ms !== undefined && data.mtime_ms !== null ? data.mtime_ms : data.mtimeMs) || 0,
+      sha256_hash: data.sha256_hash || data.sha256Hash || '',
+      source_category: data.source_category || data.sourceCategory || data.category || 'unclassified',
       status: data.status || 'active',
-      review_status: data.review_status || 'unreviewed',
-      has_frontmatter: data.has_frontmatter ? 1 : 0,
-      frontmatter_raw: data.frontmatter_raw || null,
+      review_status: data.review_status || data.reviewStatus || 'unreviewed',
+      canon_level: data.canon_level !== undefined && data.canon_level !== null ? Number(data.canon_level) : (data.canonLevel !== undefined && data.canonLevel !== null ? Number(data.canonLevel) : 0),
+      has_frontmatter: (data.has_frontmatter || data.hasFrontmatter) ? 1 : 0,
+      frontmatter_raw: data.frontmatter_raw || data.frontmatterRaw || null,
       frontmatter_json: frontmatterJson,
-      line_count: Number(data.line_count) || 0,
-      word_count: Number(data.word_count) || 0,
-      is_placeholder: data.is_placeholder ? 1 : 0,
-      placeholder_reason: data.placeholder_reason || null,
-      scan_version: Number(data.scan_version) || 1,
-      last_scanned_at: data.last_scanned_at || new Date().toISOString()
+      line_count: Number(data.line_count !== undefined && data.line_count !== null ? data.line_count : data.lineCount) || 0,
+      word_count: Number(data.word_count !== undefined && data.word_count !== null ? data.word_count : data.wordCount) || 0,
+      is_placeholder: (data.is_placeholder || data.isPlaceholder) ? 1 : 0,
+      placeholder_reason: data.placeholder_reason || data.placeholderReason || null,
+      scan_version: Number(data.scan_version !== undefined && data.scan_version !== null ? data.scan_version : data.scanVersion) || 1,
+      last_scanned_at: data.last_scanned_at || data.lastScannedAt || new Date().toISOString()
     };
   }
 
@@ -59,13 +65,13 @@ class SourceFileRepo {
     const sql = `
       INSERT INTO source_files (
         file_path, relative_path, file_name, extension, size_bytes, mtime_ms,
-        sha256_hash, source_category, status, review_status, has_frontmatter,
+        sha256_hash, source_category, status, review_status, canon_level, has_frontmatter,
         frontmatter_raw, frontmatter_json, line_count, word_count,
         is_placeholder, placeholder_reason, scan_version, last_scanned_at,
         created_at, updated_at
       ) VALUES (
         @file_path, @relative_path, @file_name, @extension, @size_bytes, @mtime_ms,
-        @sha256_hash, @source_category, @status, @review_status, @has_frontmatter,
+        @sha256_hash, @source_category, @status, @review_status, @canon_level, @has_frontmatter,
         @frontmatter_raw, @frontmatter_json, @line_count, @word_count,
         @is_placeholder, @placeholder_reason, @scan_version, @last_scanned_at,
         datetime('now', 'localtime'), datetime('now', 'localtime')
@@ -74,6 +80,13 @@ class SourceFileRepo {
     const stmt = this.db.prepare(sql);
     const info = stmt.run(record);
     return this.getById(info.lastInsertRowid);
+  }
+
+  /**
+   * Alias for insert
+   */
+  create(data) {
+    return this.insert(data);
   }
 
   /**
@@ -86,13 +99,13 @@ class SourceFileRepo {
     const sql = `
       INSERT INTO source_files (
         file_path, relative_path, file_name, extension, size_bytes, mtime_ms,
-        sha256_hash, source_category, status, review_status, has_frontmatter,
+        sha256_hash, source_category, status, review_status, canon_level, has_frontmatter,
         frontmatter_raw, frontmatter_json, line_count, word_count,
         is_placeholder, placeholder_reason, scan_version, last_scanned_at,
         created_at, updated_at
       ) VALUES (
         @file_path, @relative_path, @file_name, @extension, @size_bytes, @mtime_ms,
-        @sha256_hash, @source_category, @status, @review_status, @has_frontmatter,
+        @sha256_hash, @source_category, @status, @review_status, @canon_level, @has_frontmatter,
         @frontmatter_raw, @frontmatter_json, @line_count, @word_count,
         @is_placeholder, @placeholder_reason, @scan_version, @last_scanned_at,
         datetime('now', 'localtime'), datetime('now', 'localtime')
@@ -107,6 +120,7 @@ class SourceFileRepo {
         source_category = excluded.source_category,
         status = excluded.status,
         review_status = excluded.review_status,
+        canon_level = excluded.canon_level,
         has_frontmatter = excluded.has_frontmatter,
         frontmatter_raw = excluded.frontmatter_raw,
         frontmatter_json = excluded.frontmatter_json,
@@ -136,13 +150,13 @@ class SourceFileRepo {
     const sql = `
       INSERT INTO source_files (
         file_path, relative_path, file_name, extension, size_bytes, mtime_ms,
-        sha256_hash, source_category, status, review_status, has_frontmatter,
+        sha256_hash, source_category, status, review_status, canon_level, has_frontmatter,
         frontmatter_raw, frontmatter_json, line_count, word_count,
         is_placeholder, placeholder_reason, scan_version, last_scanned_at,
         created_at, updated_at
       ) VALUES (
         @file_path, @relative_path, @file_name, @extension, @size_bytes, @mtime_ms,
-        @sha256_hash, @source_category, @status, @review_status, @has_frontmatter,
+        @sha256_hash, @source_category, @status, @review_status, @canon_level, @has_frontmatter,
         @frontmatter_raw, @frontmatter_json, @line_count, @word_count,
         @is_placeholder, @placeholder_reason, @scan_version, @last_scanned_at,
         datetime('now', 'localtime'), datetime('now', 'localtime')
@@ -157,6 +171,7 @@ class SourceFileRepo {
         source_category = excluded.source_category,
         status = excluded.status,
         review_status = excluded.review_status,
+        canon_level = excluded.canon_level,
         has_frontmatter = excluded.has_frontmatter,
         frontmatter_raw = excluded.frontmatter_raw,
         frontmatter_json = excluded.frontmatter_json,

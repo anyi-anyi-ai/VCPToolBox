@@ -49,7 +49,7 @@ function detect(dbManager, scanSessionId = 'default', options = {}) {
   const seenKeys = new Set();
 
   for (const r of rows) {
-    const key = `${r.legacy_id}_${r.target_db_id}_${r.conflicting_db_id}`;
+    const key = `legacy_${String(r.legacy_id).toLowerCase().trim()}_${r.conflicting_db_id}`;
     if (seenKeys.has(key)) continue;
     seenKeys.add(key);
 
@@ -83,6 +83,57 @@ function detect(dbManager, scanSessionId = 'default', options = {}) {
       suggested_action: `Reassign unique canonical ID to '${r.conflicting_name}' and maintain explicit legacy ID redirect.`,
       is_resolved: 0
     });
+  }
+
+  // 1b. Frontmatter legacy_id in source_files matching active entity_id
+  const sfRows = db.prepare(`
+    SELECT id, relative_path, file_name, frontmatter_json
+    FROM source_files
+    WHERE frontmatter_json LIKE '%legacy_id%' AND status != 'deleted'
+  `).all();
+
+  for (const sf of sfRows) {
+    try {
+      const fm = typeof sf.frontmatter_json === 'string' ? JSON.parse(sf.frontmatter_json) : sf.frontmatter_json;
+      if (!fm) continue;
+      const legacyIds = Array.isArray(fm.legacy_id) ? fm.legacy_id : (Array.isArray(fm.legacy_ids) ? fm.legacy_ids : (fm.legacy_id ? [fm.legacy_id] : []));
+      for (const rawLid of legacyIds) {
+        const lid = String(rawLid).trim();
+        if (!lid) continue;
+        const conflictingEnt = db.prepare(`
+          SELECT e.id, e.entity_id, e.canonical_name, e.source_file_id, sf.relative_path AS conflicting_file_path
+          FROM entities e
+          LEFT JOIN source_files sf ON e.source_file_id = sf.id
+          WHERE LOWER(TRIM(e.entity_id)) = LOWER(?) AND e.status != 'deprecated'
+        `).get(lid);
+
+        if (conflictingEnt && conflictingEnt.source_file_id !== sf.id) {
+          const key = `legacy_${lid.toLowerCase().trim()}_${conflictingEnt.id}`;
+          if (!seenKeys.has(key)) {
+            seenKeys.add(key);
+            const affectedFiles = [sf.relative_path, conflictingEnt.conflicting_file_path].filter(Boolean);
+            anomalies.push({
+              scan_session_id: scanSessionId,
+              anomaly_rule_id: RULE_ID,
+              anomaly_type: CATEGORY,
+              severity: SEVERITY,
+              title: `Legacy ID '${lid}' in frontmatter collides with active entity ID`,
+              message: `Legacy identifier '${lid}' in '${sf.relative_path}' collides with active entity '${conflictingEnt.canonical_name}' [${conflictingEnt.entity_id}].`,
+              affected_file_paths_json: affectedFiles,
+              affected_entity_ids_json: [conflictingEnt.entity_id],
+              details_json: {
+                legacyId: lid,
+                sourceFile: { id: sf.id, relativePath: sf.relative_path },
+                intendedEntity: { id: sf.id, entityId: sf.file_name, name: sf.file_name, filePath: sf.relative_path },
+                conflictingEntity: { id: conflictingEnt.id, entityId: conflictingEnt.entity_id, name: conflictingEnt.canonical_name, filePath: conflictingEnt.conflicting_file_path }
+              },
+              suggested_action: `Resolve collision for legacy ID '${lid}' between file '${sf.relative_path}' and entity '${conflictingEnt.entity_id}'.`,
+              is_resolved: 0
+            });
+          }
+        }
+      }
+    } catch (_) {}
   }
 
   // 2. Also check if entity_id itself matches legacy patterns while another entity has the new canonical ID

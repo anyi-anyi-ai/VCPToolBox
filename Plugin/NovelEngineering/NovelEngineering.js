@@ -69,12 +69,27 @@ function outputSuccess(data) {
 }
 
 function outputError(errorMessage, details = null) {
+  let msg = errorMessage;
+  let code = undefined;
+  let det = details;
+
+  if (errorMessage instanceof Error || (errorMessage && typeof errorMessage === 'object')) {
+    msg = errorMessage.message || String(errorMessage);
+    if (errorMessage.code) code = errorMessage.code;
+    if (errorMessage.details && typeof errorMessage.details === 'object' && Object.keys(errorMessage.details).length > 0) {
+      det = det ? { ...errorMessage.details, ...det } : errorMessage.details;
+    }
+  }
+
   const payload = {
     status: 'error',
-    error: typeof errorMessage === 'string' ? errorMessage : (errorMessage?.message || String(errorMessage))
+    error: typeof msg === 'string' ? msg : String(msg)
   };
-  if (details) {
-    payload.details = details;
+  if (code) {
+    payload.code = code;
+  }
+  if (det) {
+    payload.details = det;
   }
   originalStdoutWrite(JSON.stringify(payload) + '\n');
 }
@@ -152,7 +167,7 @@ async function main() {
       process.exit(0);
     } catch (error) {
       debugLog('Execution failure:', error);
-      outputError(error.message || 'NovelEngineering execution failed');
+      outputError(error);
       process.exit(0);
     }
   });

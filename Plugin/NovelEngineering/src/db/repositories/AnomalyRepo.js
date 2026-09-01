@@ -288,21 +288,34 @@ class AnomalyRepo {
    * @private
    */
   _hydrateAnomaly(row) {
+    if (!row) return null;
     let affectedFiles = [];
     let affectedEntities = [];
     let details = {};
 
-    try {
-      if (row.affected_file_paths_json) affectedFiles = JSON.parse(row.affected_file_paths_json);
-    } catch {}
+    if (row.affected_file_paths_json) {
+      try {
+        affectedFiles = JSON.parse(row.affected_file_paths_json);
+      } catch (e) {
+        console.warn(`[AnomalyRepo] Failed to parse affected_file_paths_json (anomaly id: ${row.id}): ${e.message}`);
+      }
+    }
 
-    try {
-      if (row.affected_entity_ids_json) affectedEntities = JSON.parse(row.affected_entity_ids_json);
-    } catch {}
+    if (row.affected_entity_ids_json) {
+      try {
+        affectedEntities = JSON.parse(row.affected_entity_ids_json);
+      } catch (e) {
+        console.warn(`[AnomalyRepo] Failed to parse affected_entity_ids_json (anomaly id: ${row.id}): ${e.message}`);
+      }
+    }
 
-    try {
-      if (row.details_json) details = JSON.parse(row.details_json);
-    } catch {}
+    if (row.details_json) {
+      try {
+        details = JSON.parse(row.details_json);
+      } catch (e) {
+        console.warn(`[AnomalyRepo] Failed to parse details_json (anomaly id: ${row.id}): ${e.message}`);
+      }
+    }
 
     return {
       ...row,

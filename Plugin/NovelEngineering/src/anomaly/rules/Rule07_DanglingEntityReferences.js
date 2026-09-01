@@ -79,39 +79,43 @@ function detect(dbManager, scanSessionId = 'default', options = {}) {
 
   const refKeys = [
     'parent_planet', 'parent_entity', 'planet', 'character', 'organization',
-    'location', 'target_entity', 'related_entity', 'linked_entity', 'target'
+    'location', 'target_entity', 'related_entity', 'linked_entity', 'target',
+    'wikilinks', 'links', 'entities'
   ];
 
   for (const sf of sourceFiles) {
     let fm = {};
     try {
       if (sf.frontmatter_json) {
-        fm = JSON.parse(sf.frontmatter_json);
+        fm = typeof sf.frontmatter_json === 'string' ? JSON.parse(sf.frontmatter_json) : sf.frontmatter_json;
       }
     } catch {}
 
     for (const key of refKeys) {
       if (fm[key]) {
-        const val = String(fm[key]).trim();
-        const normVal = val.replace(/^\[\[|\]\]$/g, '').split('|')[0].trim().toLowerCase();
-        if (normVal && !validTargets.has(normVal)) {
-          anomalies.push({
-            scan_session_id: scanSessionId,
-            anomaly_rule_id: RULE_ID,
-            anomaly_type: CATEGORY,
-            severity: SEVERITY,
-            title: `Dangling entity reference in '${sf.relative_path}': '${val}'`,
-            message: `Property '${key}: ${val}' in '${sf.relative_path}' refers to non-existent entity or file '${val}'.`,
-            affected_file_paths_json: [sf.relative_path],
-            affected_entity_ids_json: [val],
-            details_json: {
-              referencingFile: sf.relative_path,
-              propertyKey: key,
-              targetValue: val
-            },
-            suggested_action: `Create missing note for '${val}' or correct reference property in frontmatter.`,
-            is_resolved: 0
-          });
+        const rawVals = Array.isArray(fm[key]) ? fm[key] : [fm[key]];
+        for (const rawItem of rawVals) {
+          const val = String(rawItem).trim();
+          const normVal = val.replace(/^\[\[|\]\]$/g, '').split('|')[0].trim().toLowerCase();
+          if (normVal && !validTargets.has(normVal)) {
+            anomalies.push({
+              scan_session_id: scanSessionId,
+              anomaly_rule_id: RULE_ID,
+              anomaly_type: CATEGORY,
+              severity: SEVERITY,
+              title: `Dangling entity reference in '${sf.relative_path}': '${val}'`,
+              message: `Property '${key}: ${val}' in '${sf.relative_path}' refers to non-existent entity or file '${val}'.`,
+              affected_file_paths_json: [sf.relative_path],
+              affected_entity_ids_json: [val],
+              details_json: {
+                referencingFile: sf.relative_path,
+                propertyKey: key,
+                targetValue: val
+              },
+              suggested_action: `Create missing note for '${val}' or correct reference property in frontmatter.`,
+              is_resolved: 0
+            });
+          }
         }
       }
     }

@@ -131,7 +131,9 @@ class AuthoringCommands {
     if (fileExistedBefore) {
       try {
         previousBackupContent = fs.readFileSync(draftFilePath);
-      } catch (_) {}
+      } catch (err) {
+        console.warn(`[AuthoringCommands] Warning: Failed to read existing draft file for backup: ${err.message}`);
+      }
     }
 
     // Two-Phase Atomic Write: Phase 1 (Write to Disk)
@@ -202,7 +204,9 @@ class AuthoringCommands {
         } else if (fs.existsSync(draftFilePath)) {
           fs.unlinkSync(draftFilePath);
         }
-      } catch (_) {}
+      } catch (rollbackErr) {
+        console.error(`[AuthoringCommands] CRITICAL: Failed to rollback draft file on disk (${draftFilePath}) after transaction abort: ${rollbackErr.message}`);
+      }
 
       throw syncError;
     }

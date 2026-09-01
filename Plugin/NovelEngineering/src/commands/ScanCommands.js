@@ -148,7 +148,8 @@ class ScanCommands {
       if (includeFrontmatter && f.frontmatter_json) {
         try {
           item.frontmatter = JSON.parse(f.frontmatter_json);
-        } catch {
+        } catch (e) {
+          console.warn(`[ScanCommands] Failed to parse frontmatter_json for file ${f.file_path}: ${e.message}`);
           item.frontmatter = {};
         }
       }

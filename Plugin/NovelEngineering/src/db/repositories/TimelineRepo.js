@@ -29,17 +29,21 @@ class TimelineRepo {
       return val || null;
     };
 
-    let timeType = data.time_type || 'exact';
-    let intervalStart = data.interval_start !== undefined && data.interval_start !== null ? Number(data.interval_start) : null;
-    let intervalEnd = data.interval_end !== undefined && data.interval_end !== null ? Number(data.interval_end) : null;
-    let baseEventId = data.base_event_id || data.base_event || data.relative_anchor_event_id || null;
+    let timeType = data.time_type || data.timeType || 'exact';
+    let intervalStart = data.interval_start !== undefined && data.interval_start !== null ? Number(data.interval_start) : (data.intervalStart !== undefined && data.intervalStart !== null ? Number(data.intervalStart) : null);
+    let intervalEnd = data.interval_end !== undefined && data.interval_end !== null ? Number(data.interval_end) : (data.intervalEnd !== undefined && data.intervalEnd !== null ? Number(data.intervalEnd) : null);
+    let baseEventId = data.base_event_id || data.baseEventId || data.base_event || data.relative_anchor_event_id || data.relativeAnchorEventId || null;
     let relativeOffset = data.relative_offset !== undefined && data.relative_offset !== null
       ? data.relative_offset
-      : (data.offset !== undefined && data.offset !== null ? data.offset : null);
-    let fuzzyTimeDesc = data.fuzzy_time_desc || (data.fuzzy_precision ? String(data.fuzzy_precision) : null);
+      : (data.relativeOffset !== undefined && data.relativeOffset !== null
+        ? data.relativeOffset
+        : (data.offset !== undefined && data.offset !== null ? data.offset : null));
+    let fuzzyTimeDesc = data.fuzzy_time_desc || data.fuzzyTimeDesc || (data.fuzzy_precision ? String(data.fuzzy_precision) : null);
     let timePointJson = null;
-    let relativeTimeDesc = data.relative_time_desc || null;
-    let timestampOrder = null;
+    let relativeTimeDesc = data.relative_time_desc || data.relativeTimeDesc || null;
+    let timestampOrder = data.timestamp_order !== undefined && data.timestamp_order !== null
+      ? Number(data.timestamp_order)
+      : (data.timestampOrder !== undefined && data.timestampOrder !== null ? Number(data.timestampOrder) : null);
 
     // Handle object-shaped time_point: { type: "...", ... }
     if (typeof data.time_point === 'object' && data.time_point !== null) {
@@ -232,6 +236,13 @@ class TimelineRepo {
       row.relative_offset = record._rawRelativeOffset;
     }
     return row;
+  }
+
+  /**
+   * Alias for insert
+   */
+  create(data) {
+    return this.insert(data);
   }
 
   /**

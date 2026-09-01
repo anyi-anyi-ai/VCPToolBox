@@ -33,6 +33,7 @@ class EntityRepo {
       category: data.category || null,
       status: data.status || 'active',
       review_status: data.review_status || 'unreviewed',
+      canon_level: data.canon_level !== undefined && data.canon_level !== null ? Number(data.canon_level) : 0,
       summary: data.summary || null,
       description: data.description || null,
       attributes_json: attributesJson,
@@ -52,11 +53,11 @@ class EntityRepo {
     const sql = `
       INSERT INTO entities (
         entity_id, canonical_name, entity_type, category, status,
-        review_status, summary, description, attributes_json,
+        review_status, canon_level, summary, description, attributes_json,
         source_file_id, line_number, created_at, updated_at
       ) VALUES (
         @entity_id, @canonical_name, @entity_type, @category, @status,
-        @review_status, @summary, @description, @attributes_json,
+        @review_status, @canon_level, @summary, @description, @attributes_json,
         @source_file_id, @line_number, datetime('now', 'localtime'), datetime('now', 'localtime')
       )
     `;
@@ -97,6 +98,13 @@ class EntityRepo {
   }
 
   /**
+   * Alias for insert
+   */
+  create(entityData, aliases = []) {
+    return this.insert(entityData, aliases);
+  }
+
+  /**
    * Upserts an entity record
    * @param {object} entityData
    * @param {Array<string|object>} [aliases=[]]
@@ -113,6 +121,7 @@ class EntityRepo {
           category = @category,
           status = @status,
           review_status = @review_status,
+          canon_level = @canon_level,
           summary = @summary,
           description = @description,
           attributes_json = @attributes_json,
@@ -141,13 +150,14 @@ class EntityRepo {
       return this.getById(record.id);
     }
 
-    // Check if entity already exists in this source file
-    const existing = this.db.prepare(
-      'SELECT id FROM entities WHERE source_file_id = ? AND entity_id = ?'
-    ).get(Number(entityData.source_file_id), entityData.entity_id);
+    if (entityData.source_file_id && entityData.entity_id) {
+      const existing = this.db.prepare(
+        'SELECT id FROM entities WHERE source_file_id = ? AND entity_id = ? LIMIT 1'
+      ).get(Number(entityData.source_file_id), String(entityData.entity_id));
 
-    if (existing) {
-      return this.upsert({ ...entityData, id: existing.id }, aliases);
+      if (existing) {
+        return this.upsert({ ...entityData, id: existing.id }, aliases);
+      }
     }
 
     return this.insert(entityData, aliases);
@@ -446,13 +456,16 @@ class EntityRepo {
   }
 
   /**
-   * Delete all entities belonging to a source file
+   * Decouple entities belonging to a source file by clearing their source_file_id
    * @param {number} sourceFileId
-   * @returns {number} Count of deleted entities
+   * @returns {number} Count of decoupled entities
    */
   deleteBySourceFileId(sourceFileId) {
-    const stmt = this.db.prepare('DELETE FROM entities WHERE source_file_id = ?');
+    const stmt = this.db.prepare(
+      "UPDATE entities SET source_file_id = NULL, updated_at = datetime('now', 'localtime') WHERE source_file_id = ?"
+    );
     const info = stmt.run(Number(sourceFileId));
+    this.deleteMentionsBySourceFile(sourceFileId);
     return info.changes;
   }
 

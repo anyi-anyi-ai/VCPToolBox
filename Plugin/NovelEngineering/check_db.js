@@ -1,0 +1,1 @@
+const Database = require('better-sqlite3'); const db = new Database('data/novel_index.db'); console.log(JSON.stringify(db.prepare(SELECT id, entity_id, canonical_name, entity_type, status, review_status FROM entities WHERE canonical_name LIKE '%灰港星%' OR entity_id LIKE '%V-002%').all(), null, 2)); console.log('Total:', db.prepare('SELECT COUNT(*) as c FROM entities').get().c);

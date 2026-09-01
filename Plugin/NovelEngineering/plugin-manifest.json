@@ -136,8 +136,8 @@
       },
       {
         "command": "GetChapterContext",
-        "description": "功能: 聚合指定篇章的上下文信息，包括篇章基础设定、焦点实体关联设定全文、世界观底层法则、开放伏笔线索与编年史时间线事件。\n参数:\n- `projectId` (字符串, 可选): 项目标识符。\n- `chapterId` (字符串/整数, 可选*): 篇章 ID、编号或标题。\n- `focusEntities` (字符串数组/逗号分隔字符串, 必填): 需要召回上下文的焦点实体名称、ID 或别名列表。\n- `includeWorldRules` (布尔值, 可选, 默认 true): 是否自动包含底层世界观法则。\n- `includeRawContent` (布尔值, 可选, 默认 true): 是否挂载实体源文件 Markdown 全文。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」GetChapterContext「末」,\nchapterId:「始」1「末」,\nfocusEntities:「始」[\"泰拉\", \"林远\"]「末」,\nincludeWorldRules:「始」true「末」\n<<<[END_TOOL_REQUEST]>>>",
-        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」GetChapterContext「末」,\nchapterId:「始」1「末」,\nfocusEntities:「始」[\"泰拉\"]「末」\n<<<[END_TOOL_REQUEST]>>>"
+        "description": "功能: [Context v3] 聚合指定篇章的上下文信息，包括全局世界公理与局部规则分类、正史档案设定、候选创意提案、篇章既定事实、开放伏笔线索、编年史时间线事件以及冲突预警。支持 sourcePolicy 多维正史生命周期过滤策略、maxTokens 预算控制与确定性 SHA-256 数据源追溯。\n参数:\n- `projectId` (字符串, 可选, 默认 'default'): 项目标识符。\n- `chapterId` (字符串/整数, 可选*): 篇章唯一代码、序号或标题 (与 chapterNumber 二选一)。\n- `chapterNumber` (整数/浮点数, 可选*): 显式篇章章节序号 (如: 1, 2.5)。\n- `volumeNumber` (整数, 可选, 默认 1): 篇章归属卷号/分卷编号。\n- `focusEntities` (字符串数组/逗号分隔字符串, 可选): 需要召回上下文的焦点实体名称、业务ID (如 'PL-001') 或别名 (如 '地球') 列表。为空时召回通用全局设定。\n- `sourcePolicy` (字符串, 可选, 默认 'canon_and_reviewed'): 正史生命周期过滤策略，可选:\n  * 'canon_only': 仅正史 (canon_level>=2 且已审核)，严格排除候选草稿\n  * 'canon_and_reviewed': 正史及已审核候选 (默认写作模式)\n  * 'include_drafts': 包含草稿与脑暴候选 (canon_level>=0)\n  * 'all': 全量模式，包含所有未删除记录 (用于审计)\n- `maxTokens` (整数, 可选): 上下文文本组装的最大 Token 预算上限。\n- `includeWorldRules` (布尔值, 可选, 默认 true): 是否包含世界观底层规则（自动区分为 global 公理与 scoped 局部设定）。\n- `includeTimeline` (布尔值, 可选, 默认 true): 是否通过图谱关联与时间区间召回编年史时间线事件。\n- `includeForeshadowing` (布尔值, 可选, 默认 true): 是否召回活跃未决伏笔线索。\n- `includeRawContent` (布尔值, 可选, 默认 true): 是否挂载实体源文件 Markdown 全文。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」GetChapterContext「末」,\nchapterId:「始」1「末」,\nfocusEntities:「始」[\"泰拉\", \"林远\"]「末」,\nsourcePolicy:「始」canon_and_reviewed「末」,\nincludeWorldRules:「始」true「末」,\nincludeTimeline:「始」true「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」GetChapterContext「末」,\nchapterId:「始」1「末」,\nfocusEntities:「始」[\"泰拉\", \"林远\"]「末」,\nsourcePolicy:「始」canon_and_reviewed「末」\n<<<[END_TOOL_REQUEST]>>>"
       },
       {
         "command": "SaveChapterDraft",
@@ -153,6 +153,116 @@
         "command": "ManageTimeline",
         "description": "功能: 管理世界观编年史与事件时间线，支持添加历史大事件以及按时间顺序或涉及实体检索事件列表。\n参数:\n- `action` (字符串, 必填): 操作类型，可选 'add' (添加事件), 'query' (查询事件)。\n- `event_name` (字符串, add必填): 事件名称。\n- `time_point` (数值/字符串, add必填): 事件排序时间戳 (如: 2042.0815, -5000)。\n- `era_epoch` (字符串, 可选, 默认 'CE'): 纪元/纪历 (如: '旧历', '新历', '星际纪元', 'CE')。\n- `description` (字符串, 可选): 事件详细叙事。\n- `involved_entities` (数组/字符串, 可选): 参与或关联的实体名称/ID 列表。\n- `min_order` (数值, query可选): 起始时间戳过滤。\n- `max_order` (数值, query可选): 截止时间戳过滤。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」ManageTimeline「末」,\naction:「始」add「末」,\nevent_name:「始」太阳系联合防线建立「末」,\ntime_point:「始」2042.0815「末」\n<<<[END_TOOL_REQUEST]>>>",
         "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」ManageTimeline「末」,\naction:「始」query「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "GetGovernanceSummary",
+        "description": "功能: 聚合输出世界树全库的正史治理生命周期统计数据、3维状态分布（status × review_status × canon_level）、待审/候选/风险指标与审计日志汇总。\n参数: 无必需参数。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」GetGovernanceSummary「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」GetGovernanceSummary「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "SetSourceReviewStatus",
+        "description": "功能: 更新源文件或实体的审核状态 (pending/in_review/reviewed/rejected)，自动级联同步该源文件中定义的核心实体。\n参数:\n- `sourceFileId` (整数/字符串, 可选*): 目标源文件数据库记录 ID。\n- `filePath` (字符串, 可选*): 目标源文件路径（相对或绝对）。\n- `entityId` (字符串, 可选*): 目标实体业务代码 (如: 'PL-001')。\n- `reviewStatus` (字符串, 必填): 目标审核状态，可选 'pending', 'in_review', 'reviewed', 'rejected'。\n- `reviewer` (字符串, 可选, 默认 'system'): 审核人姓名/标识。\n- `notes` (字符串, 可选): 审核意见或批注。\n- `cascade` (布尔值, 可选, 默认 true): 是否级联同步源文件中定义的核心实体。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」SetSourceReviewStatus「末」,\nfilePath:「始」04_星球档案/V-001/00_星球总览.md「末」,\nreviewStatus:「始」reviewed「末」,\nreviewer:「始」lead_editor「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」SetSourceReviewStatus「末」,\nentityId:「始」PL-001「末」,\nreviewStatus:「始」reviewed「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "PromoteSourceToCanonPreview",
+        "description": "功能: 预演正史升格操作，校验审核状态门禁（禁止静默升格未审核草稿）、检测潜在异常冲突并列出受影响的实体与篇章（只读预览）。\n参数:\n- `sourceFileId` (整数/字符串, 可选*): 目标源文件 ID。\n- `filePath` (字符串, 可选*): 目标源文件路径。\n- `entityId` (字符串, 可选*): 目标实体代码。\n- `targetCanonLevel` (整数, 可选, 默认 2): 目标正史等级 (1: 候选参考, 2: 正史, 3: 公理法则)。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」PromoteSourceToCanonPreview「末」,\nfilePath:「始」04_星球档案/V-001/00_星球总览.md「末」,\ntargetCanonLevel:「始」2「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」PromoteSourceToCanonPreview「末」,\nentityId:「始」PL-001「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "PromoteSourceToCanon",
+        "description": "功能: 正式执行正史升格操作，强制要求安全确认令牌 (confirmationToken === 'CONFIRM_CANON_CHANGE')，禁止静默升格草稿，自动级联定义实体并在 canon_changes 中留存审计日志。\n参数:\n- `sourceFileId` (整数/字符串, 可选*): 目标源文件 ID。\n- `filePath` (字符串, 可选*): 目标源文件路径。\n- `entityId` (字符串, 可选*): 目标实体代码。\n- `targetCanonLevel` (整数, 可选, 默认 2): 目标正史等级。\n- `confirmationToken` (字符串, 必填): 安全确认口令，必须为 'CONFIRM_CANON_CHANGE'。\n- `operator` (字符串, 可选, 默认 'system'): 操作人身份。\n- `reason` (字符串, 可选): 升格原因。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」PromoteSourceToCanon「末」,\nentityId:「始」PL-001「末」,\ntargetCanonLevel:「始」2「末」,\nconfirmationToken:「始」CONFIRM_CANON_CHANGE「末」,\nreason:「始」主编审核通过，正式列入正史「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」PromoteSourceToCanon「末」,\nfilePath:「始」04_星球档案/V-001/00_星球总览.md「末」,\nconfirmationToken:「始」CONFIRM_CANON_CHANGE「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "DeprecateSourcePreview",
+        "description": "功能: 预演废弃源文件或实体，分析下游知识图谱关系断链、关联篇章与时间线事件，评估风险级别 (LOW/MEDIUM/HIGH/CRITICAL)（只读预览）。\n参数:\n- `sourceFileId` (整数/字符串, 可选*): 目标源文件 ID。\n- `filePath` (字符串, 可选*): 目标源文件路径。\n- `entityId` (字符串, 可选*): 目标实体代码。\n- `reason` (字符串, 可选): 废弃原因。\n- `replacementEntityId` (字符串, 可选): 替代实体代码。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」DeprecateSourcePreview「末」,\nentityId:「始」PL-999「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」DeprecateSourcePreview「末」,\nfilePath:「始」04_星球档案/V-999/废弃草案.md「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "DeprecateSource",
+        "description": "功能: 正式执行源文件或实体废弃，强制要求安全确认口令 (confirmationToken === 'CONFIRM_CANON_CHANGE')，标记 status='archived' 且 canon_level=0，并在 canon_changes 记录审计日志。\n参数:\n- `sourceFileId` (整数/字符串, 可选*): 目标源文件 ID。\n- `filePath` (字符串, 可选*): 目标源文件路径。\n- `entityId` (字符串, 可选*): 目标实体代码。\n- `confirmationToken` (字符串, 必填): 安全确认口令，必须为 'CONFIRM_CANON_CHANGE'。\n- `reason` (字符串, 必填): 废弃原因。\n- `replacementEntityId` (字符串, 可选): 替代实体代码。\n- `operator` (字符串, 可选, 默认 'system'): 操作人身份。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」DeprecateSource「末」,\nentityId:「始」PL-999「末」,\nconfirmationToken:「始」CONFIRM_CANON_CHANGE「末」,\nreason:「始」历史废弃设定，由PL-001完全替代「末」,\nreplacementEntityId:「始」PL-001「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」DeprecateSource「末」,\nentityId:「始」PL-999「末」,\nconfirmationToken:「始」CONFIRM_CANON_CHANGE「末」,\nreason:「始」已废弃「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "CheckConsistency",
+        "description": "功能: 执行多维世界观一致性校验，检测实体属性冲突、时间线因果悖论、未闭环伏笔与悬空图谱关联。\n参数:\n- `scope` (字符串, 可选, 默认 'all'): 校验范围 ('all', 'timeline', 'foreshadowing', 'entities', 'relations')。\n- `severityThreshold` (字符串, 可选, 默认 'INFO'): 最低严重性过滤 ('INFO', 'LOW', 'MEDIUM', 'HIGH', 'CRITICAL')。\n- `persistToReports` (布尔值, 可选, 默认 true): 是否自动将检测结果持久化至 anomaly_reports 表。\n- `entityIds` (数组/字符串, 可选): 指定过滤校验的目标实体代码或内部 ID 列表。\n- `category` (字符串, 可选): 指定过滤校验的异常大类 (如 'ENTITY_CONFLICT', 'CAUSAL_PARADOX', 'FORESHADOW_MISMATCH', 'GRAPH_INTEGRITY')。\n- `scanSessionId` (字符串, 可选): 指定会话标识符。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」CheckConsistency「末」,\nscope:「始」all「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」CheckConsistency「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "AnalyzeChangeImpact",
+        "description": "功能: 在修改或废弃设定前执行知识图谱深度遍历，评估对实体关系、关联篇章、时间线事件与伏笔的扩散影响（爆炸半径与风险评级）。\n参数:\n- `entityId` (字符串, 可选*): 目标实体业务代码。\n- `sourceFileId` (整数/字符串, 可选*): 目标源文件 ID。\n- `filePath` (字符串, 可选*): 目标源文件路径。\n- `changeType` (字符串, 可选, 默认 'MODIFY'): 变更类型 ('MODIFY', 'DEPRECATE', 'RENAME', 'RELOCATE', 'PROMOTE')。\n- `proposedChanges` (对象, 可选): 拟变更的属性与字段。\n- `maxDepth` (整数, 可选, 默认 2): 图谱遍历深度 (1 到 5)。\n- `minConfidence` (数值, 可选, 默认 0.0): 关系边置信度阈值过滤。\n- `includeDrafts` (布尔值, 可选, 默认 true): 是否纳入草稿与候选篇章计算。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」AnalyzeChangeImpact「末」,\nentityId:「始」PL-001「末」,\nchangeType:「始」DEPRECATE「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」AnalyzeChangeImpact「末」,\nentityId:「始」PL-001「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "CreateProjectSnapshot",
+        "description": "功能: 创建完整的项目级外部 JSON 状态快照，备份全部表结构与索引数据至 data/snapshots/，避免撑爆 SQLite 体积。\n参数:\n- `snapshotName` (字符串, 可选): 快照备注名称。\n- `description` (字符串, 可选): 快照详细描述说明。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」CreateProjectSnapshot「末」,\nsnapshotName:「始」v1.0_pre_major_revision「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」CreateProjectSnapshot「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "RestoreProjectSnapshotPreview",
+        "description": "功能: 预演快照恢复操作，比对当前数据库与目标快照的数据集增减差异（filesDelta/entitiesDelta）与 Schema 版本一致性（只读预览）。\n参数:\n- `snapshotId` (字符串, 可选*): 快照标识符。\n- `snapshotPath` (字符串, 可选*): 快照文件路径。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」RestoreProjectSnapshotPreview「末」,\nsnapshotId:「始」snap_2026-08-31_auto_backup「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」RestoreProjectSnapshotPreview「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "RestoreProjectSnapshot",
+        "description": "功能: 执行数据库状态从指定快照的原子事务恢复，要求强制确认令牌 (confirmationToken === 'CONFIRM_RESTORE')。\n参数:\n- `snapshotId` (字符串, 可选*): 快照标识符。\n- `snapshotPath` (字符串, 可选*): 快照文件路径。\n- `confirmationToken` (字符串, 必填): 确认口令，必须为 'CONFIRM_RESTORE'。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」RestoreProjectSnapshot「末」,\nsnapshotId:「始」snap_2026-08-31_auto_backup「末」,\nconfirmationToken:「始」CONFIRM_RESTORE「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」RestoreProjectSnapshot「末」,\nconfirmationToken:「始」CONFIRM_RESTORE「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "BuildRagCorpusManifest",
+        "description": "功能: 生成与 VCP 浪潮 (RAG) 对接的 JSONL 清单文件 (manifest.jsonl)，输出包含 doc_type, category, sha256 与词元估算的结构化文档索引。\n参数:\n- `corpusType` (字符串, 可选, 默认 'all'): 语料库类型 ('all', 'canon', 'creative')。\n- `outputPath` (字符串, 可选): 指定导出的 manifest.jsonl 路径。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」BuildRagCorpusManifest「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」BuildRagCorpusManifest「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "ExportRagSources",
+        "description": "功能: 导出剥离了干扰项的纯净 Markdown 语料库目录，明确拆分为正史库 (canon/) 与创意参考库 (candidate/)，并自动生成汇总 manifest.jsonl。\n参数:\n- `outputDir` (字符串, 可选): 导出目标目录（默认 data/rag_corpus/）。\n- `policy` (字符串, 可选, 默认 'all'): 导出策略 ('all', 'canon_only', 'canon_and_reviewed')。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」ExportRagSources「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」ExportRagSources「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "BuildVCPContext",
+        "description": "功能: [Context v4] 编译与构建标准 5 层合并漏斗（Schema 4.0）上下文快照，将外部语义候选 (semanticCandidates) 与 VCP 长期记忆 (vcpMemoryRefs) 安全融合至底层工程正史中。严格执行反向覆盖防御 (Anti-Override Logic)，禁止外部候选静默覆盖正史；集成 11 级优先级裁剪引擎与全量源血统自动追踪 (Context Tracing)，每条记录附加 sha256 追踪戳并返回 requestId 与 databaseRevision。\n参数:\n- `projectId` (字符串, 可选, 默认 'default'): 项目标识符。\n- `chapterId` (字符串/整数, 可选, 默认 'general'): 目标篇章唯一代码或序号。\n- `focusEntities` (字符串数组/逗号分隔字符串, 可选): 需要召回上下文的焦点实体列表。\n- `vcpMemoryRefs` (对象数组, 可选): 外部 VCP 长期记忆条目引用列表。\n- `semanticCandidates` (对象数组, 可选): 外部 RAG/浪潮检索到的语义候选参考资料列表。\n- `sourcePolicy` (字符串, 可选, 默认 'canon_and_reviewed'): 正史生命周期过滤策略 ('canon_only', 'canon_and_reviewed', 'include_drafts', 'all')。\n- `includeConflicts` (布尔值, 可选, 默认 true): 是否包含设定冲突预警。\n- `includeUnresolved` (布尔值, 可选, 默认 true): 是否包含未闭环伏笔与未决设定。\n- `includeWorldRules` (布尔值, 可选, 默认 true): 是否包含世界观底层规则（自动区分为 global 与 scoped）。\n- `maxTokens` (整数, 可选, 默认 30000): 上下文最大 Token 预算上限。\n- `authorDirectives` (字符串/对象数组, 可选): 作者当前最高优先级写作指令。\n- `requestId` (字符串, 可选): 请求追踪唯一标识符 (UUID)。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」BuildVCPContext「末」,\nprojectId:「始」流浪「末」,\nchapterId:「始」Vol1_Ch03「末」,\nfocusEntities:「始」[\"灰港星\"]「末」,\nmaxTokens:「始」30000「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」BuildVCPContext「末」,\nprojectId:「始」流浪「末」,\nchapterId:「始」Vol1_Ch03「末」,\nfocusEntities:「始」[\"灰港星\"]「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "GetContextTrace",
+        "description": "功能: 根据快照 ID (snapshotId) 或追踪 ID (traceId) 检索对应上下文生成的完整血统链与数据源追溯记录。支持磁盘实时文件 SHA-256 完整性核验 (verifyIntegrity=true)，检测源文件是否存在篡改或缺失；输出包含 sourceSystem、authority、sha256 与 requestId/databaseRevision。\n参数:\n- `snapshotId` (字符串, 可选*): 快照标识符 (与 traceId 二选一)。\n- `traceId` (字符串, 可选*): 追踪记录标识符。\n- `verifyIntegrity` (布尔值, 可选, 默认 false): 是否执行磁盘源文件 SHA-256 实时完整性校验。\n- `vaultRoot` (字符串, 可选): 世界树根目录路径。\n- `requestId` (字符串, 可选): 请求追踪 UUID。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」GetContextTrace「末」,\nsnapshotId:「始」ctx_v4_1788157500000_abcd「末」,\nverifyIntegrity:「始」true「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」GetContextTrace「末」,\nsnapshotId:「始」ctx_v4_1788157500000_abcd「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "RegisterCreativeDecision",
+        "description": "功能: 将 AI Agent 提出的新设定或创作决策安全暂存入待审队列 (canon_changes_queue)，状态严格锁定为 pending_author_confirmation。实现正史零污染隔离（严禁直接篡改 entities、source_files 或正史表）；支持批量轰炸防洪与作者审核门禁。\n参数:\n- `decisionType` (字符串, 必填): 决策类型 (如: 'SETTING_ADDITION', 'CHARACTER_TRAIT', 'PLOT_EVENT', 'WORLD_RULE', 'RELATION_CHANGE')。\n- `proposedChanges` (对象/值, 必填): 拟变更的设定属性或结构化内容。\n- `projectId` (字符串, 可选, 默认 'default'): 项目标识符。\n- `chapterId` (字符串, 可选): 关联篇章代码。\n- `proposer` (字符串, 可选, 默认 'AI_Agent'): 提议者标识。\n- `targetEntityId` (字符串, 可选): 关联的目标实体业务 ID。\n- `sourceEntities` (数组, 可选): 关联的源实体 ID 列表。\n- `rationale` (字符串, 可选): 决策理由或设定背景解释。\n- `tags` (数组, 可选): 标签列表。\n- `priority` (字符串, 可选, 默认 'normal'): 优先级 ('low', 'normal', 'high', 'urgent')。\n- `requestId` (字符串, 可选): 请求追踪 UUID。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」RegisterCreativeDecision「末」,\ndecisionType:「始」SETTING_ADDITION「末」,\ntargetEntityId:「始」PL-001「末」,\nproposedChanges:「始」{\"atmosphere\": \"dense_nitrogen\", \"habitable\": true}「末」,\nrationale:「始」AI Agent在第3章推导出的星球生态特征「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」RegisterCreativeDecision「末」,\ndecisionType:「始」SETTING_ADDITION「末」,\nproposedChanges:「始」{\"newSetting\": \"value\"}「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "SuggestMemoryUpdate",
+        "description": "功能: (R7) 在篇章草稿完成或审校后，分析正文内容与实体增量，生成面向 VCP DailyNote / RAG 的结构化更新建议清单。纯分析提案引擎，严格执行零数据库直写；遵循 SuggestMemoryUpdate (提案) -> 作者确认 -> PublishToVCPMemory (执行) 协作生命周期闭环。\n参数:\n- `draftContent` (字符串, 必填): 待分析的篇章草稿 Markdown 文本。\n- `projectId` (字符串, 可选, 默认 'default'): 项目标识符。\n- `chapterId` (字符串, 可选, 默认 'general'): 篇章代码或标识。\n- `draftMetadata` (对象, 可选): 篇章元数据 (如: { tags, summary, volumeNumber, chapterNumber })。\n- `snapshotContext` (对象, 可选): 关联的上下文快照，用于实体状态增量匹配。\n- `requestId` (字符串, 可选): 请求追踪 UUID。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」SuggestMemoryUpdate「末」,\nchapterId:「始」Vol1_Ch03「末」,\ndraftContent:「始」# 第3章 灰港之风\\n\\n林远站在观测塔顶...「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」SuggestMemoryUpdate「末」,\ndraftContent:「始」草稿正文内容「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "PublishToVCPMemory",
+        "description": "功能: (R4) 将作者已确认的记忆与剧情摘要打包为标准化 VCP 信封 JSON (Envelope Schema 1.0)，供 VCP DailyNote/RAG 服务安全抓取与沉淀。搭载防污染安全门禁，严格要求作者确认标记 (confirmedBy)；零数据库直写，杜绝草稿自动回流污染 RAG。\n参数:\n- `memories` (对象数组, 必填): 待推送的确认记忆条目列表，每项包含 memoryType, title, content (或 suggestedContent), tags, sourceRefs 等。\n- `confirmedBy` (字符串, 可选, 默认 'author'): 确认人身份，防污染门禁要求非空。\n- `projectId` (字符串, 可选, 默认 'default'): 项目标识符。\n- `chapterId` (字符串, 可选): 关联篇章代码。\n- `requestId` (字符串, 可选): 请求追踪 UUID。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」PublishToVCPMemory「末」,\nchapterId:「始」Vol1_Ch03「末」,\nconfirmedBy:「始」author「末」,\nmemories:「始」[{\"memoryType\":\"chapter_summary\",\"title\":\"第3章摘要\",\"content\":\"林远抵达灰港星并完成首次接触。\"}]「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」PublishToVCPMemory「末」,\nmemories:「始」[{\"memoryType\":\"chapter_summary\",\"content\":\"篇章摘要内容\"}]「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "EvaluateCanonLeakage",
+        "description": "功能: (R5-FIX) 对 AI Agent 编写的草稿正文执行 7 维度全量正史泄露与幻觉巡检。针对已归档/废弃实体 (archived/deprecated) 实现 100% 召回拦截；覆盖 7 项巡检：① 引用废弃归档内容 ② 候选设定误作正史 ③ 提前使用未发生时间线事件 ④ 角色掌握越权全知信息 ⑤ 引用未确认设定变更 ⑥ 混入其他草稿分支内容 ⑦ 将过时 VCP 记忆误作当前正史。\n参数:\n- `draftContent` (字符串, 必填): 待巡检的草稿 Markdown 正文。\n- `projectId` (字符串, 可选, 默认 'default'): 项目标识符。\n- `chapterId` (字符串, 可选): 篇章代码。\n- `chapterNumber` (整数/浮点数, 可选, 默认 1): 当前章节序号（用于时间线因果校验）。\n- `snapshotContext` (对象, 可选): 写作时使用的上下文快照。\n- `forbiddenEntities` (字符串数组, 可选): 额外显式禁用的实体或关键词列表。\n- `metadata` (对象, 可选): 草稿附加元数据。\n- `requestId` (字符串, 可选): 请求追踪 UUID。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」EvaluateCanonLeakage「末」,\nchapterNumber:「始」3「末」,\ndraftContent:「始」林远在灰港星使用了旧版引擎PL-999...「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」EvaluateCanonLeakage「末」,\ndraftContent:「始」草稿正文「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "EvaluateContextPrecision",
+        "description": "功能: (R8) 评估上下文快照的精准度 (Precision)，计算快照中实际与当前写作任务相关的条目比例，识别并剔除无关噪声实体 (noiseEntities)，提供针对性的上下文过滤优化建议。\n参数:\n- `contextSnapshot` (对象, 必填): 待评估的 5 层或 3.0 上下文快照对象。\n- `targetChapterInfo` (对象, 可选): 目标篇章任务信息 (包含 focusEntities, keywords, tags, chapterId)。\n- `requestId` (字符串, 可选): 请求追踪 UUID。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」EvaluateContextPrecision「末」,\ntargetChapterInfo:「始」{\"focusEntities\": [\"灰港星\", \"林远\"], \"keywords\": [\"跃迁\", \"港口\"]}「末」,\ncontextSnapshot:「始」{\"canonFacts\": [...]}「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」EvaluateContextPrecision「末」,\ncontextSnapshot:「始」{}「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "EvaluateContextRecall",
+        "description": "功能: (R8) 评估上下文快照的召回率 (Recall)，检测是否遗漏了应包含的焦点实体、关键正史档案或全局世界公理规则 (Global World Rules)，返回遗漏实体与规则明细清单。\n参数:\n- `contextSnapshot` (对象, 必填): 待评估的上下文快照对象。\n- `targetChapterInfo` (对象, 可选): 目标篇章任务信息 (包含 focusEntities, focus, chapterId)。\n- `fullDatabaseFacts` (对象数组, 可选): 完整数据库事实列表，缺省时自动从 SQLite 查询。\n- `requestId` (字符串, 可选): 请求追踪 UUID。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」EvaluateContextRecall「末」,\ntargetChapterInfo:「始」{\"focusEntities\": [\"灰港星\", \"林远\"]}「末」,\ncontextSnapshot:「始」{\"canonFacts\": [...]}「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」EvaluateContextRecall「末」,\ncontextSnapshot:「始」{}「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "EvaluateMemoryConflict",
+        "description": "功能: (R8) 检测外部 VCP 长期记忆条目与 NovelEngineering 底层结构化正史事实之间的逻辑矛盾与状态冲突，计算一致性得分并定位冲突实体与矛盾原因。\n参数:\n- `vcpMemories` (对象数组, 必填): 外部传入的 VCP 长期记忆条目列表。\n- `structuredCanonFacts` (对象数组, 可选): 结构化正史事实列表，缺省时自动从 SQLite 加载。\n- `requestId` (字符串, 可选): 请求追踪 UUID。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」EvaluateMemoryConflict「末」,\nvcpMemories:「始」[{\"targetEntityId\": \"PL-001\", \"status\": \"destroyed\"}]「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」EvaluateMemoryConflict「末」,\nvcpMemories:「始」[]「末」\n<<<[END_TOOL_REQUEST]>>>"
       }
     ]
   }

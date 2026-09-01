@@ -22,18 +22,27 @@ class ChapterRepo {
    * @private
    */
   _normalizeRecord(data) {
+    const rawChapterNum = data.chapter_number !== undefined && data.chapter_number !== null ? data.chapter_number : data.chapterNumber;
+    const rawVolNum = data.volume_number !== undefined && data.volume_number !== null ? data.volume_number : data.volumeNumber;
+    const rawRelPath = data.relative_path !== undefined && data.relative_path !== null ? data.relative_path : data.relativePath;
+    const rawSourceFileId = data.source_file_id !== undefined && data.source_file_id !== null ? data.source_file_id : data.sourceFileId;
+    const rawWordCount = data.word_count !== undefined && data.word_count !== null ? data.word_count : data.wordCount;
+    const rawTimelineStart = data.timeline_start !== undefined && data.timeline_start !== null ? data.timeline_start : data.timelineStart;
+    const rawTimelineEnd = data.timeline_end !== undefined && data.timeline_end !== null ? data.timeline_end : data.timelineEnd;
+    const rawPovEntityId = data.pov_entity_id !== undefined && data.pov_entity_id !== null ? data.pov_entity_id : data.povEntityId;
+
     return {
-      chapter_number: Number(data.chapter_number) || 1,
-      volume_number: Number(data.volume_number) || 1,
+      chapter_number: Number(rawChapterNum) || 1,
+      volume_number: Number(rawVolNum) || 1,
       title: data.title || '',
-      relative_path: data.relative_path || '',
-      source_file_id: data.source_file_id !== undefined && data.source_file_id !== null ? Number(data.source_file_id) : null,
-      word_count: Number(data.word_count) || 0,
+      relative_path: rawRelPath || '',
+      source_file_id: rawSourceFileId !== undefined && rawSourceFileId !== null ? Number(rawSourceFileId) : null,
+      word_count: Number(rawWordCount) || 0,
       status: data.status || 'draft',
       canon: data.canon !== undefined && data.canon !== null ? Number(data.canon) : 0,
-      timeline_start: data.timeline_start !== undefined && data.timeline_start !== null ? Number(data.timeline_start) : null,
-      timeline_end: data.timeline_end !== undefined && data.timeline_end !== null ? Number(data.timeline_end) : null,
-      pov_entity_id: data.pov_entity_id ? Number(data.pov_entity_id) : null,
+      timeline_start: rawTimelineStart !== undefined && rawTimelineStart !== null ? Number(rawTimelineStart) : null,
+      timeline_end: rawTimelineEnd !== undefined && rawTimelineEnd !== null ? Number(rawTimelineEnd) : null,
+      pov_entity_id: rawPovEntityId ? Number(rawPovEntityId) : null,
       summary: data.summary || null
     };
   }
@@ -61,6 +70,13 @@ class ChapterRepo {
     const stmt = this.db.prepare(sql);
     const info = stmt.run(record);
     return this.getById(info.lastInsertRowid);
+  }
+
+  /**
+   * Alias for insert
+   */
+  create(data) {
+    return this.insert(data);
   }
 
   /**

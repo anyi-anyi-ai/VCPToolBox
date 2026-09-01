@@ -124,9 +124,11 @@ describe('E2E Anomaly Elimination: ANOM_002 False-Positive Eradication', () => {
     const scanResult = await IncrementalIndexer.sync(vaultDir, dbManager);
     assert.ok(scanResult.totalFilesScanned >= 27, `Should scan at least 27 files (got ${scanResult.totalFilesScanned})`);
 
-    // 3. Verify SQLite entities count
+    // 3. Verify SQLite source files and aggregated entities count
+    const allFiles = dbManager.sourceFiles.query({ limit: 100 });
+    assert.ok(allFiles.length >= 27, `Should index at least 27 source files (got ${allFiles.length})`);
     const allEntities = dbManager.entities.query({ limit: 100 });
-    assert.ok(allEntities.length >= 27, `Should extract at least 27 entities (got ${allEntities.length})`);
+    assert.ok(allEntities.length >= 5, `Should aggregate into at least 5 canonical entities (got ${allEntities.length})`);
 
     // 4. Run ANOM_002 detection rule directly and via AnomalyEngine
     const rule02Anomalies = Rule02_SameIdMultiEntities.detect(dbManager, 'test_session_001');

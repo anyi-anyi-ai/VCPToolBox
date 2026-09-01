@@ -317,9 +317,9 @@ class IncrementalIndexer {
                 }
               }
             } else {
-              // Standalone entity file
-              this.dbManager.entities.deleteBySourceFileId(sourceFileId);
-              let existingEntity = this.dbManager.entities.getBySourceFileIdAndEntityId(sourceFileId, ent.entity_id);
+              // Standalone entity file: match existing entity for this source file
+              let existingEntity = this.dbManager.entities.getBySourceFileIdAndEntityId(sourceFileId, ent.entity_id) ||
+                this.dbManager.db.prepare('SELECT * FROM entities WHERE source_file_id = ? LIMIT 1').get(sourceFileId);
               if (!existingEntity) {
                 canonicalEntity = this.dbManager.entities.insert({
                   ...ent,

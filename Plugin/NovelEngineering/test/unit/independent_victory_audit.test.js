@@ -205,7 +205,7 @@ describe('VICTORY AUDIT: Independent Verification Suite (R1-R6, AC1-AC3)', () =>
 
       assert.equal(result.sourceCategory, 'planet_system');
       assert.equal(result.status, 'active');
-      assert.equal(result.reviewStatus, 'confirmed');
+      assert.equal(result.reviewStatus, 'human_confirmed');
       assert.ok(result.entity, 'Entity must be extracted');
       assert.equal(result.entity.entity_id, 'PL-001');
       assert.equal(result.entity.canonical_name, '塔兰托');

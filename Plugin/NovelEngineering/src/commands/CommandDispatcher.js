@@ -15,6 +15,11 @@ const DetectionCommands = require('./DetectionCommands');
 const QueryCommands = require('./QueryCommands');
 const AuthoringCommands = require('./AuthoringCommands');
 const ReportCommands = require('./ReportCommands');
+const GovernanceCommands = require('./GovernanceCommands');
+const ConsistencyCommands = require('./ConsistencyCommands');
+const SnapshotCommands = require('./SnapshotCommands');
+const RagExportCommands = require('./RagExportCommands');
+const CollaborationCommands = require('./CollaborationCommands');
 
 class CommandDispatcher {
   /**
@@ -63,8 +68,11 @@ class CommandDispatcher {
    * @returns {object}
    */
   getContext() {
+    const self = this;
     return {
-      dbManager: this.getDbManager(),
+      get dbManager() {
+        return self.getDbManager();
+      },
       pathGuard: this.pathGuard,
       config: this.config,
       basePath: this.basePath
@@ -83,9 +91,8 @@ class CommandDispatcher {
     }
 
     const trimmedAction = action.trim();
-    const context = this.getContext();
 
-    // Built-in Utility Commands
+    // 1. Built-in Utility Commands (Fast path, zero DB connection)
     switch (trimmedAction) {
       case 'ping':
         return this._handlePing(parameters);
@@ -95,8 +102,61 @@ class CommandDispatcher {
 
       case 'info':
         return this._handleInfo(parameters);
+    }
 
-      // Core MVP Commands
+    // 2. Validate against supported domain commands before acquiring DB context
+    const supportedDomainCommands = new Set([
+      'ScanWorldTree',
+      'BuildSourceManifest',
+      'ClassifySourceFiles',
+      'DetectPlaceholderFiles',
+      'DetectDuplicateEntities',
+      'DetectLegacyIdConflicts',
+      'GetSourceFile',
+      'QueryEntities',
+      'GetChapterContext',
+      'SaveChapterDraft',
+      'ManageForeshadowing',
+      'ManageTimeline',
+      'ExportImportReport',
+      // Phase 3 Milestone 2 Governance Commands
+      'GetGovernanceSummary',
+      'SetSourceReviewStatus',
+      'PromoteSourceToCanonPreview',
+      'PromoteSourceToCanon',
+      'DeprecateSourcePreview',
+      'DeprecateSource',
+      // Phase 3 Milestone 3 Consistency & Impact Commands
+      'CheckConsistency',
+      'AnalyzeChangeImpact',
+      // Phase 3 Milestone 5 Snapshot & RAG Commands
+      'CreateProjectSnapshot',
+      'RestoreProjectSnapshotPreview',
+      'RestoreProjectSnapshot',
+      'BuildRagCorpusManifest',
+      'ExportRagSources',
+      // Phase 4 Milestone 2-4 Collaboration & Quality Commands
+      'BuildVCPContext',
+      'GetContextTrace',
+      'RegisterCreativeDecision',
+      'SuggestMemoryUpdate',
+      'PublishToVCPMemory',
+      'EvaluateCanonLeakage',
+      'EvaluateContextPrecision',
+      'EvaluateContextRecall',
+      'EvaluateMemoryConflict'
+    ]);
+
+    if (!supportedDomainCommands.has(trimmedAction)) {
+      throw new Error(
+        `Unsupported or unknown command: "${trimmedAction}". Supported commands: ${Array.from(supportedDomainCommands).join(', ')}, ping, help, info.`
+      );
+    }
+
+    const context = this.getContext();
+
+    // 3. Core MVP & Phase 2/3 Domain Commands
+    switch (trimmedAction) {
       case 'ScanWorldTree':
         return ScanCommands.handleScanWorldTree(parameters, context);
 
@@ -136,9 +196,79 @@ class CommandDispatcher {
       case 'ExportImportReport':
         return ReportCommands.handleExportImportReport(parameters, context);
 
+      // Phase 3 Milestone 2 Governance Commands
+      case 'GetGovernanceSummary':
+        return GovernanceCommands.handleGetGovernanceSummary(parameters, context);
+
+      case 'SetSourceReviewStatus':
+        return GovernanceCommands.handleSetSourceReviewStatus(parameters, context);
+
+      case 'PromoteSourceToCanonPreview':
+        return GovernanceCommands.handlePromoteSourceToCanonPreview(parameters, context);
+
+      case 'PromoteSourceToCanon':
+        return GovernanceCommands.handlePromoteSourceToCanon(parameters, context);
+
+      case 'DeprecateSourcePreview':
+        return GovernanceCommands.handleDeprecateSourcePreview(parameters, context);
+
+      case 'DeprecateSource':
+        return GovernanceCommands.handleDeprecateSource(parameters, context);
+
+      // Phase 3 Milestone 3 Consistency & Impact Commands
+      case 'CheckConsistency':
+        return ConsistencyCommands.handleCheckConsistency(parameters, context);
+
+      case 'AnalyzeChangeImpact':
+        return ConsistencyCommands.handleAnalyzeChangeImpact(parameters, context);
+
+      // Phase 3 Milestone 5 Snapshot & RAG Commands
+      case 'CreateProjectSnapshot':
+        return SnapshotCommands.handleCreateProjectSnapshot(parameters, context);
+
+      case 'RestoreProjectSnapshotPreview':
+        return SnapshotCommands.handleRestoreProjectSnapshotPreview(parameters, context);
+
+      case 'RestoreProjectSnapshot':
+        return SnapshotCommands.handleRestoreProjectSnapshot(parameters, context);
+
+      case 'BuildRagCorpusManifest':
+        return RagExportCommands.handleBuildRagCorpusManifest(parameters, context);
+
+      case 'ExportRagSources':
+        return RagExportCommands.handleExportRagSources(parameters, context);
+
+      // Phase 4 Milestone 2-4 Collaboration & Quality Commands
+      case 'BuildVCPContext':
+        return CollaborationCommands.handleBuildVCPContext(parameters, context);
+
+      case 'GetContextTrace':
+        return CollaborationCommands.handleGetContextTrace(parameters, context);
+
+      case 'RegisterCreativeDecision':
+        return CollaborationCommands.handleRegisterCreativeDecision(parameters, context);
+
+      case 'SuggestMemoryUpdate':
+        return CollaborationCommands.handleSuggestMemoryUpdate(parameters, context);
+
+      case 'PublishToVCPMemory':
+        return CollaborationCommands.handlePublishToVCPMemory(parameters, context);
+
+      case 'EvaluateCanonLeakage':
+        return CollaborationCommands.handleEvaluateCanonLeakage(parameters, context);
+
+      case 'EvaluateContextPrecision':
+        return CollaborationCommands.handleEvaluateContextPrecision(parameters, context);
+
+      case 'EvaluateContextRecall':
+        return CollaborationCommands.handleEvaluateContextRecall(parameters, context);
+
+      case 'EvaluateMemoryConflict':
+        return CollaborationCommands.handleEvaluateMemoryConflict(parameters, context);
+
       default:
         throw new Error(
-          `Unsupported or unknown command: "${trimmedAction}". Supported commands: ScanWorldTree, BuildSourceManifest, ClassifySourceFiles, DetectPlaceholderFiles, DetectDuplicateEntities, DetectLegacyIdConflicts, GetSourceFile, QueryEntities, GetChapterContext, SaveChapterDraft, ManageForeshadowing, ManageTimeline, ExportImportReport, ping, help, info.`
+          `Unsupported or unknown command: "${trimmedAction}". Supported commands: ${Array.from(supportedDomainCommands).join(', ')}, ping, help, info.`
         );
     }
   }
@@ -175,6 +305,29 @@ class CommandDispatcher {
       'ManageForeshadowing',
       'ManageTimeline',
       'ExportImportReport',
+      'GetGovernanceSummary',
+      'SetSourceReviewStatus',
+      'PromoteSourceToCanonPreview',
+      'PromoteSourceToCanon',
+      'DeprecateSourcePreview',
+      'DeprecateSource',
+      'CheckConsistency',
+      'AnalyzeChangeImpact',
+      'CreateProjectSnapshot',
+      'RestoreProjectSnapshotPreview',
+      'RestoreProjectSnapshot',
+      'BuildRagCorpusManifest',
+      'ExportRagSources',
+      // Phase 4 Collaboration & Evaluation
+      'BuildVCPContext',
+      'GetContextTrace',
+      'RegisterCreativeDecision',
+      'SuggestMemoryUpdate',
+      'PublishToVCPMemory',
+      'EvaluateCanonLeakage',
+      'EvaluateContextPrecision',
+      'EvaluateContextRecall',
+      'EvaluateMemoryConflict',
       'ping',
       'help',
       'info'
@@ -208,7 +361,7 @@ class CommandDispatcher {
         displayName: '流浪小说工程 (VCPNovelManager)',
         version: this.version,
         status: 'ready',
-        milestone: 'M4'
+        milestone: 'Phase 4'
       }
     };
   }

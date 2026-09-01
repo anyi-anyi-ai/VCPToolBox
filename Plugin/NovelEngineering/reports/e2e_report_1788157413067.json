@@ -1,0 +1,577 @@
+{
+  "reportId": "RPT-20260831-6E1E",
+  "generatedAt": "2026-08-31T06:23:33.279Z",
+  "scanSessionId": "all_sessions",
+  "statistics": {
+    "totalFiles": 24,
+    "totalEntities": 12,
+    "totalAliases": 6,
+    "totalTimelineEvents": 4,
+    "totalChapters": 2,
+    "totalForeshadowing": 2,
+    "totalAnomalies": 15
+  },
+  "categoryDistribution": {
+    "planet": 0,
+    "character": 0,
+    "organization": 0,
+    "timeline": 0,
+    "chapter": 0,
+    "foreshadowing": 0,
+    "draft": 0,
+    "archive": 0,
+    "unclassified": 0,
+    "character_bio": 7,
+    "planet_system": 5,
+    "timeline_record": 4,
+    "worldview_setting": 4,
+    "chapter_text": 2,
+    "foreshadowing_entry": 2
+  },
+  "statusDistribution": {
+    "active": 15,
+    "draft": 3,
+    "finalized": 5,
+    "placeholder": 1
+  },
+  "reviewStatusDistribution": {
+    "ai_generated": 1,
+    "human_confirmed": 14,
+    "unreviewed": 9
+  },
+  "anomalyBreakdown": {
+    "CRITICAL": 1,
+    "HIGH": 4,
+    "MEDIUM": 8,
+    "LOW": 2,
+    "INFO": 0
+  },
+  "anomalies": [
+    {
+      "id": 1,
+      "scan_session_id": "scan_1788157408893_b04575e2",
+      "anomaly_rule_id": "ANOM_001_SAME_NAME_DIFF_ID",
+      "anomaly_type": "ENTITY_CONFLICT",
+      "severity": "HIGH",
+      "title": "Duplicate planet name with divergent IDs: '塔兰托'",
+      "message": "Planet '塔兰托' is assigned multiple distinct IDs (PL-001, PL-099) across 2 files.",
+      "affected_file_paths_json": "[\"02_Entities/Planets/Taranto_PL001.md\",\"02_Entities/Planets/Taranto_PL099.md\"]",
+      "affected_entity_ids_json": "[\"PL-001\",\"PL-099\"]",
+      "details_json": "{\"canonicalName\":\"塔兰托\",\"normalizedName\":\"塔兰托\",\"distinctIdCount\":2,\"conflictingEntities\":[{\"dbId\":11,\"entityId\":\"PL-001\",\"canonicalName\":\"塔兰托\",\"filePath\":\"02_Entities/Planets/Taranto_PL001.md\",\"line\":1,\"status\":\"active\",\"reviewStatus\":\"confirmed\"},{\"dbId\":12,\"entityId\":\"PL-099\",\"canonicalName\":\"塔兰托\",\"filePath\":\"02_Entities/Planets/Taranto_PL099.md\",\"line\":1,\"status\":\"active\",\"reviewStatus\":\"confirmed\"}]}",
+      "suggested_action": "Merge conflicting IDs (PL-001, PL-099) into canonical entity and deprecate secondary draft notes.",
+      "is_resolved": 0,
+      "created_at": "2026-08-31 14:23:29",
+      "affectedFilePaths": [
+        "02_Entities/Planets/Taranto_PL001.md",
+        "02_Entities/Planets/Taranto_PL099.md"
+      ],
+      "affectedEntityIds": [
+        "PL-001",
+        "PL-099"
+      ],
+      "details": {
+        "canonicalName": "塔兰托",
+        "normalizedName": "塔兰托",
+        "distinctIdCount": 2,
+        "conflictingEntities": [
+          {
+            "dbId": 11,
+            "entityId": "PL-001",
+            "canonicalName": "塔兰托",
+            "filePath": "02_Entities/Planets/Taranto_PL001.md",
+            "line": 1,
+            "status": "active",
+            "reviewStatus": "confirmed"
+          },
+          {
+            "dbId": 12,
+            "entityId": "PL-099",
+            "canonicalName": "塔兰托",
+            "filePath": "02_Entities/Planets/Taranto_PL099.md",
+            "line": 1,
+            "status": "active",
+            "reviewStatus": "confirmed"
+          }
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "scan_session_id": "scan_1788157408893_b04575e2",
+      "anomaly_rule_id": "ANOM_002_SAME_ID_MULTI_ENTITY",
+      "anomaly_type": "ID_INTEGRITY",
+      "severity": "CRITICAL",
+      "title": "ID collision on 'CHAR-007' for distinct entities",
+      "message": "ID 'CHAR-007' is simultaneously assigned to distinct entities: 爱丽丝, 鲍勃.",
+      "affected_file_paths_json": "[\"02_Entities/Characters/Alice_CHAR007.md\",\"02_Entities/Characters/Bob_CHAR007.md\"]",
+      "affected_entity_ids_json": "[\"CHAR-007\"]",
+      "details_json": "{\"entityId\":\"CHAR-007\",\"distinctNameCount\":2,\"totalOccurrences\":2,\"entities\":[{\"dbId\":1,\"entityId\":\"CHAR-007\",\"name\":\"爱丽丝\",\"type\":\"character\",\"filePath\":\"02_Entities/Characters/Alice_CHAR007.md\",\"line\":1,\"status\":\"active\",\"reviewStatus\":\"confirmed\"},{\"dbId\":2,\"entityId\":\"CHAR-007\",\"name\":\"鲍勃\",\"type\":\"character\",\"filePath\":\"02_Entities/Characters/Bob_CHAR007.md\",\"line\":1,\"status\":\"active\",\"reviewStatus\":\"confirmed\"}]}",
+      "suggested_action": "Quarantine conflicting notes and reassign unique canonical IDs to distinct entities.",
+      "is_resolved": 0,
+      "created_at": "2026-08-31 14:23:29",
+      "affectedFilePaths": [
+        "02_Entities/Characters/Alice_CHAR007.md",
+        "02_Entities/Characters/Bob_CHAR007.md"
+      ],
+      "affectedEntityIds": [
+        "CHAR-007"
+      ],
+      "details": {
+        "entityId": "CHAR-007",
+        "distinctNameCount": 2,
+        "totalOccurrences": 2,
+        "entities": [
+          {
+            "dbId": 1,
+            "entityId": "CHAR-007",
+            "name": "爱丽丝",
+            "type": "character",
+            "filePath": "02_Entities/Characters/Alice_CHAR007.md",
+            "line": 1,
+            "status": "active",
+            "reviewStatus": "confirmed"
+          },
+          {
+            "dbId": 2,
+            "entityId": "CHAR-007",
+            "name": "鲍勃",
+            "type": "character",
+            "filePath": "02_Entities/Characters/Bob_CHAR007.md",
+            "line": 1,
+            "status": "active",
+            "reviewStatus": "confirmed"
+          }
+        ]
+      }
+    },
+    {
+      "id": 3,
+      "scan_session_id": "scan_1788157408893_b04575e2",
+      "anomaly_rule_id": "ANOM_003_HISTORICAL_VERSION_DUPLICATION",
+      "anomaly_type": "STRUCTURAL_DUPLICATION",
+      "severity": "MEDIUM",
+      "title": "Duplicate file or historical clone detected: 'Cosmology_Canonical.md'",
+      "message": "File '99_Archive/Cosmology_Canonical_v1_backup.md' is an identical clone of active file '01_Worldview/Cosmology_Canonical.md'.",
+      "affected_file_paths_json": "[\"01_Worldview/Cosmology_Canonical.md\",\"99_Archive/Cosmology_Canonical_v1_backup.md\"]",
+      "affected_entity_ids_json": "[]",
+      "details_json": "{\"sha256\":\"ddcb23fba645a014ecfeda55cedadb5c86cf71eec39ca67295394b1de06eb938\",\"duplicateCount\":2,\"files\":[{\"id\":1,\"relativePath\":\"01_Worldview/Cosmology_Canonical.md\",\"sizeBytes\":244,\"status\":\"finalized\",\"reviewStatus\":\"human_confirmed\",\"entityId\":null,\"canonicalName\":null},{\"id\":9,\"relativePath\":\"99_Archive/Cosmology_Canonical_v1_backup.md\",\"sizeBytes\":244,\"status\":\"finalized\",\"reviewStatus\":\"human_confirmed\",\"entityId\":null,\"canonicalName\":null}]}",
+      "suggested_action": "Set status of historical/backup copies to 'archived' and exclude from primary RAG indexing pipelines.",
+      "is_resolved": 0,
+      "created_at": "2026-08-31 14:23:29",
+      "affectedFilePaths": [
+        "01_Worldview/Cosmology_Canonical.md",
+        "99_Archive/Cosmology_Canonical_v1_backup.md"
+      ],
+      "affectedEntityIds": [],
+      "details": {
+        "sha256": "ddcb23fba645a014ecfeda55cedadb5c86cf71eec39ca67295394b1de06eb938",
+        "duplicateCount": 2,
+        "files": [
+          {
+            "id": 1,
+            "relativePath": "01_Worldview/Cosmology_Canonical.md",
+            "sizeBytes": 244,
+            "status": "finalized",
+            "reviewStatus": "human_confirmed",
+            "entityId": null,
+            "canonicalName": null
+          },
+          {
+            "id": 9,
+            "relativePath": "99_Archive/Cosmology_Canonical_v1_backup.md",
+            "sizeBytes": 244,
+            "status": "finalized",
+            "reviewStatus": "human_confirmed",
+            "entityId": null,
+            "canonicalName": null
+          }
+        ]
+      }
+    },
+    {
+      "id": 4,
+      "scan_session_id": "scan_1788157408893_b04575e2",
+      "anomaly_rule_id": "ANOM_004_PLACEHOLDER_STUB_FILE",
+      "anomaly_type": "VAULT_HYGIENE",
+      "severity": "LOW",
+      "title": "Stub placeholder file detected: '02_Entities/Planets/Stub_Planet_30B.md'",
+      "message": "File '02_Entities/Planets/Stub_Planet_30B.md' is an empty or minimal placeholder (15B, 4 words). Reason: FILE_SIZE_LE_30B.",
+      "affected_file_paths_json": "[\"02_Entities/Planets/Stub_Planet_30B.md\"]",
+      "affected_entity_ids_json": "[\"Planets_1ee2fae0_Stub_Planet_30B\"]",
+      "details_json": "{\"fileId\":20,\"relativePath\":\"02_Entities/Planets/Stub_Planet_30B.md\",\"fileName\":\"Stub_Planet_30B.md\",\"sizeBytes\":15,\"wordCount\":4,\"lineCount\":2,\"reason\":\"FILE_SIZE_LE_30B\",\"entityId\":\"Planets_1ee2fae0_Stub_Planet_30B\",\"canonicalName\":\"Planet\"}",
+      "suggested_action": "Fill in entity/chapter content or mark as placeholder to exclude from deep RAG generation.",
+      "is_resolved": 0,
+      "created_at": "2026-08-31 14:23:29",
+      "affectedFilePaths": [
+        "02_Entities/Planets/Stub_Planet_30B.md"
+      ],
+      "affectedEntityIds": [
+        "Planets_1ee2fae0_Stub_Planet_30B"
+      ],
+      "details": {
+        "fileId": 20,
+        "relativePath": "02_Entities/Planets/Stub_Planet_30B.md",
+        "fileName": "Stub_Planet_30B.md",
+        "sizeBytes": 15,
+        "wordCount": 4,
+        "lineCount": 2,
+        "reason": "FILE_SIZE_LE_30B",
+        "entityId": "Planets_1ee2fae0_Stub_Planet_30B",
+        "canonicalName": "Planet"
+      }
+    },
+    {
+      "id": 5,
+      "scan_session_id": "scan_1788157408893_b04575e2",
+      "anomaly_rule_id": "ANOM_005_LEGACY_DEPRECATED_ID_CONFLICT",
+      "anomaly_type": "SCHEMA_MIGRATION",
+      "severity": "HIGH",
+      "title": "Legacy ID 'P-001' collides with active entity ID",
+      "message": "Legacy identifier 'P-001' (alias of '老指挥官' [CHAR-001]) collides with active entity '新普罗米修斯' [P-001].",
+      "affected_file_paths_json": "[\"02_Entities/Characters/Elder_CHAR001.md\",\"02_Entities/Planets/Planet_Prometheus_P001.md\"]",
+      "affected_entity_ids_json": "[\"CHAR-001\",\"P-001\"]",
+      "details_json": "{\"legacyId\":\"P-001\",\"intendedEntity\":{\"id\":3,\"entityId\":\"CHAR-001\",\"name\":\"老指挥官\",\"filePath\":\"02_Entities/Characters/Elder_CHAR001.md\"},\"conflictingEntity\":{\"id\":9,\"entityId\":\"P-001\",\"name\":\"新普罗米修斯\",\"filePath\":\"02_Entities/Planets/Planet_Prometheus_P001.md\"}}",
+      "suggested_action": "Reassign unique canonical ID to '新普罗米修斯' and maintain explicit legacy ID redirect.",
+      "is_resolved": 0,
+      "created_at": "2026-08-31 14:23:29",
+      "affectedFilePaths": [
+        "02_Entities/Characters/Elder_CHAR001.md",
+        "02_Entities/Planets/Planet_Prometheus_P001.md"
+      ],
+      "affectedEntityIds": [
+        "CHAR-001",
+        "P-001"
+      ],
+      "details": {
+        "legacyId": "P-001",
+        "intendedEntity": {
+          "id": 3,
+          "entityId": "CHAR-001",
+          "name": "老指挥官",
+          "filePath": "02_Entities/Characters/Elder_CHAR001.md"
+        },
+        "conflictingEntity": {
+          "id": 9,
+          "entityId": "P-001",
+          "name": "新普罗米修斯",
+          "filePath": "02_Entities/Planets/Planet_Prometheus_P001.md"
+        }
+      }
+    },
+    {
+      "id": 6,
+      "scan_session_id": "scan_1788157408893_b04575e2",
+      "anomaly_rule_id": "ANOM_005_LEGACY_DEPRECATED_ID_CONFLICT",
+      "anomaly_type": "SCHEMA_MIGRATION",
+      "severity": "HIGH",
+      "title": "Legacy ID 'P-001' in frontmatter collides with active entity ID",
+      "message": "Legacy identifier 'P-001' in '02_Entities/Characters/Elder_CHAR001.md' collides with active entity '新普罗米修斯' [P-001].",
+      "affected_file_paths_json": "[\"02_Entities/Characters/Elder_CHAR001.md\"]",
+      "affected_entity_ids_json": "[\"P-001\"]",
+      "details_json": "{\"legacyId\":\"P-001\",\"sourceFile\":{\"id\":13,\"relativePath\":\"02_Entities/Characters/Elder_CHAR001.md\"},\"intendedEntity\":{\"id\":13,\"entityId\":\"Elder_CHAR001.md\",\"name\":\"Elder_CHAR001.md\",\"filePath\":\"02_Entities/Characters/Elder_CHAR001.md\"},\"conflictingEntity\":{\"id\":9,\"entityId\":\"P-001\",\"name\":\"新普罗米修斯\"}}",
+      "suggested_action": "Resolve collision for legacy ID 'P-001' between file '02_Entities/Characters/Elder_CHAR001.md' and entity 'P-001'.",
+      "is_resolved": 0,
+      "created_at": "2026-08-31 14:23:29",
+      "affectedFilePaths": [
+        "02_Entities/Characters/Elder_CHAR001.md"
+      ],
+      "affectedEntityIds": [
+        "P-001"
+      ],
+      "details": {
+        "legacyId": "P-001",
+        "sourceFile": {
+          "id": 13,
+          "relativePath": "02_Entities/Characters/Elder_CHAR001.md"
+        },
+        "intendedEntity": {
+          "id": 13,
+          "entityId": "Elder_CHAR001.md",
+          "name": "Elder_CHAR001.md",
+          "filePath": "02_Entities/Characters/Elder_CHAR001.md"
+        },
+        "conflictingEntity": {
+          "id": 9,
+          "entityId": "P-001",
+          "name": "新普罗米修斯"
+        }
+      }
+    },
+    {
+      "id": 7,
+      "scan_session_id": "scan_1788157408893_b04575e2",
+      "anomaly_rule_id": "ANOM_006_AI_HUMAN_MIXED_DATA",
+      "anomaly_type": "QUALITY_GOVERNANCE",
+      "severity": "MEDIUM",
+      "title": "AI/Human data governance issue in '04_Timeline/Event_Child_Inverted_EV100.md'",
+      "message": "File '04_Timeline/Event_Child_Inverted_EV100.md': File is in canonical directory but review_status is 'unreviewed'.",
+      "affected_file_paths_json": "[\"04_Timeline/Event_Child_Inverted_EV100.md\"]",
+      "affected_entity_ids_json": "[]",
+      "details_json": "{\"fileId\":3,\"relativePath\":\"04_Timeline/Event_Child_Inverted_EV100.md\",\"status\":\"active\",\"reviewStatus\":\"unreviewed\",\"entityReviewStatus\":null,\"detectedMarker\":\"Canonical path with unconfirmed status: unreviewed\",\"reason\":\"File is in canonical directory but review_status is 'unreviewed'\"}",
+      "suggested_action": "Review and verify content manually, or relocate file to 'Drafts/' directory until confirmed.",
+      "is_resolved": 0,
+      "created_at": "2026-08-31 14:23:29",
+      "affectedFilePaths": [
+        "04_Timeline/Event_Child_Inverted_EV100.md"
+      ],
+      "affectedEntityIds": [],
+      "details": {
+        "fileId": 3,
+        "relativePath": "04_Timeline/Event_Child_Inverted_EV100.md",
+        "status": "active",
+        "reviewStatus": "unreviewed",
+        "entityReviewStatus": null,
+        "detectedMarker": "Canonical path with unconfirmed status: unreviewed",
+        "reason": "File is in canonical directory but review_status is 'unreviewed'"
+      }
+    },
+    {
+      "id": 8,
+      "scan_session_id": "scan_1788157408893_b04575e2",
+      "anomaly_rule_id": "ANOM_006_AI_HUMAN_MIXED_DATA",
+      "anomaly_type": "QUALITY_GOVERNANCE",
+      "severity": "MEDIUM",
+      "title": "AI/Human data governance issue in '04_Timeline/Event_FirstContact_EV002.md'",
+      "message": "File '04_Timeline/Event_FirstContact_EV002.md': File is in canonical directory but review_status is 'unreviewed'.",
+      "affected_file_paths_json": "[\"04_Timeline/Event_FirstContact_EV002.md\"]",
+      "affected_entity_ids_json": "[]",
+      "details_json": "{\"fileId\":4,\"relativePath\":\"04_Timeline/Event_FirstContact_EV002.md\",\"status\":\"active\",\"reviewStatus\":\"unreviewed\",\"entityReviewStatus\":null,\"detectedMarker\":\"Canonical path with unconfirmed status: unreviewed\",\"reason\":\"File is in canonical directory but review_status is 'unreviewed'\"}",
+      "suggested_action": "Review and verify content manually, or relocate file to 'Drafts/' directory until confirmed.",
+      "is_resolved": 0,
+      "created_at": "2026-08-31 14:23:29",
+      "affectedFilePaths": [
+        "04_Timeline/Event_FirstContact_EV002.md"
+      ],
+      "affectedEntityIds": [],
+      "details": {
+        "fileId": 4,
+        "relativePath": "04_Timeline/Event_FirstContact_EV002.md",
+        "status": "active",
+        "reviewStatus": "unreviewed",
+        "entityReviewStatus": null,
+        "detectedMarker": "Canonical path with unconfirmed status: unreviewed",
+        "reason": "File is in canonical directory but review_status is 'unreviewed'"
+      }
+    },
+    {
+      "id": 9,
+      "scan_session_id": "scan_1788157408893_b04575e2",
+      "anomaly_rule_id": "ANOM_006_AI_HUMAN_MIXED_DATA",
+      "anomaly_type": "QUALITY_GOVERNANCE",
+      "severity": "MEDIUM",
+      "title": "AI/Human data governance issue in '04_Timeline/Event_Genesis_EV001.md'",
+      "message": "File '04_Timeline/Event_Genesis_EV001.md': File is in canonical directory but review_status is 'unreviewed'.",
+      "affected_file_paths_json": "[\"04_Timeline/Event_Genesis_EV001.md\"]",
+      "affected_entity_ids_json": "[]",
+      "details_json": "{\"fileId\":5,\"relativePath\":\"04_Timeline/Event_Genesis_EV001.md\",\"status\":\"active\",\"reviewStatus\":\"unreviewed\",\"entityReviewStatus\":null,\"detectedMarker\":\"Canonical path with unconfirmed status: unreviewed\",\"reason\":\"File is in canonical directory but review_status is 'unreviewed'\"}",
+      "suggested_action": "Review and verify content manually, or relocate file to 'Drafts/' directory until confirmed.",
+      "is_resolved": 0,
+      "created_at": "2026-08-31 14:23:29",
+      "affectedFilePaths": [
+        "04_Timeline/Event_Genesis_EV001.md"
+      ],
+      "affectedEntityIds": [],
+      "details": {
+        "fileId": 5,
+        "relativePath": "04_Timeline/Event_Genesis_EV001.md",
+        "status": "active",
+        "reviewStatus": "unreviewed",
+        "entityReviewStatus": null,
+        "detectedMarker": "Canonical path with unconfirmed status: unreviewed",
+        "reason": "File is in canonical directory but review_status is 'unreviewed'"
+      }
+    },
+    {
+      "id": 10,
+      "scan_session_id": "scan_1788157408893_b04575e2",
+      "anomaly_rule_id": "ANOM_006_AI_HUMAN_MIXED_DATA",
+      "anomaly_type": "QUALITY_GOVERNANCE",
+      "severity": "MEDIUM",
+      "title": "AI/Human data governance issue in '04_Timeline/Event_Parent_EV200.md'",
+      "message": "File '04_Timeline/Event_Parent_EV200.md': File is in canonical directory but review_status is 'unreviewed'.",
+      "affected_file_paths_json": "[\"04_Timeline/Event_Parent_EV200.md\"]",
+      "affected_entity_ids_json": "[]",
+      "details_json": "{\"fileId\":6,\"relativePath\":\"04_Timeline/Event_Parent_EV200.md\",\"status\":\"active\",\"reviewStatus\":\"unreviewed\",\"entityReviewStatus\":null,\"detectedMarker\":\"Canonical path with unconfirmed status: unreviewed\",\"reason\":\"File is in canonical directory but review_status is 'unreviewed'\"}",
+      "suggested_action": "Review and verify content manually, or relocate file to 'Drafts/' directory until confirmed.",
+      "is_resolved": 0,
+      "created_at": "2026-08-31 14:23:29",
+      "affectedFilePaths": [
+        "04_Timeline/Event_Parent_EV200.md"
+      ],
+      "affectedEntityIds": [],
+      "details": {
+        "fileId": 6,
+        "relativePath": "04_Timeline/Event_Parent_EV200.md",
+        "status": "active",
+        "reviewStatus": "unreviewed",
+        "entityReviewStatus": null,
+        "detectedMarker": "Canonical path with unconfirmed status: unreviewed",
+        "reason": "File is in canonical directory but review_status is 'unreviewed'"
+      }
+    },
+    {
+      "id": 11,
+      "scan_session_id": "scan_1788157408893_b04575e2",
+      "anomaly_rule_id": "ANOM_006_AI_HUMAN_MIXED_DATA",
+      "anomaly_type": "QUALITY_GOVERNANCE",
+      "severity": "MEDIUM",
+      "title": "AI/Human data governance issue in '01_Worldview/Canonical/AI_Unreviewed_Cosmology.md'",
+      "message": "File '01_Worldview/Canonical/AI_Unreviewed_Cosmology.md': File is in canonical directory but review_status is 'ai_generated' and has ai_generated frontmatter.",
+      "affected_file_paths_json": "[\"01_Worldview/Canonical/AI_Unreviewed_Cosmology.md\"]",
+      "affected_entity_ids_json": "[]",
+      "details_json": "{\"fileId\":10,\"relativePath\":\"01_Worldview/Canonical/AI_Unreviewed_Cosmology.md\",\"status\":\"draft\",\"reviewStatus\":\"ai_generated\",\"entityReviewStatus\":null,\"detectedMarker\":\"Canonical path with unconfirmed status: ai_generated\",\"reason\":\"File is in canonical directory but review_status is 'ai_generated' and has ai_generated frontmatter\"}",
+      "suggested_action": "Review and verify content manually, or relocate file to 'Drafts/' directory until confirmed.",
+      "is_resolved": 0,
+      "created_at": "2026-08-31 14:23:29",
+      "affectedFilePaths": [
+        "01_Worldview/Canonical/AI_Unreviewed_Cosmology.md"
+      ],
+      "affectedEntityIds": [],
+      "details": {
+        "fileId": 10,
+        "relativePath": "01_Worldview/Canonical/AI_Unreviewed_Cosmology.md",
+        "status": "draft",
+        "reviewStatus": "ai_generated",
+        "entityReviewStatus": null,
+        "detectedMarker": "Canonical path with unconfirmed status: ai_generated",
+        "reason": "File is in canonical directory but review_status is 'ai_generated' and has ai_generated frontmatter"
+      }
+    },
+    {
+      "id": 12,
+      "scan_session_id": "scan_1788157408893_b04575e2",
+      "anomaly_rule_id": "ANOM_007_DANGLING_CROSS_REFERENCE",
+      "anomaly_type": "GRAPH_INTEGRITY",
+      "severity": "MEDIUM",
+      "title": "Dangling entity reference in '02_Entities/Characters/Explorer_CHAR003.md': '[[NonExistent_Ghost_Planet_X999]]'",
+      "message": "Property 'planet: [[NonExistent_Ghost_Planet_X999]]' in '02_Entities/Characters/Explorer_CHAR003.md' refers to non-existent entity or file '[[NonExistent_Ghost_Planet_X999]]'.",
+      "affected_file_paths_json": "[\"02_Entities/Characters/Explorer_CHAR003.md\"]",
+      "affected_entity_ids_json": "[\"[[NonExistent_Ghost_Planet_X999]]\"]",
+      "details_json": "{\"referencingFile\":\"02_Entities/Characters/Explorer_CHAR003.md\",\"propertyKey\":\"planet\",\"targetValue\":\"[[NonExistent_Ghost_Planet_X999]]\"}",
+      "suggested_action": "Create missing note for '[[NonExistent_Ghost_Planet_X999]]' or correct reference property in frontmatter.",
+      "is_resolved": 0,
+      "created_at": "2026-08-31 14:23:29",
+      "affectedFilePaths": [
+        "02_Entities/Characters/Explorer_CHAR003.md"
+      ],
+      "affectedEntityIds": [
+        "[[NonExistent_Ghost_Planet_X999]]"
+      ],
+      "details": {
+        "referencingFile": "02_Entities/Characters/Explorer_CHAR003.md",
+        "propertyKey": "planet",
+        "targetValue": "[[NonExistent_Ghost_Planet_X999]]"
+      }
+    },
+    {
+      "id": 13,
+      "scan_session_id": "scan_1788157408893_b04575e2",
+      "anomaly_rule_id": "ANOM_008_ALIAS_CROSS_COLLISION",
+      "anomaly_type": "DISAMBIGUATION",
+      "severity": "MEDIUM",
+      "title": "Ambiguous alias '影子执行者' shared across multiple entities",
+      "message": "Alias '影子执行者' is registered by 2 distinct entities: CHAR-004 (特工幽灵), ORG-001 (幽灵战团).",
+      "affected_file_paths_json": "[\"02_Entities/Characters/Spy_CHAR004.md\",\"02_Entities/Organizations/Faction_ORG001.md\"]",
+      "affected_entity_ids_json": "[\"CHAR-004\",\"ORG-001\"]",
+      "details_json": "{\"aliasName\":\"影子执行者\",\"normalizedAlias\":\"影子执行者\",\"distinctEntityCount\":2,\"entities\":[{\"aliasDbId\":3,\"aliasType\":\"nickname\",\"isPrimary\":false,\"entityDbId\":6,\"entityId\":\"CHAR-004\",\"name\":\"特工幽灵\",\"type\":\"character\",\"filePath\":\"02_Entities/Characters/Spy_CHAR004.md\"},{\"aliasDbId\":5,\"aliasType\":\"nickname\",\"isPrimary\":false,\"entityDbId\":7,\"entityId\":\"ORG-001\",\"name\":\"幽灵战团\",\"type\":\"organization\",\"filePath\":\"02_Entities/Organizations/Faction_ORG001.md\"}]}",
+      "suggested_action": "Demote colliding aliases to is_primary=0 and use namespace/type qualifiers for resolution.",
+      "is_resolved": 0,
+      "created_at": "2026-08-31 14:23:29",
+      "affectedFilePaths": [
+        "02_Entities/Characters/Spy_CHAR004.md",
+        "02_Entities/Organizations/Faction_ORG001.md"
+      ],
+      "affectedEntityIds": [
+        "CHAR-004",
+        "ORG-001"
+      ],
+      "details": {
+        "aliasName": "影子执行者",
+        "normalizedAlias": "影子执行者",
+        "distinctEntityCount": 2,
+        "entities": [
+          {
+            "aliasDbId": 3,
+            "aliasType": "nickname",
+            "isPrimary": false,
+            "entityDbId": 6,
+            "entityId": "CHAR-004",
+            "name": "特工幽灵",
+            "type": "character",
+            "filePath": "02_Entities/Characters/Spy_CHAR004.md"
+          },
+          {
+            "aliasDbId": 5,
+            "aliasType": "nickname",
+            "isPrimary": false,
+            "entityDbId": 7,
+            "entityId": "ORG-001",
+            "name": "幽灵战团",
+            "type": "organization",
+            "filePath": "02_Entities/Organizations/Faction_ORG001.md"
+          }
+        ]
+      }
+    },
+    {
+      "id": 14,
+      "scan_session_id": "scan_1788157408893_b04575e2",
+      "anomaly_rule_id": "ANOM_009_TIMELINE_CHRONOLOGY_ORDER",
+      "anomaly_type": "NARRATIVE_LOGIC",
+      "severity": "HIGH",
+      "title": "Causality timeline inversion: 'EV-100' precedes prerequisite 'EV-200'",
+      "message": "Event '远航成果庆功会' (EV-100, time: 100) lists '第二次大航海启航' (EV-200, time: 200) as prerequisite, but occurs strictly earlier.",
+      "affected_file_paths_json": "[\"04_Timeline/Event_Child_Inverted_EV100.md\",\"04_Timeline/Event_Parent_EV200.md\"]",
+      "affected_entity_ids_json": "[]",
+      "details_json": "{\"childEvent\":{\"id\":\"EV-100\",\"title\":\"远航成果庆功会\",\"timestamp\":100,\"filePath\":\"04_Timeline/Event_Child_Inverted_EV100.md\"},\"prerequisiteEvent\":{\"id\":\"EV-200\",\"title\":\"第二次大航海启航\",\"timestamp\":200,\"filePath\":\"04_Timeline/Event_Parent_EV200.md\"},\"timeDelta\":100}",
+      "suggested_action": "Adjust timestamp of child event or prerequisite event, or fix the causality dependency direction.",
+      "is_resolved": 0,
+      "created_at": "2026-08-31 14:23:29",
+      "affectedFilePaths": [
+        "04_Timeline/Event_Child_Inverted_EV100.md",
+        "04_Timeline/Event_Parent_EV200.md"
+      ],
+      "affectedEntityIds": [],
+      "details": {
+        "childEvent": {
+          "id": "EV-100",
+          "title": "远航成果庆功会",
+          "timestamp": 100,
+          "filePath": "04_Timeline/Event_Child_Inverted_EV100.md"
+        },
+        "prerequisiteEvent": {
+          "id": "EV-200",
+          "title": "第二次大航海启航",
+          "timestamp": 200,
+          "filePath": "04_Timeline/Event_Parent_EV200.md"
+        },
+        "timeDelta": 100
+      }
+    },
+    {
+      "id": 15,
+      "scan_session_id": "scan_1788157408893_b04575e2",
+      "anomaly_rule_id": "ANOM_010_FORESHADOWING_UNCLOSED_STATUS",
+      "anomaly_type": "PLOT_TRACKING",
+      "severity": "LOW",
+      "title": "Foreshadowing 'FS-001' marked closed without resolution reference",
+      "message": "Foreshadowing clue '深空神秘莫尔斯信号' (FS-001) is marked 'resolved' but lacks resolution_file_id and resolution_chapter_id.",
+      "affected_file_paths_json": "[\"05_Foreshadowing/Hook_Unresolved_FS001.md\"]",
+      "affected_entity_ids_json": "[]",
+      "details_json": "{\"foreshadowId\":\"FS-001\",\"title\":\"深空神秘莫尔斯信号\",\"status\":\"resolved\",\"setupFile\":\"05_Foreshadowing/Hook_Unresolved_FS001.md\"}",
+      "suggested_action": "Provide resolution chapter and payoff line reference, or revert status to 'open'.",
+      "is_resolved": 0,
+      "created_at": "2026-08-31 14:23:29",
+      "affectedFilePaths": [
+        "05_Foreshadowing/Hook_Unresolved_FS001.md"
+      ],
+      "affectedEntityIds": [],
+      "details": {
+        "foreshadowId": "FS-001",
+        "title": "深空神秘莫尔斯信号",
+        "status": "resolved",
+        "setupFile": "05_Foreshadowing/Hook_Unresolved_FS001.md"
+      }
+    }
+  ]
+}

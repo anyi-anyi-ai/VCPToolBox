@@ -9,11 +9,12 @@
 
 const path = require('path');
 const fs = require('fs');
+const { SecurityViolationError } = require('../errors');
 
 /**
  * Standard Security Error for all boundary and mutation violations.
  */
-class SecurityError extends Error {
+class SecurityError extends SecurityViolationError {
   /**
    * @param {string} message
    * @param {object|string} [detailsOrCode]
@@ -264,6 +265,16 @@ class PathGuard {
     }
 
     return canonical;
+  }
+
+  /**
+   * Asserts that a target path resides within the plugin sandbox.
+   * @param {string} targetPath
+   * @param {string} [operation='sandbox_access']
+   * @returns {string} Canonical path inside sandbox
+   */
+  assertSandboxPath(targetPath, operation = 'sandbox_access') {
+    return this.assertWritablePath(targetPath, operation);
   }
 
   /**
@@ -544,6 +555,50 @@ class PathGuard {
     }
     const fullPath = path.join(reportDir, filename);
     return this.assertWritablePath(fullPath, 'create_report_file');
+  }
+
+  /**
+   * Helper to retrieve or create a safe, pre-validated path in plugin/data/snapshots/
+   * @param {string} [filename='']
+   * @returns {string} Canonical validated snapshot path or snapshot directory
+   */
+  getSafeSnapshotPath(filename = '') {
+    const snapDir = path.join(this.pluginRoot, 'data', 'snapshots');
+    if (!fs.existsSync(snapDir)) {
+      fs.mkdirSync(snapDir, { recursive: true });
+    }
+    const fullPath = filename ? path.join(snapDir, filename) : snapDir;
+    return this.assertWritablePath(fullPath, 'create_snapshot_file');
+  }
+
+  /**
+   * Helper to retrieve or create the designated snapshots directory inside sandbox
+   * @returns {string} Canonical snapshot directory path
+   */
+  getSafeSnapshotDir() {
+    return this.getSafeSnapshotPath('');
+  }
+
+  /**
+   * Helper to retrieve or create a safe, pre-validated path in plugin/data/rag_corpus/
+   * @param {string} [subpath='']
+   * @returns {string} Canonical validated RAG corpus path or RAG directory
+   */
+  getSafeRagCorpusPath(subpath = '') {
+    const ragDir = path.join(this.pluginRoot, 'data', 'rag_corpus');
+    if (!fs.existsSync(ragDir)) {
+      fs.mkdirSync(ragDir, { recursive: true });
+    }
+    const fullPath = subpath ? path.join(ragDir, subpath) : ragDir;
+    return this.assertWritablePath(fullPath, 'create_rag_file');
+  }
+
+  /**
+   * Helper to retrieve or create the designated RAG corpus directory inside sandbox
+   * @returns {string} Canonical RAG corpus directory path
+   */
+  getSafeRagCorpusDir() {
+    return this.getSafeRagCorpusPath('');
   }
 
   /**
