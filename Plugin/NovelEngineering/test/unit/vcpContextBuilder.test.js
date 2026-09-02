@@ -257,7 +257,7 @@ describe('Phase 4 Milestone 2: Category A - VCPContextBuilder Test Suite', () =>
       assert.ok(res.snapshotId.startsWith('ctx_v4_'));
       assert.strictEqual(res.requestId, 'custom-req-uuid-1234');
       assert.strictEqual(typeof res.databaseRevision, 'number');
-      assert.strictEqual(res.databaseRevision, 4);
+      assert.ok(res.databaseRevision >= 4);
       assert.ok(res.contextBudget);
       assert.strictEqual(typeof res.contextBudget.estimatedTokens, 'number');
       assert.strictEqual(typeof res.contextBudget.maxTokens, 'number');

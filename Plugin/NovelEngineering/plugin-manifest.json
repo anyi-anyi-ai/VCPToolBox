@@ -263,6 +263,26 @@
         "command": "EvaluateMemoryConflict",
         "description": "功能: (R8) 检测外部 VCP 长期记忆条目与 NovelEngineering 底层结构化正史事实之间的逻辑矛盾与状态冲突，计算一致性得分并定位冲突实体与矛盾原因。\n参数:\n- `vcpMemories` (对象数组, 必填): 外部传入的 VCP 长期记忆条目列表。\n- `structuredCanonFacts` (对象数组, 可选): 结构化正史事实列表，缺省时自动从 SQLite 加载。\n- `requestId` (字符串, 可选): 请求追踪 UUID。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」EvaluateMemoryConflict「末」,\nvcpMemories:「始」[{\"targetEntityId\": \"PL-001\", \"status\": \"destroyed\"}]「末」\n<<<[END_TOOL_REQUEST]>>>",
         "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」EvaluateMemoryConflict「末」,\nvcpMemories:「始」[]「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "ManageNarrativeDebt",
+        "description": "功能: (Phase 5) 管理叙事债务（伏笔借贷、利息累积、偿还兑现、多维查询与故事健康度汇总）。\n参数:\n- `action` (字符串, 必填): 操作类型 ('create', 'accrue', 'pay', 'query', 'summary')。\n- `debtId` (字符串, pay/query可选): 债务唯一标识代码。\n- `title` (字符串, create必填): 债务标题/悬念名称。\n- `debtType` (字符串, create可选): 债务类型 ('core_mystery', 'subplot_hook', 'crisis_hook', 'character_promise', 'power_teaser', 'world_secret')。\n- `borrowedChapter` (整数, create可选, 默认 1): 借出/设伏篇章章节号。\n- `targetPayoffChapter` (整数, create可选): 目标偿还/闭环篇章章节号（必须大于 borrowedChapter）。\n- `basePrincipal` (数值, create可选): 初始本金/叙事压力基数。\n- `interestRate` (数值, create可选): 每章节利息累积复合率。\n- `currentChapter` (整数, accrue/query/summary可选): 当前章节进度。\n- `amount` (数值, pay可选): 偿还/兑现金额。\n- `triggerReason` (字符串, pay可选): 偿还触发剧情理由。\n- `status` (字符串, query可选): 状态过滤 ('active', 'overdue', 'partially_paid', 'paid')。\n- `entityId` (字符串, query可选): 关联实体业务代码。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」ManageNarrativeDebt「末」,\naction:「始」create「末」,\ntitle:「始」老皇帝遇刺之谜「末」,\ndebtType:「始」core_mystery「末」,\nborrowedChapter:「始」1「末」,\ntargetPayoffChapter:「始」50「末」,\nbasePrincipal:「始」100.0「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」ManageNarrativeDebt「末」,\naction:「始」create「末」,\ntitle:「始」老皇帝遇刺之谜「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "RecordMicroPayoff",
+        "description": "功能: (Phase 5) 记录叙事微偿付/阶段性悬念释放，缓解读者追读疲劳并抵扣关联债务本金。\n参数:\n- `debtId` (字符串, 必填): 关联叙事债务唯一标识代码。\n- `chapterNumber` (整数, 可选, 默认 1): 微偿付发生章节号。\n- `payoffType` (字符串, 可选): 偿付类型 ('clue_revealed', 'minor_satisfaction', 'theory_confirmed', 'crisis_alleviated', 'sub_payoff', 'foreshadow_advance')。\n- `satisfactionScore` (数值, 可选, 默认 1.0): 读者满足度得分。\n- `fatigueMitigationScore` (数值, 可选, 默认 1.0): 疲劳缓解系数。\n- `principalReduction` (数值, 可选, 默认 0.0): 抵扣的本金数额。\n- `description` (字符串, 可选): 偿付内容说明。\n- `snippet` (字符串, 可选): 篇章正文剧情摘录。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」RecordMicroPayoff「末」,\ndebtId:「始」debt_123456「末」,\nchapterNumber:「始」5「末」,\npayoffType:「始」clue_revealed「末」,\nprincipalReduction:「始」20.0「末」,\ndescription:「始」破译了密信的第一段暗号「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」RecordMicroPayoff「末」,\ndebtId:「始」debt_123456「末」,\npayoffType:「始」clue_revealed「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "GetDebtPressure",
+        "description": "功能: (Phase 5) 获取指定章节的叙事债务压力向量 (Layer 6 注入分区)，输出逾期与活跃悬念清单、总压力指数、最高紧迫度等级与 Markdown 提示词片段。支持焦点实体过滤 (focusEntities) 与 Top-5 极值防洪截断。\n参数:\n- `chapterNumber` (整数, 可选, 默认 1): 目标章节序号。\n- `focusEntities` (字符串数组/逗号分隔字符串, 可选): 焦点实体过滤列表。\n- `projectId` (字符串, 可选, 默认 'default'): 项目标识符。\n- `maxItems` (整数, 可选, 默认 5): 极值防洪最大条目数限制。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」GetDebtPressure「末」,\nchapterNumber:「始」5「末」,\nfocusEntities:「始」[\"顾沉\"]「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」GetDebtPressure「末」,\nchapterNumber:「始」5「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "EvaluateDebtHealth",
+        "description": "功能: (Phase 5) 评估故事叙事债务健康度与追读节奏诊断，检测逾期债务 (ANOM_DEBT_OVERDUE)、微兑现干涸 (ANOM_PAYOFF_DROUGHT) 与钩子类型单一化 (ANOM_HOOK_MONOTONY)，输出五级健康评级 ('A'/'B'/'C'/'D'/'F')、0-100 健康得分、结构化指标与针对性创作建议。\n参数:\n- `currentChapter` (整数, 可选, 默认当前最新章节): 评估章节进度。\n- `projectId` (字符串, 可选, 默认 'default'): 项目标识符。\n- `droughtThreshold` (整数, 可选, 默认 5): 兑现干涸判定章节数阈值。\n- `monotonyThreshold` (数值, 可选, 默认 0.60): 钩子单一化判定比例阈值。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」EvaluateDebtHealth「末」,\ncurrentChapter:「始」10「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」EvaluateDebtHealth「末」,\ncurrentChapter:「始」10「末」\n<<<[END_TOOL_REQUEST]>>>"
       }
     ]
   }

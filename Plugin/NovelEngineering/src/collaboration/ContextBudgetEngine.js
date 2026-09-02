@@ -87,6 +87,9 @@ class ContextBudgetEngine {
       semanticCandidates: Array.isArray(contextData.semanticCandidates) ? [...contextData.semanticCandidates] : [],
       conflicts: Array.isArray(contextData.conflicts) ? [...contextData.conflicts] : [],
       unresolved: Array.isArray(contextData.unresolved) ? [...contextData.unresolved] : [],
+      debtPressure: contextData.debtPressure ? { ...contextData.debtPressure } : null,
+      narrativeDebtPressure: contextData.narrativeDebtPressure ? { ...contextData.narrativeDebtPressure } : (contextData.debtPressure ? { ...contextData.debtPressure } : null),
+      layer6: contextData.layer6 ? { ...contextData.layer6 } : (contextData.debtPressure ? { ...contextData.debtPressure } : null),
       warnings: Array.isArray(contextData.warnings) ? [...contextData.warnings] : []
     };
 

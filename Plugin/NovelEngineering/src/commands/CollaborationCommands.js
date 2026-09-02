@@ -586,6 +586,107 @@ class CollaborationCommands {
       details: result
     };
   }
+
+  /**
+   * Command 10: GetDebtPressure
+   * Retrieves Layer 6 narrative debt pressure partition with Top-5 extreme cutoff,
+   * focusEntities filtering, urgency determination, and markdown context snippet.
+   * @param {object} params
+   * @param {number|string} [params.chapterNumber]
+   * @param {string|number} [params.chapterId]
+   * @param {Array<string>|string} [params.focusEntities]
+   * @param {string} [params.projectId='default']
+   * @param {number} [params.maxItems=5]
+   * @param {string} [params.requestId]
+   * @param {object} context
+   * @returns {Promise<object>}
+   */
+  static async handleGetDebtPressure(params = {}, context = {}) {
+    const { dbManager } = context;
+    const requestId = CollaborationCommands._ensureRequestId(params);
+    const databaseRevision = CollaborationCommands._getDatabaseRevision(dbManager);
+
+    if (!dbManager) {
+      throw new CollaborationError(
+        'DatabaseManager instance is required in context for GetDebtPressure.',
+        CollaborationError.CODES.INVALID_COLLABORATION_PAYLOAD,
+        { params }
+      );
+    }
+
+    const chapterNumber = params.chapterNumber !== undefined && params.chapterNumber !== null
+      ? Number(params.chapterNumber)
+      : (params.chapterId !== undefined && params.chapterId !== null
+          ? (Number(params.chapterId) || 1)
+          : (params.currentChapter !== undefined && params.currentChapter !== null ? Number(params.currentChapter) : 1));
+
+    const focusEntities = params.focusEntities || params.focusEntity || params.entities || params.entity;
+    const projectId = params.projectId || params.project_id || null;
+    const maxItems = params.maxItems || 5;
+
+    let debtPressure = null;
+    if (dbManager.narrativeDebts && typeof dbManager.narrativeDebts.getDebtPressure === 'function') {
+      debtPressure = dbManager.narrativeDebts.getDebtPressure(chapterNumber, {
+        focusEntities,
+        projectId,
+        maxItems
+      });
+    } else {
+      debtPressure = {
+        layer: 6,
+        layerName: 'narrative_debt_pressure',
+        immuneToTokenTrimming: true,
+        extremeCutoffApplied: false,
+        omittedDebtsCount: 0,
+        chapterNumber,
+        totalDebtsCount: 0,
+        activeDebtsCount: 0,
+        overdueDebtsCount: 0,
+        debtPressureVector: {
+          totalPressure: 0,
+          averagePressure: 0,
+          highestUrgency: 'low',
+          overdueCount: 0,
+          activeHooks: [],
+          overdueDebts: []
+        },
+        formattedContextSnippet: `### ⚡ [Narrative Debt Pressure] (Chapter ${chapterNumber})\n*No active narrative debt pressure.*`
+      };
+    }
+
+    const markdown = debtPressure.formattedContextSnippet;
+
+    return {
+      status: 'success',
+      command: 'GetDebtPressure',
+      requestId,
+      databaseRevision,
+      layer: debtPressure.layer,
+      layerName: debtPressure.layerName,
+      immuneToTokenTrimming: debtPressure.immuneToTokenTrimming,
+      extremeCutoffApplied: debtPressure.extremeCutoffApplied,
+      omittedDebtsCount: debtPressure.omittedDebtsCount,
+      chapterNumber: debtPressure.chapterNumber,
+      debtPressureVector: debtPressure.debtPressureVector,
+      formattedContextSnippet: debtPressure.formattedContextSnippet,
+      debts: [
+        ...(debtPressure.debtPressureVector.overdueDebts || []),
+        ...(debtPressure.debtPressureVector.activeHooks || [])
+      ],
+      content: [
+        {
+          type: 'text',
+          text: markdown
+        }
+      ],
+      details: {
+        command: 'GetDebtPressure',
+        requestId,
+        databaseRevision,
+        ...debtPressure
+      }
+    };
+  }
 }
 
 module.exports = CollaborationCommands;

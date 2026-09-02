@@ -20,6 +20,7 @@ const ConsistencyCommands = require('./ConsistencyCommands');
 const SnapshotCommands = require('./SnapshotCommands');
 const RagExportCommands = require('./RagExportCommands');
 const CollaborationCommands = require('./CollaborationCommands');
+const DebtCommands = require('./DebtCommands');
 
 class CommandDispatcher {
   /**
@@ -144,7 +145,12 @@ class CommandDispatcher {
       'EvaluateCanonLeakage',
       'EvaluateContextPrecision',
       'EvaluateContextRecall',
-      'EvaluateMemoryConflict'
+      'EvaluateMemoryConflict',
+      // Phase 5 Narrative Debt Tracking Commands
+      'ManageNarrativeDebt',
+      'RecordMicroPayoff',
+      'GetDebtPressure',
+      'EvaluateDebtHealth'
     ]);
 
     if (!supportedDomainCommands.has(trimmedAction)) {
@@ -266,6 +272,19 @@ class CommandDispatcher {
       case 'EvaluateMemoryConflict':
         return CollaborationCommands.handleEvaluateMemoryConflict(parameters, context);
 
+      // Phase 5 Narrative Debt Tracking Commands
+      case 'ManageNarrativeDebt':
+        return DebtCommands.handleManageNarrativeDebt(parameters, context);
+
+      case 'RecordMicroPayoff':
+        return DebtCommands.handleRecordMicroPayoff(parameters, context);
+
+      case 'GetDebtPressure':
+        return DebtCommands.handleGetDebtPressure(parameters, context);
+
+      case 'EvaluateDebtHealth':
+        return ConsistencyCommands.handleEvaluateDebtHealth(parameters, context);
+
       default:
         throw new Error(
           `Unsupported or unknown command: "${trimmedAction}". Supported commands: ${Array.from(supportedDomainCommands).join(', ')}, ping, help, info.`
@@ -328,6 +347,11 @@ class CommandDispatcher {
       'EvaluateContextPrecision',
       'EvaluateContextRecall',
       'EvaluateMemoryConflict',
+      // Phase 5 Narrative Debt Tracking
+      'ManageNarrativeDebt',
+      'RecordMicroPayoff',
+      'GetDebtPressure',
+      'EvaluateDebtHealth',
       'ping',
       'help',
       'info'

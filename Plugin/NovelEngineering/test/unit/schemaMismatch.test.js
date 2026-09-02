@@ -126,8 +126,11 @@ describe('Milestone 1: Anti-Swallow & Schema Mismatch Assertion Suite', () => {
         CREATE TABLE foreshadowing (id INTEGER PRIMARY KEY, introduced_chapter TEXT);
         CREATE TABLE anomaly_reports (id INTEGER PRIMARY KEY, anomaly_rule_id TEXT, severity TEXT, scan_session_id TEXT);
         CREATE TABLE canon_changes (id INTEGER PRIMARY KEY, confirmation_token TEXT);
-        CREATE TABLE canon_changes_queue (id INTEGER PRIMARY KEY, queue_id TEXT);
-        CREATE TABLE context_traces (id INTEGER PRIMARY KEY, snapshot_id TEXT);
+        CREATE TABLE canon_changes_queue (id INTEGER PRIMARY KEY, queue_id TEXT, status TEXT, proposed_changes_json TEXT);
+        CREATE TABLE context_traces (id INTEGER PRIMARY KEY, trace_id TEXT, snapshot_id TEXT, trace_items_json TEXT);
+        CREATE TABLE narrative_debts (id INTEGER PRIMARY KEY, debt_id TEXT, current_balance REAL, status TEXT);
+        CREATE TABLE debt_events (id INTEGER PRIMARY KEY, debt_id TEXT, event_type TEXT, chapter_number INTEGER);
+        CREATE TABLE micro_payoffs (id INTEGER PRIMARY KEY, debt_id TEXT, payoff_id TEXT, chapter_number INTEGER);
       `);
 
       const MigrationRunner = require('../../src/migrations/MigrationRunner');

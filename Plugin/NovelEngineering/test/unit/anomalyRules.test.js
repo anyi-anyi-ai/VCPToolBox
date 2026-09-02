@@ -419,10 +419,10 @@ describe('VCPNovelManager Anomaly Rules & Command Handlers Suite (M4)', () => {
       assert.equal(anomalies[0].details_json.foreshadowId, 'FS-001');
     });
 
-    it('AnomalyEngine: should execute all 10 rules and return aggregate breakdown', () => {
+    it('AnomalyEngine: should execute all rules and return aggregate breakdown', () => {
       const engine = new AnomalyEngine();
       const registered = engine.getRegisteredRules();
-      assert.equal(registered.length, 10);
+      assert.equal(registered.length, 13);
 
       // Run against clean database (0 anomalies)
       const cleanResult = engine.runAll(dbManager, 'clean-scan', { persist: false });

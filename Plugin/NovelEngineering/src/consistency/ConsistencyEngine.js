@@ -8,6 +8,9 @@
 'use strict';
 
 const AnomalyEngine = require('../anomaly/AnomalyEngine');
+const Rule11 = require('../anomaly/rules/Rule11_DebtOverdue');
+const Rule12 = require('../anomaly/rules/Rule12_PayoffDrought');
+const Rule13 = require('../anomaly/rules/Rule13_HookMonotony');
 const { NovelError } = require('../errors');
 
 class ConsistencyEngine {
@@ -76,12 +79,19 @@ class ConsistencyEngine {
           'ANOM_007_DANGLING_CROSS_REFERENCE', 'DANGLING_CROSS_REFERENCE',
           'ANOM_007_DANGLING_ENTITY_REFERENCES', 'ANOM_007_DANGLING_ENTITY_REF', 'ANOM_007'
         ];
+      } else if (scope === 'debt' || scope === 'narrative_debt') {
+        rulesToInclude = [
+          'ANOM_DEBT_OVERDUE', 'ANOM_011_DEBT_OVERDUE', 'ANOM_011', 'DEBT_OVERDUE',
+          'ANOM_DEBT_PAYOFF_DROUGHT', 'ANOM_012_PAYOFF_DROUGHT', 'ANOM_012', 'PAYOFF_DROUGHT',
+          'ANOM_DEBT_HOOK_MONOTONY', 'ANOM_013_HOOK_MONOTONY', 'ANOM_013', 'HOOK_MONOTONY'
+        ];
       }
     }
 
     let coreAnomalies = [];
     try {
       const anomalyResult = this.anomalyEngine.runAll(this.dbManager, scanSessionId, {
+        ...params,
         persist: false,
         includeRules: rulesToInclude
       });
@@ -219,6 +229,13 @@ class ConsistencyEngine {
     if (scope === 'all' || scope === 'relations') {
       this._checkRelationalIntegrity(db, scanSessionId, issues);
       this._checkRelationalSemanticConflicts(db, scanSessionId, issues);
+    }
+
+    // =========================================================================
+    // Dimension 5: Narrative Debt & Overdue Payoffs (Phase 5)
+    // =========================================================================
+    if (scope === 'all' || scope === 'debt' || scope === 'narrative_debt' || scope === 'foreshadowing') {
+      this._checkNarrativeDebtAnomalies(db, scanSessionId, issues);
     }
 
     return issues;
@@ -965,6 +982,342 @@ class ConsistencyEngine {
       console.warn(`[ConsistencyEngine] Warning in relational semantic conflicts check: ${err.message}`);
     }
   }
+
+  // ===========================================================================
+  // Dimension 5 Check Helpers & Health Evaluation (Phase 5)
+  // ===========================================================================
+
+  /**
+   * Detects narrative debt anomalies using Rule11, Rule12, and Rule13
+   * @private
+   * @param {import('better-sqlite3').Database} db
+   * @param {string} scanSessionId
+   * @param {Array<object>} issues
+   */
+  _checkNarrativeDebtAnomalies(db, scanSessionId, issues) {
+    try {
+      const opts = { ...this.options };
+      const r11 = Rule11.detect(this.dbManager, scanSessionId, opts);
+      const r12 = Rule12.detect(this.dbManager, scanSessionId, opts);
+      const r13 = Rule13.detect(this.dbManager, scanSessionId, opts);
+
+      for (const anom of [...r11, ...r12, ...r13]) {
+        issues.push(anom);
+      }
+    } catch (err) {
+      console.warn(`[ConsistencyEngine] Warning in narrative debt anomalies check: ${err.message}`);
+    }
+  }
+
+  /**
+   * Dimension 5 Narrative Debt Health Evaluation
+   * Evaluates debt health, computes health grade ('A', 'B', 'C', 'D', 'F'), healthScore (0-100),
+   * drought metrics, and monotony ratios.
+   * @param {object} [options={}]
+   * @returns {object}
+   */
+  _checkNarrativeDebtHealth(options = {}) {
+    return this.evaluateDebtHealth(options);
+  }
+
+  /**
+   * Evaluates comprehensive narrative debt health, anomaly warnings, and actionable recommendations
+   * @param {object} [params={}]
+   * @param {string} [params.projectId]
+   * @param {number} [params.currentChapter]
+   * @param {object} [params.options]
+   * @returns {object}
+   */
+  evaluateDebtHealth(params = {}) {
+    const db = this.dbManager.getDatabase ? this.dbManager.getDatabase() : this.dbManager.db;
+    const projectId = params.projectId || params.project_id || null;
+    const scanSessionId = params.scanSessionId || `debt_health_${Date.now()}`;
+    const droughtThreshold = Number(params.droughtThreshold || (params.options && params.options.droughtThreshold)) || 5;
+    const monotonyThreshold = Number(params.monotonyThreshold || (params.options && params.options.monotonyThreshold)) || 0.60;
+
+    // Verify table exists
+    try {
+      const tableCheck = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='narrative_debts'").get();
+      if (!tableCheck) {
+        return {
+          success: true,
+          healthGrade: 'A',
+          healthScore: 100,
+          metrics: {
+            totalActiveDebts: 0,
+            totalOverdueDebts: 0,
+            overdueRatio: 0,
+            chaptersSinceLastPayoff: 0,
+            isPayoffDrought: false,
+            typeDistribution: {},
+            hookMonotonyScore: 0
+          },
+          warnings: [],
+          recommendations: ['当前无未偿还叙事债务，故事节奏良好。']
+        };
+      }
+    } catch (_) {
+      return {
+        success: true,
+        healthGrade: 'A',
+        healthScore: 100,
+        metrics: {
+          totalActiveDebts: 0,
+          totalOverdueDebts: 0,
+          overdueRatio: 0,
+          chaptersSinceLastPayoff: 0,
+          isPayoffDrought: false,
+          typeDistribution: {},
+          hookMonotonyScore: 0
+        },
+        warnings: [],
+        recommendations: ['当前无未偿还叙事债务，故事节奏良好。']
+      };
+    }
+
+    // Determine current chapter
+    let currentChapter = params.currentChapter !== undefined && params.currentChapter !== null
+      ? Number(params.currentChapter)
+      : null;
+
+    if (currentChapter === null || isNaN(currentChapter)) {
+      try {
+        const maxChapRow = db.prepare("SELECT MAX(chapter_number) as max_chap FROM chapters WHERE status != 'draft'").get();
+        if (maxChapRow && maxChapRow.max_chap !== null) {
+          currentChapter = Number(maxChapRow.max_chap);
+        }
+      } catch (_) {}
+    }
+
+    if (currentChapter === null || isNaN(currentChapter)) {
+      try {
+        const debtMaxRow = db.prepare('SELECT MAX(COALESCE(last_accrued_chapter, borrowed_chapter)) as max_chap FROM narrative_debts').get();
+        if (debtMaxRow && debtMaxRow.max_chap !== null) {
+          currentChapter = Number(debtMaxRow.max_chap);
+        }
+      } catch (_) {}
+    }
+
+    if (currentChapter === null || isNaN(currentChapter)) {
+      currentChapter = 1;
+    }
+
+    // Fetch active debts
+    let debtSql = "SELECT * FROM narrative_debts WHERE status IN ('active', 'overdue', 'partially_paid')";
+    const debtParams = [];
+    if (projectId) {
+      debtSql += ' AND project_id = ?';
+      debtParams.push(projectId);
+    }
+    const debts = db.prepare(debtSql).all(...debtParams);
+
+    const totalActiveDebts = debts.length;
+    let totalOverdueDebts = 0;
+    let criticalOverdueCount = 0;
+    let totalPrincipal = 0.0;
+    let totalCurrentBalance = 0.0;
+    let minBorrowedChapter = null;
+
+    const typeDistribution = {};
+
+    for (const d of debts) {
+      totalPrincipal += Number(d.base_principal || 0);
+      totalCurrentBalance += Number(d.current_balance || 0);
+
+      const borrowed = Number(d.borrowed_chapter || 1);
+      if (minBorrowedChapter === null || borrowed < minBorrowedChapter) {
+        minBorrowedChapter = borrowed;
+      }
+
+      const t = d.debt_type || 'subplot_hook';
+      typeDistribution[t] = (typeDistribution[t] || 0) + 1;
+
+      const targetChap = d.target_payoff_chapter !== null && d.target_payoff_chapter !== undefined
+        ? Number(d.target_payoff_chapter)
+        : null;
+
+      const accruedChap = d.last_accrued_chapter !== null && d.last_accrued_chapter !== undefined
+        ? Number(d.last_accrued_chapter)
+        : (borrowed + (d.accrued_chapters || 0));
+
+      const effectiveChap = Math.max(currentChapter, accruedChap);
+
+      const isOverdue = d.status === 'overdue' || (
+        targetChap !== null && (effectiveChap > targetChap || (d.last_accrued_chapter !== null && d.last_accrued_chapter > targetChap))
+      );
+
+      if (isOverdue) {
+        totalOverdueDebts++;
+        const overdueChapters = targetChap !== null && effectiveChap > targetChap ? effectiveChap - targetChap : 1;
+        if (d.debt_type === 'core_mystery' || overdueChapters >= 5 || d.current_balance >= (d.base_principal * 2)) {
+          criticalOverdueCount++;
+        }
+      }
+    }
+
+    const overdueRatio = totalActiveDebts > 0
+      ? Math.round((totalOverdueDebts / totalActiveDebts) * 1000) / 1000
+      : 0;
+
+    // Monotony calculation
+    let maxTypeCount = 0;
+    let dominantType = null;
+    for (const [type, count] of Object.entries(typeDistribution)) {
+      if (count > maxTypeCount) {
+        maxTypeCount = count;
+        dominantType = type;
+      }
+    }
+    const hookMonotonyScore = totalActiveDebts > 0
+      ? Math.round((maxTypeCount / totalActiveDebts) * 1000) / 1000
+      : 0;
+    const isHookMonotony = totalActiveDebts >= 3 && hookMonotonyScore > monotonyThreshold;
+
+    // Drought calculation
+    let lastMicroChapter = null;
+    try {
+      const hasMicroTable = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='micro_payoffs'").get();
+      if (hasMicroTable) {
+        const microSql = projectId
+          ? 'SELECT MAX(mp.chapter_number) as last_micro FROM micro_payoffs mp JOIN narrative_debts nd ON mp.debt_id = nd.debt_id WHERE nd.project_id = ?'
+          : 'SELECT MAX(chapter_number) as last_micro FROM micro_payoffs';
+        const microRow = projectId ? db.prepare(microSql).get(projectId) : db.prepare(microSql).get();
+        if (microRow && microRow.last_micro !== null && microRow.last_micro !== undefined) {
+          lastMicroChapter = Number(microRow.last_micro);
+        }
+      }
+    } catch (_) {}
+
+    let lastEventChapter = null;
+    try {
+      const hasEventTable = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='debt_events'").get();
+      if (hasEventTable) {
+        const eventSql = projectId
+          ? "SELECT MAX(de.chapter_number) as last_event FROM debt_events de JOIN narrative_debts nd ON de.debt_id = nd.debt_id WHERE de.event_type IN ('payoff', 'partial_pay', 'pay') AND nd.project_id = ?"
+          : "SELECT MAX(chapter_number) as last_event FROM debt_events WHERE event_type IN ('payoff', 'partial_pay', 'pay')";
+        const eventRow = projectId ? db.prepare(eventSql).get(projectId) : db.prepare(eventSql).get();
+        if (eventRow && eventRow.last_event !== null && eventRow.last_event !== undefined) {
+          lastEventChapter = Number(eventRow.last_event);
+        }
+      }
+    } catch (_) {}
+
+    const validPayoffs = [lastMicroChapter, lastEventChapter].filter(c => c !== null && !isNaN(c));
+    const lastPayoffChapter = validPayoffs.length > 0 ? Math.max(...validPayoffs) : null;
+
+    let chaptersSinceLastPayoff = 0;
+    if (totalActiveDebts > 0) {
+      if (lastPayoffChapter !== null) {
+        chaptersSinceLastPayoff = Math.max(0, currentChapter - lastPayoffChapter);
+      } else {
+        chaptersSinceLastPayoff = Math.max(0, currentChapter - (minBorrowedChapter || 1));
+      }
+    }
+    const isPayoffDrought = totalActiveDebts > 0 && chaptersSinceLastPayoff >= droughtThreshold;
+
+    // Detect anomalies using rules for structured warnings
+    const ruleOpts = {
+      currentChapter,
+      projectId,
+      droughtThreshold,
+      monotonyThreshold,
+      ...params.options
+    };
+
+    const r11Anoms = Rule11.detect(this.dbManager, scanSessionId, ruleOpts);
+    const r12Anoms = Rule12.detect(this.dbManager, scanSessionId, ruleOpts);
+    const r13Anoms = Rule13.detect(this.dbManager, scanSessionId, ruleOpts);
+
+    const warnings = [];
+    for (const anom of [...r11Anoms, ...r12Anoms, ...r13Anoms]) {
+      warnings.push({
+        code: anom.identifier || anom.anomaly_rule_id || anom.ruleId,
+        severity: anom.severity || 'MEDIUM',
+        message: anom.message || anom.title,
+        debtId: (anom.details_json && anom.details_json.debtId) ? anom.details_json.debtId : undefined,
+        details: anom.details_json || {}
+      });
+    }
+
+    // Health Score calculation (0 - 100)
+    let healthScore = 100;
+    if (totalActiveDebts > 0) {
+      // Overdue penalty
+      healthScore -= Math.round(overdueRatio * 40);
+      healthScore -= Math.min(20, criticalOverdueCount * 5);
+
+      // Drought penalty
+      if (isPayoffDrought) {
+        healthScore -= 15;
+        if (chaptersSinceLastPayoff >= droughtThreshold * 2) {
+          healthScore -= 10;
+        }
+      }
+
+      // Monotony penalty
+      if (isHookMonotony) {
+        const over = hookMonotonyScore - monotonyThreshold;
+        healthScore -= Math.min(20, Math.max(10, Math.round(over * 50)));
+      }
+
+      // Balance inflation penalty
+      if (totalPrincipal > 0 && (totalCurrentBalance / totalPrincipal) > 2.0) {
+        healthScore -= Math.min(15, Math.round(((totalCurrentBalance / totalPrincipal) - 2.0) * 10));
+      }
+    }
+    healthScore = Math.max(0, Math.min(100, healthScore));
+
+    // Health Grade calculation
+    let healthGrade = 'A';
+    if (healthScore >= 90) {
+      healthGrade = 'A';
+    } else if (healthScore >= 75) {
+      healthGrade = 'B';
+    } else if (healthScore >= 60) {
+      healthGrade = 'C';
+    } else if (healthScore >= 45) {
+      healthGrade = 'D';
+    } else {
+      healthGrade = 'F';
+    }
+
+    // Recommendations
+    const recommendations = [];
+    if (totalActiveDebts === 0) {
+      recommendations.push('当前无未偿还叙事债务，故事节奏良好。建议在关键剧情节点适度埋下新的叙事伏笔与钩子。');
+    } else {
+      if (totalOverdueDebts > 0) {
+        recommendations.push(`优先安排推进并闭环 ${totalOverdueDebts} 笔逾期叙事债务，兑现前期伏笔承诺以缓解读者追读焦虑。`);
+      }
+      if (isPayoffDrought) {
+        recommendations.push(`连续 ${chaptersSinceLastPayoff} 章无微兑现，建议在近期章节安排阶段性线索揭示或微偿付 (RecordMicroPayoff) 释放读者追读压力。`);
+      }
+      if (isHookMonotony) {
+        recommendations.push(`当前钩子类型过度集中于 "${dominantType}" (占比 ${(hookMonotonyScore * 100).toFixed(1)}%)，建议增加人物承诺(character_promise)或能力升级(power_teaser)等多维钩子。`);
+      }
+      if (recommendations.length === 0) {
+        recommendations.push('叙事债务整体处于健康可控状态，建议保持当前节奏定期进行阶段性微偿付。');
+      }
+    }
+
+    return {
+      success: true,
+      healthGrade,
+      healthScore,
+      metrics: {
+        totalActiveDebts,
+        totalOverdueDebts,
+        overdueRatio,
+        chaptersSinceLastPayoff,
+        isPayoffDrought,
+        typeDistribution,
+        hookMonotonyScore
+      },
+      warnings,
+      recommendations
+    };
+  }
 }
 
 module.exports = ConsistencyEngine;
+

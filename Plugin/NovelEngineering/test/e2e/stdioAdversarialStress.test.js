@@ -16,9 +16,10 @@
 'use strict';
 
 const test = require('node:test');
-const { describe, it } = test;
+const { describe, it, before } = test;
 const assert = require('node:assert/strict');
 const path = require('node:path');
+const fs = require('node:fs');
 const { spawn } = require('node:child_process');
 
 const PLUGIN_DIR = path.resolve(__dirname, '..', '..');
@@ -161,6 +162,16 @@ function assertValidVcpEnvelope(res, expectedStatus = null) {
 }
 
 describe('NovelEngineering Adversarial Stress & Invariant Suite', () => {
+  before(() => {
+    const dbFile = path.join(PLUGIN_DIR, 'data', 'novel_index.db');
+    const shmFile = path.join(PLUGIN_DIR, 'data', 'novel_index.db-shm');
+    const walFile = path.join(PLUGIN_DIR, 'data', 'novel_index.db-wal');
+    for (const f of [dbFile, shmFile, walFile]) {
+      if (fs.existsSync(f)) {
+        try { fs.unlinkSync(f); } catch (_) {}
+      }
+    }
+  });
 
   // =========================================================================
   // Suite 1: Extreme Malformed JSON & Syntax Violations

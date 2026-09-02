@@ -153,38 +153,47 @@ class MigrationRunner {
     let baselineVersion = 1;
     let baselineDescription = 'Baseline legacy Phase 1 database';
 
-    // Check if Phase 4 is already in place
-    const hasCanonQueue = domainTables.includes('canon_changes_queue');
-    const hasContextTraces = domainTables.includes('context_traces');
-    if (hasCanonQueue || hasContextTraces) {
-      baselineVersion = 4;
-      baselineDescription = 'Baseline legacy Phase 4 database';
+    // Check if Phase 5 is already in place
+    const hasNarrativeDebts = domainTables.includes('narrative_debts');
+    const hasDebtEvents = domainTables.includes('debt_events');
+    const hasMicroPayoffs = domainTables.includes('micro_payoffs');
+    if (hasNarrativeDebts || hasDebtEvents || hasMicroPayoffs) {
+      baselineVersion = 5;
+      baselineDescription = 'Baseline legacy Phase 5 database';
     } else {
-      // Check if Phase 3 is already in place
-      const hasEntityRelations = domainTables.includes('entity_relations');
-      let hasCanonLevel = false;
-      if (domainTables.includes('source_files')) {
-        const sfCols = db.pragma('table_info(source_files)');
-        hasCanonLevel = Array.isArray(sfCols) && sfCols.some(c => c.name === 'canon_level');
-      }
-
-      if (hasEntityRelations || hasCanonLevel) {
-        baselineVersion = 3;
-        baselineDescription = 'Baseline legacy Phase 3 database';
+      // Check if Phase 4 is already in place
+      const hasCanonQueue = domainTables.includes('canon_changes_queue');
+      const hasContextTraces = domainTables.includes('context_traces');
+      if (hasCanonQueue || hasContextTraces) {
+        baselineVersion = 4;
+        baselineDescription = 'Baseline legacy Phase 4 database';
       } else {
-        // Check if Phase 2 extensions exist
-        let hasPhase2 = false;
-        if (domainTables.includes('timeline_events')) {
-          const cols = db.pragma('table_info(timeline_events)');
-          hasPhase2 = Array.isArray(cols) && cols.some((c) => c.name === 'time_type');
+        // Check if Phase 3 is already in place
+        const hasEntityRelations = domainTables.includes('entity_relations');
+        let hasCanonLevel = false;
+        if (domainTables.includes('source_files')) {
+          const sfCols = db.pragma('table_info(source_files)');
+          hasCanonLevel = Array.isArray(sfCols) && sfCols.some(c => c.name === 'canon_level');
         }
-        if (!hasPhase2 && domainTables.includes('foreshadowing')) {
-          const cols = db.pragma('table_info(foreshadowing)');
-          hasPhase2 = Array.isArray(cols) && cols.some((c) => c.name === 'introduced_chapter');
-        }
-        if (hasPhase2) {
-          baselineVersion = 2;
-          baselineDescription = 'Baseline legacy Phase 2 database';
+
+        if (hasEntityRelations || hasCanonLevel) {
+          baselineVersion = 3;
+          baselineDescription = 'Baseline legacy Phase 3 database';
+        } else {
+          // Check if Phase 2 extensions exist
+          let hasPhase2 = false;
+          if (domainTables.includes('timeline_events')) {
+            const cols = db.pragma('table_info(timeline_events)');
+            hasPhase2 = Array.isArray(cols) && cols.some((c) => c.name === 'time_type');
+          }
+          if (!hasPhase2 && domainTables.includes('foreshadowing')) {
+            const cols = db.pragma('table_info(foreshadowing)');
+            hasPhase2 = Array.isArray(cols) && cols.some((c) => c.name === 'introduced_chapter');
+          }
+          if (hasPhase2) {
+            baselineVersion = 2;
+            baselineDescription = 'Baseline legacy Phase 2 database';
+          }
         }
       }
     }
@@ -424,7 +433,10 @@ class MigrationRunner {
       'canon_changes',
       'scan_manifests',
       'canon_changes_queue',
-      'context_traces'
+      'context_traces',
+      'narrative_debts',
+      'debt_events',
+      'micro_payoffs'
     ];
 
     const existingTables = new Set(
@@ -482,6 +494,21 @@ class MigrationRunner {
     const traceCols = new Set(db.pragma('table_info(context_traces)').map((c) => c.name));
     if (!traceCols.has('trace_id') || !traceCols.has('snapshot_id') || !traceCols.has('trace_items_json')) {
       throw new SchemaMismatchError('context_traces table is missing required columns', { table: 'context_traces' });
+    }
+
+    const debtCols = new Set(db.pragma('table_info(narrative_debts)').map((c) => c.name));
+    if (!debtCols.has('debt_id') || !debtCols.has('current_balance') || !debtCols.has('status')) {
+      throw new SchemaMismatchError('narrative_debts table is missing required columns', { table: 'narrative_debts' });
+    }
+
+    const eventCols = new Set(db.pragma('table_info(debt_events)').map((c) => c.name));
+    if (!eventCols.has('debt_id') || !eventCols.has('event_type') || !eventCols.has('chapter_number')) {
+      throw new SchemaMismatchError('debt_events table is missing required columns', { table: 'debt_events' });
+    }
+
+    const payoffCols = new Set(db.pragma('table_info(micro_payoffs)').map((c) => c.name));
+    if (!payoffCols.has('debt_id') || !payoffCols.has('payoff_id') || !payoffCols.has('chapter_number')) {
+      throw new SchemaMismatchError('micro_payoffs table is missing required columns', { table: 'micro_payoffs' });
     }
   }
 }

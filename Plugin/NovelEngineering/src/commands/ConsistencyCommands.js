@@ -121,6 +121,72 @@ class ConsistencyCommands {
       details: result
     };
   }
+
+  /**
+   * Command: EvaluateDebtHealth
+   * Evaluates story narrative debt health, overdue anomalies, payoff drought, and hook monotony
+   * @param {object} params
+   * @param {string} [params.projectId]
+   * @param {number} [params.currentChapter]
+   * @param {object} [params.options]
+   * @param {object} context
+   * @returns {Promise<object>}
+   */
+  static async handleEvaluateDebtHealth(params = {}, context = {}) {
+    const { dbManager } = context;
+    if (!dbManager) {
+      throw new Error('DatabaseManager is required for EvaluateDebtHealth');
+    }
+
+    const engine = new ConsistencyEngine(dbManager);
+    const result = engine.evaluateDebtHealth(params);
+
+    const gradeEmoji = {
+      A: '🟢',
+      B: '🔵',
+      C: '🟡',
+      D: '🟠',
+      F: '🔴'
+    }[result.healthGrade] || '⚪';
+
+    const metrics = result.metrics || {};
+    const warnings = result.warnings || [];
+    const recommendations = result.recommendations || [];
+
+    const typeDistStr = Object.entries(metrics.typeDistribution || {})
+      .map(([t, count]) => `\`${t}\`: ${count}`)
+      .join(', ') || 'None';
+
+    const markdown = [
+      '### [NovelEngineering] Narrative Debt Health Diagnostic Report',
+      `- **Health Grade**: ${gradeEmoji} **Grade ${result.healthGrade}** (Health Score: **${result.healthScore}/100**)`,
+      `- **Active Debts**: **${metrics.totalActiveDebts}** (Overdue: **${metrics.totalOverdueDebts}**, Ratio: **${(metrics.overdueRatio * 100).toFixed(1)}%**)`,
+      `- **Chapters Since Last Payoff**: **${metrics.chaptersSinceLastPayoff}** (Payoff Drought: **${metrics.isPayoffDrought ? '⚠️ YES' : '✅ NO'}**)`,
+      `- **Hook Monotony Score**: **${(metrics.hookMonotonyScore * 100).toFixed(1)}%**`,
+      `- **Hook Type Distribution**: ${typeDistStr}`,
+      '',
+      warnings.length > 0
+        ? '#### Narrative Health Warnings\n' + warnings.map(w => `- ⚠️ **[${w.severity}] ${w.code}**: ${w.message}`).join('\n')
+        : '✅ *Zero narrative debt anomalies detected! Plot progression is balanced and engaging.*',
+      '',
+      recommendations.length > 0
+        ? '#### Actionable Recommendations\n' + recommendations.map(r => `- 💡 ${r}`).join('\n')
+        : ''
+    ].filter(Boolean).join('\n');
+
+    return {
+      success: true,
+      status: 'success',
+      command: 'EvaluateDebtHealth',
+      healthGrade: result.healthGrade,
+      healthScore: result.healthScore,
+      metrics: result.metrics,
+      warnings: result.warnings,
+      recommendations: result.recommendations,
+      content: markdown,
+      details: result
+    };
+  }
 }
 
 module.exports = ConsistencyCommands;

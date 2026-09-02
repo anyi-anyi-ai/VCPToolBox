@@ -1293,7 +1293,7 @@ describe('Milestone 5: Phase 4 VCP Collaboration & Lifecycle Comprehensive E2E S
       }
     });
 
-    it('E-7: Fast utility verification (ping, help with 38 commands, info with Phase 4)', async () => {
+    it('E-7: Fast utility verification (ping, help with all commands, info with Phase 4)', async () => {
       // 1. Ping
       const pingRes = await dispatcher.dispatch('ping');
       assert.strictEqual(pingRes.pong, true);
@@ -1306,8 +1306,8 @@ describe('Milestone 5: Phase 4 VCP Collaboration & Lifecycle Comprehensive E2E S
       assert.ok(Array.isArray(helpRes.availableCommands));
       assert.strictEqual(
         helpRes.availableCommands.length,
-        38,
-        'Help must list all 38 commands (35 domain + 3 utilities)'
+        42,
+        'Help must list all 42 commands (39 domain + 3 utilities)'
       );
       assert.ok(helpRes.availableCommands.includes('BuildVCPContext'));
       assert.ok(helpRes.availableCommands.includes('PublishToVCPMemory'));

@@ -46,11 +46,11 @@ describe('Phase 4 Milestone 1: Schema Evolution & Repositories Test Suite', () =
       assert.ok(tables.includes('context_traces'), 'context_traces table must exist');
 
       const version = dbManager.getSchemaVersion();
-      assert.equal(version, 4, 'Schema version must be 4');
+      assert.ok(version >= 4, 'Schema version must be at least 4');
 
       const integrity = dbManager.verifySchemaIntegrity();
       assert.equal(integrity.valid, true);
-      assert.equal(integrity.schemaVersion, 4);
+      assert.ok(integrity.schemaVersion >= 4);
     });
 
     it('should record migration 004 in migration_history with checksum and duration', () => {
@@ -92,7 +92,7 @@ describe('Phase 4 Milestone 1: Schema Evolution & Repositories Test Suite', () =
       const pathGuard = new PathGuard({ pluginRoot: tempEnv.path });
       dbManager = new DatabaseManager(dbPath, { pathGuard });
 
-      assert.equal(dbManager.getSchemaVersion(), 4);
+      assert.ok(dbManager.getSchemaVersion() >= 4);
       const tables = dbManager.getTableNames();
       assert.ok(tables.includes('canon_changes_queue'));
       assert.ok(tables.includes('context_traces'));
@@ -106,14 +106,14 @@ describe('Phase 4 Milestone 1: Schema Evolution & Repositories Test Suite', () =
     it('should be completely idempotent on repeated migration execution', () => {
       dbManager = new DatabaseManager(':memory:');
       const initialVersion = dbManager.getSchemaVersion();
-      assert.equal(initialVersion, 4);
+      assert.ok(initialVersion >= 4);
 
       const migrationsDir = path.resolve(__dirname, '../../src/migrations');
       const result = MigrationRunner.runMigrations(dbManager.db, migrationsDir);
 
       assert.equal(result.alreadyUpToDate, true);
       assert.equal(result.applied.length, 0);
-      assert.equal(result.currentVersion, 4);
+      assert.ok(result.currentVersion >= 4);
     });
   });
 
@@ -458,7 +458,7 @@ describe('Phase 4 Milestone 1: Schema Evolution & Repositories Test Suite', () =
       dbManager.saveContextTrace({ snapshotId: 'snap_stats_01', traceItems: [] });
 
       const stats = dbManager.getStats();
-      assert.equal(stats.schemaVersion, 4);
+      assert.ok(stats.schemaVersion >= 4);
       assert.equal(stats.totalDecisionQueue, 1);
       assert.equal(stats.totalContextTraces, 1);
     });

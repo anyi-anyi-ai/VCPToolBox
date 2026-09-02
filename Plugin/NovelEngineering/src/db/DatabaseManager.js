@@ -23,6 +23,9 @@ const ForeshadowingRepo = require('./repositories/ForeshadowingRepo');
 const AnomalyRepo = require('./repositories/AnomalyRepo');
 const DecisionQueueRepo = require('./repositories/DecisionQueueRepo');
 const ContextTraceRepo = require('./repositories/ContextTraceRepo');
+const NarrativeDebtRepo = require('./repositories/NarrativeDebtRepo');
+const DebtEventRepo = require('./repositories/DebtEventRepo');
+const MicroPayoffRepo = require('./repositories/MicroPayoffRepo');
 
 // Migration Runner
 const MigrationRunner = require('../migrations/MigrationRunner');
@@ -57,6 +60,9 @@ class DatabaseManager {
     this.anomalies = null;
     this.decisionQueue = null;
     this.contextTraces = null;
+    this.narrativeDebts = null;
+    this.debtEvents = null;
+    this.microPayoffs = null;
 
     if (options.autoInit !== false) {
       this.init();
@@ -123,6 +129,9 @@ class DatabaseManager {
     this.anomalies = new AnomalyRepo(this.db);
     this.decisionQueue = new DecisionQueueRepo(this.db);
     this.contextTraces = new ContextTraceRepo(this.db);
+    this.narrativeDebts = new NarrativeDebtRepo(this.db);
+    this.debtEvents = new DebtEventRepo(this.db);
+    this.microPayoffs = new MicroPayoffRepo(this.db);
 
     return this;
   }
@@ -224,7 +233,10 @@ class DatabaseManager {
       'foreshadowing',
       'anomaly_reports',
       'canon_changes_queue',
-      'context_traces'
+      'context_traces',
+      'narrative_debts',
+      'debt_events',
+      'micro_payoffs'
     ];
 
     const actualTables = new Set(this.getTableNames());
@@ -244,7 +256,10 @@ class DatabaseManager {
       foreshadowing: ['introduced_chapter'],
       anomaly_reports: ['anomaly_rule_id', 'severity', 'scan_session_id'],
       canon_changes_queue: ['queue_id', 'decision_type', 'proposer', 'status', 'proposed_changes_json'],
-      context_traces: ['trace_id', 'snapshot_id', 'trace_items_json']
+      context_traces: ['trace_id', 'snapshot_id', 'trace_items_json'],
+      narrative_debts: ['debt_id', 'borrowed_chapter', 'current_balance', 'interest_rate', 'status'],
+      debt_events: ['debt_id', 'event_type', 'chapter_number', 'new_balance'],
+      micro_payoffs: ['debt_id', 'payoff_id', 'chapter_number', 'payoff_type']
     };
 
     for (const [table, cols] of Object.entries(criticalColumns)) {
@@ -438,7 +453,10 @@ class DatabaseManager {
       totalAnomalies: tableCounts.anomaly_reports || 0,
       totalManifests: tableCounts.scan_manifests || 0,
       totalDecisionQueue: tableCounts.canon_changes_queue || 0,
-      totalContextTraces: tableCounts.context_traces || 0
+      totalContextTraces: tableCounts.context_traces || 0,
+      totalNarrativeDebts: tableCounts.narrative_debts || 0,
+      totalDebtEvents: tableCounts.debt_events || 0,
+      totalMicroPayoffs: tableCounts.micro_payoffs || 0
     };
   }
 
@@ -449,6 +467,9 @@ class DatabaseManager {
     if (!this.isOpen()) return;
 
     const tables = [
+      'micro_payoffs',
+      'debt_events',
+      'narrative_debts',
       'context_traces',
       'canon_changes_queue',
       'canon_changes',
@@ -526,6 +547,30 @@ class DatabaseManager {
 
   getContextTrace(snapshotOrTraceId) {
     return this.contextTraces.getBySnapshotId(snapshotOrTraceId) || this.contextTraces.getByTraceId(snapshotOrTraceId);
+  }
+
+  createNarrativeDebt(data) {
+    return this.narrativeDebts.createDebt(data);
+  }
+
+  getNarrativeDebt(debtId) {
+    return this.narrativeDebts.getById(debtId);
+  }
+
+  accrueNarrativeDebts(currentChapter, options) {
+    return this.narrativeDebts.accrueInterest(currentChapter, options);
+  }
+
+  payNarrativeDebt(debtId, amount, options) {
+    return this.narrativeDebts.applyPayoff(debtId, amount, options);
+  }
+
+  recordDebtEvent(eventData) {
+    return this.debtEvents.recordEvent(eventData);
+  }
+
+  recordMicroPayoff(data) {
+    return this.microPayoffs.recordPayoff(data);
   }
 }
 

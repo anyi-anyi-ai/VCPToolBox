@@ -305,6 +305,8 @@ class QueryCommands {
       relevantTimelineEvents: result.snapshot.timelineEvents,
       timeline: result.snapshot.timelineEvents,
       timeline_events: result.snapshot.timelineEvents,
+      debtPressure: result.snapshot.debtPressure,
+      narrativeDebtPressure: result.snapshot.debtPressure,
       assembledContext: result.assembledContext
     };
 
@@ -339,7 +341,9 @@ class QueryCommands {
       open_foreshadowing: result.snapshot.unresolved,
       relevantTimelineEvents: result.snapshot.timelineEvents,
       timeline: result.snapshot.timelineEvents,
-      timeline_events: result.snapshot.timelineEvents
+      timeline_events: result.snapshot.timelineEvents,
+      debtPressure: result.snapshot.debtPressure,
+      narrativeDebtPressure: result.snapshot.debtPressure
     };
   }
 

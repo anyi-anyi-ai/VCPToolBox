@@ -100,20 +100,22 @@ function normalizeRequest(rawInput) {
     throw new Error('Invalid input payload: expected a JSON object.');
   }
 
-  const action = rawInput.action || rawInput.command || rawInput.commandIdentifier;
-  if (!action || typeof action !== 'string' || !action.trim()) {
-    throw new Error('Missing or invalid command identifier (expected "action" or "command").');
+  // 优先使用 command 作为顶层路由，如果没有再回退到 action
+  const routeCommand = rawInput.command || rawInput.commandIdentifier || rawInput.action;
+  if (!routeCommand || typeof routeCommand !== 'string' || !routeCommand.trim()) {
+    throw new Error('Missing or invalid command identifier.');
   }
 
   let parameters = {};
   if (rawInput.parameters && typeof rawInput.parameters === 'object' && !Array.isArray(rawInput.parameters)) {
     parameters = { ...rawInput.parameters };
   } else {
-    const { action: _a, command: _c, commandIdentifier: _ci, parameters: _p, ...rest } = rawInput;
+    // ⚠️ 关键修改：不要把 action 剥离掉！保留它传给内部处理器
+    const { command: _c, commandIdentifier: _ci, parameters: _p, ...rest } = rawInput;
     parameters = rest;
   }
 
-  return { action: action.trim(), parameters };
+  return { action: routeCommand.trim(), parameters };
 }
 
 // 5. Command Routing Pipeline
@@ -123,8 +125,9 @@ async function dispatchCommand(action, parameters) {
   const dispatcherPath = path.join(__dirname, 'src', 'commands', 'CommandDispatcher.js');
   if (fs.existsSync(dispatcherPath)) {
     const { CommandDispatcher } = require(dispatcherPath);
+    const basePath = process.env.PLUGIN_ROOT || __dirname;
     const dispatcher = new CommandDispatcher({
-      basePath: __dirname,
+      basePath,
       config: process.env
     });
     return await dispatcher.dispatch(action, parameters);

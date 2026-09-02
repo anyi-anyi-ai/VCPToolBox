@@ -68,11 +68,11 @@ describe('CommandDispatcher - Phase 4 Collaboration Routing Test Suite', () => {
   });
 
   describe('1. Help & Info Metadata Verification', () => {
-    it('help command should list all 9 Phase 4 commands (total 38 available commands)', async () => {
+    it('help command should list all available commands (including Phase 4 & Phase 5 commands)', async () => {
       const res = await dispatcher.dispatch('help');
       assert.strictEqual(typeof res, 'object');
       assert.ok(Array.isArray(res.availableCommands));
-      assert.strictEqual(res.availableCommands.length, 38);
+      assert.strictEqual(res.availableCommands.length, 42);
 
       const requiredPhase4 = [
         'BuildVCPContext',

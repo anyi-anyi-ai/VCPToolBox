@@ -17,6 +17,9 @@ const Rule07 = require('./rules/Rule07_DanglingEntityReferences');
 const Rule08 = require('./rules/Rule08_AliasCollisions');
 const Rule09 = require('./rules/Rule09_TimelineChronologyAnomalies');
 const Rule10 = require('./rules/Rule10_ForeshadowingUnclosedMismatch');
+const Rule11 = require('./rules/Rule11_DebtOverdue');
+const Rule12 = require('./rules/Rule12_PayoffDrought');
+const Rule13 = require('./rules/Rule13_HookMonotony');
 
 class AnomalyEngine {
   /**
@@ -26,7 +29,7 @@ class AnomalyEngine {
     this.options = options;
     this.rules = new Map();
 
-    // Register built-in rules (ANOM_001 .. ANOM_010)
+    // Register built-in rules (ANOM_001 .. ANOM_013)
     this.registerRule(Rule01);
     this.registerRule(Rule02);
     this.registerRule(Rule03);
@@ -37,6 +40,9 @@ class AnomalyEngine {
     this.registerRule(Rule08);
     this.registerRule(Rule09);
     this.registerRule(Rule10);
+    this.registerRule(Rule11);
+    this.registerRule(Rule12);
+    this.registerRule(Rule13);
   }
 
   /**

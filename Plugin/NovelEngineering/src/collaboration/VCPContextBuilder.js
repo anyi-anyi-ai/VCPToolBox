@@ -309,6 +309,37 @@ class VCPContextBuilder {
       hashTrackingStamp: u.sha256Hash || this._computeHash(u.content || u.description || u.title)
     }));
 
+    // --- LAYER 6: Narrative Debt Pressure (Phase 5) ---
+    const chapterNumber = Number(chapterId) || (underlyingSnapshot.chapter && underlyingSnapshot.chapter.chapter_number) || (params.chapterNumber ? Number(params.chapterNumber) : 1);
+    let debtPressure = null;
+    if (this.dbManager && this.dbManager.narrativeDebts && typeof this.dbManager.narrativeDebts.getDebtPressure === 'function') {
+      debtPressure = this.dbManager.narrativeDebts.getDebtPressure(chapterNumber, {
+        focusEntities,
+        projectId
+      });
+    } else {
+      debtPressure = {
+        layer: 6,
+        layerName: 'narrative_debt_pressure',
+        immuneToTokenTrimming: true,
+        extremeCutoffApplied: false,
+        omittedDebtsCount: 0,
+        chapterNumber,
+        totalDebtsCount: 0,
+        activeDebtsCount: 0,
+        overdueDebtsCount: 0,
+        debtPressureVector: {
+          totalPressure: 0,
+          averagePressure: 0,
+          highestUrgency: 'low',
+          overdueCount: 0,
+          activeHooks: [],
+          overdueDebts: []
+        },
+        formattedContextSnippet: `### ⚡ [Narrative Debt Pressure] (Chapter ${chapterNumber})\n*No active narrative debt pressure.*`
+      };
+    }
+
     // Compile Lineage Source Trace
     const sourceTrace = [];
     const allLayers = [
@@ -333,6 +364,24 @@ class VCPContextBuilder {
       });
     });
 
+    // Add Layer 6 injected debts to lineage sourceTrace
+    const injectedDebts = [
+      ...(debtPressure.debtPressureVector.overdueDebts || []),
+      ...(debtPressure.debtPressureVector.activeHooks || [])
+    ];
+    injectedDebts.forEach(d => {
+      sourceTrace.push({
+        sourceFileId: null,
+        sourceFilePath: `db://narrative_debts/${d.debtId}`,
+        sourceSystem: 'NovelEngineering-NarrativeDebt',
+        authority: 'narrative_debt',
+        category: 'narrative_debt',
+        sha256: this._computeHash(d.title + String(d.currentBalance)),
+        entityId: (d.relatedEntities && d.relatedEntities[0]) || null,
+        priority: 7
+      });
+    });
+
     // --- Assemble Context V4 Payload ---
     const rawPayload = {
       contextVersion: '4.0',
@@ -347,6 +396,9 @@ class VCPContextBuilder {
       semanticCandidates,
       conflicts,
       unresolved,
+      debtPressure,
+      narrativeDebtPressure: debtPressure,
+      layer6: debtPressure,
       sourceTrace,
       warnings
     };

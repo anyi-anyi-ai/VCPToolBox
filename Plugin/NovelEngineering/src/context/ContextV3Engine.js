@@ -979,6 +979,16 @@ class ContextV3Engine {
       conflicts.push(anomItem);
     }
 
+    // --- 3G. Narrative Debt Pressure (Phase 5) ---
+    const currentChapterNum = (chapterObj && chapterObj.chapter_number) || (Number(rawChapterId) || 1);
+    let debtPressure = null;
+    if (this.dbManager && this.dbManager.narrativeDebts && typeof this.dbManager.narrativeDebts.getDebtPressure === 'function') {
+      debtPressure = this.dbManager.narrativeDebts.getDebtPressure(currentChapterNum, {
+        focusEntities: focusEntityNames,
+        projectId
+      });
+    }
+
     // --- 4. Backward and Forward Dual Compatibility for worldRules ---
     // Composite array containing all world rules (global + scoped)
     // with attached .global and .scoped array properties
@@ -997,7 +1007,9 @@ class ContextV3Engine {
       candidateSources,
       conflicts,
       unresolved,
-      timelineEvents
+      timelineEvents,
+      debtPressure,
+      narrativeDebtPressure: debtPressure
     };
 
     // --- 5. Build Assembled Context Markdown ---
@@ -1017,6 +1029,7 @@ class ContextV3Engine {
       timelineEventsCount: timelineEvents.length,
       unresolvedCount: unresolved.length,
       conflictsCount: conflicts.length,
+      debtPressureCount: debtPressure ? debtPressure.totalDebtsCount : 0,
       generatedAt: new Date().toISOString()
     };
 
@@ -1046,6 +1059,8 @@ class ContextV3Engine {
       foreshadowing: unresolved,
       openForeshadowing: unresolved,
       open_foreshadowing: unresolved,
+      debtPressure,
+      narrativeDebtPressure: debtPressure,
       entities: recalledEntities,
       chapter: chapterObj
     };
@@ -1350,6 +1365,19 @@ class ContextV3Engine {
       sections.push('## ⚠️ Active Setting Conflicts');
       for (const c of snapshot.conflicts) {
         sections.push(`- 🔴 **[${c.severity || 'warning'}] ${c.title}**: ${c.message} *(Source: \`${c.sourceFilePath || 'virtual'}\`)*`);
+      }
+    }
+
+    // 8. Narrative Debt Pressure (Phase 5)
+    if (snapshot.debtPressure && snapshot.debtPressure.debtPressureVector && (snapshot.debtPressure.debtPressureVector.totalPressure > 0 || snapshot.debtPressure.totalDebtsCount > 0)) {
+      sections.push('## ⚡ Narrative Debt & Payoff Pressure');
+      const vector = snapshot.debtPressure.debtPressureVector;
+      for (const d of (vector.overdueDebts || [])) {
+        sections.push(`- 🔴 **[CRITICAL OVERDUE]** \`${d.debtId}\` (Due: CH-${d.targetPayoffChapter !== null ? d.targetPayoffChapter : 'N/A'}, Overdue: +${d.overdueChapters} Chaps, Balance: ${d.currentBalance}): **${d.title}**`);
+      }
+      for (const d of (vector.activeHooks || [])) {
+        const icon = d.urgencyLevel === 'warning' ? '🟡' : (d.urgencyLevel === 'high' ? '🟠' : '🟢');
+        sections.push(`- ${icon} **[${(d.urgencyLevel || 'normal').toUpperCase()}]** \`${d.debtId}\` (Due: CH-${d.targetPayoffChapter !== null ? d.targetPayoffChapter : 'N/A'}, Balance: ${d.currentBalance}): **${d.title}**`);
       }
     }
 

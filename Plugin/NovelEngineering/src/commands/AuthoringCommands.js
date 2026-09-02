@@ -60,8 +60,10 @@ class AuthoringCommands {
     const customFilename = params.customFilename || params.filename || null;
     const customPath = params.customPath || null;
 
-    // Determine vault root
+    // Determine vault root and project root
     const vaultRoot = params.vaultRoot || params.vaultPath || pathGuard.vaultRoot || config.VAULT_ROOT || config.DEFAULT_WORLDTREE_PATH || 'J:\\obsidian库\\obsidian-workflow-vault-main\\流浪\\世界树';
+    const projectRoot = params.projectRoot || config.PROJECT_ROOT || (vaultRoot ? path.dirname(vaultRoot) : 'J:\\obsidian库\\obsidian-workflow-vault-main\\流浪');
+    const targetZone = String(params.targetZone || params.zone || params.target_zone || 'draft').toLowerCase();
 
     // Validate customFilename syntax early if provided
     if (customFilename) {
@@ -79,10 +81,16 @@ class AuthoringCommands {
       draftFilename = `CH_${padNum}_${sanitizedTitle || sanitizedId}.md`;
     }
 
-    // Determine target path
+    // Determine target path based on targetZone
     let targetDraftPath = '';
     if (customPath) {
       targetDraftPath = customPath;
+    } else if (targetZone === 'manuscript' || targetZone === '正文' || targetZone === '正文卷') {
+      const volumeFolder = params.volumeFolder || `第一卷_初啼`;
+      targetDraftPath = path.join(projectRoot, '正文卷', volumeFolder, draftFilename);
+    } else if (targetZone === 'plotline' || targetZone === '剧情' || targetZone === '剧情线') {
+      const subDir = params.subDir || '主线大纲';
+      targetDraftPath = path.join(projectRoot, '剧情线', subDir, draftFilename);
     } else {
       targetDraftPath = path.join(vaultRoot, '13_小说工程插件', '篇章草稿', draftFilename);
     }

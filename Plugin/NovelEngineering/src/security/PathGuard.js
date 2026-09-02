@@ -93,7 +93,17 @@ class PathGuard {
     this.vaultRoot = rawVault ? this._canonicalizeExisting(rawVault) : null;
     this.vaultPath = this.vaultRoot;
 
+    this.config = options.config || process.env || {};
     this.allowedSubdirs = options.allowedSubdirs || ['data', 'logs', 'reports', 'temp', 'test'];
+
+    const rawExternal = options.authorizedExternalDirs || this.config.AUTHORIZED_EXTERNAL_DIRS || process.env.AUTHORIZED_EXTERNAL_DIRS || [];
+    let externalList = [];
+    if (typeof rawExternal === 'string') {
+      externalList = rawExternal.split(',').map(s => s.trim()).filter(Boolean);
+    } else if (Array.isArray(rawExternal)) {
+      externalList = rawExternal.map(s => String(s).trim()).filter(Boolean);
+    }
+    this.authorizedExternalDirs = externalList.map(dir => this._canonicalizeExisting(dir));
 
     // Check for illegal collision where vault and sandbox are identical
     if (this.vaultRoot && this._isSamePath(this.pluginRoot, this.vaultRoot)) {
@@ -315,8 +325,11 @@ class PathGuard {
 
     const relFromVault = path.relative(canonicalVault, canonicalTarget).replace(/\\/g, '/');
 
-    // 4. Check for traversal escaping vault root
+    // 4. Check for traversal escaping vault root or check if targeting authorized external directory
     if (relFromVault.startsWith('..') || !compTarget.startsWith(compVault)) {
+      if (this.isExternalAuthorizedPath(canonicalTarget)) {
+        return this.assertExternalWritablePath(canonicalTarget, operation);
+      }
       throw new SecurityError(
         `Directory traversal detected escaping vault root: ${targetPath}`,
         'ERR_PATH_TRAVERSAL',
@@ -406,6 +419,87 @@ class PathGuard {
       fs.mkdirSync(draftDir, { recursive: true });
     }
     return this._getCanonicalPath(draftDir);
+  }
+
+  /**
+   * Checks whether a target path is inside one of the authorized external directories.
+   * @param {string} targetPath
+   * @returns {boolean}
+   */
+  isExternalAuthorizedPath(targetPath) {
+    if (!this.authorizedExternalDirs || this.authorizedExternalDirs.length === 0 || typeof targetPath !== 'string' || !targetPath.trim()) {
+      return false;
+    }
+    try {
+      const resolved = path.resolve(this.baseDir, targetPath);
+      const canonical = this._getCanonicalPath(resolved);
+      return this.authorizedExternalDirs.some(authDir => this._isPathInside(canonical, authDir));
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Asserts that a target path is strictly inside one of the authorized external directories
+   * (e.g. 流浪/正文卷 or 流浪/剧情线) and does NOT mutate vault 01_~12_.
+   * @param {string} targetPath
+   * @param {string} [operation='external_write']
+   * @returns {string} Canonical validated writable path
+   */
+  assertExternalWritablePath(targetPath, operation = 'external_write') {
+    this.validatePathSyntax(targetPath);
+
+    // If it is inside vault, defer to assertDraftWritablePath
+    if (this.isVaultPath(targetPath)) {
+      return this.assertDraftWritablePath(targetPath, this.vaultRoot, operation);
+    }
+
+    const resolved = path.resolve(this.baseDir, targetPath);
+    const canonicalTarget = this._getCanonicalPath(resolved);
+
+    // Must reside strictly inside one of the authorized external directories
+    const isAuthorized = this.authorizedExternalDirs.some(authDir => this._isPathInside(canonicalTarget, authDir));
+    if (!isAuthorized) {
+      throw new SecurityError(
+        `Sandbox Isolation Violation: Write target "${canonicalTarget}" is outside authorized external directories: [${this.authorizedExternalDirs.join(', ')}]`,
+        'ERR_SECURITY_VIOLATION',
+        canonicalTarget,
+        this.baseDir
+      );
+    }
+
+    // Symlink / Junction Escape Check: Verify that the canonical path does not resolve outside authorized dirs
+    let checkDir = path.dirname(resolved);
+    while (checkDir && checkDir !== path.dirname(checkDir)) {
+      if (fs.existsSync(checkDir)) {
+        try {
+          const lstat = fs.lstatSync(checkDir);
+          if (lstat.isSymbolicLink()) {
+            const realDir = fs.realpathSync.native(checkDir);
+            const insideAuth = this.authorizedExternalDirs.some(authDir => this._isPathInside(realDir, authDir));
+            if (!insideAuth) {
+              throw new SecurityError(
+                `Symlink/Junction escape detected: "${checkDir}" points outside authorized directories to "${realDir}"`,
+                'ERR_VAULT_WRITE_BLOCKED',
+                checkDir,
+                this.baseDir
+              );
+            }
+          }
+        } catch (err) {
+          if (err instanceof SecurityError) throw err;
+        }
+      }
+      checkDir = path.dirname(checkDir);
+    }
+
+    // Ensure parent directory exists inside sandbox
+    const parentDir = path.dirname(canonicalTarget);
+    if (!fs.existsSync(parentDir)) {
+      fs.mkdirSync(parentDir, { recursive: true });
+    }
+
+    return canonicalTarget;
   }
 
   /**
