@@ -17,16 +17,19 @@
   "capabilities": {
     "invocationCommands": [
       {
+        "command": "divine_by_numbers",
         "commandIdentifier": "divine_by_numbers",
         "description": "根据用户提供的两个数字进行梅花易数起卦。参数: number1(必需,数字,用于计算上卦), number2(必需,数字,用于计算下卦), question(可选,字符串,所问之事)。插件返回的content可用HTML格式渲染。",
         "example": "<<<[TOOL_REQUEST]>>>\ntool_name: 「始」PlumBlossomDivination「末」,\ncommand: 「始」divine_by_numbers「末」,\nnumber1: 「始」4「末」,\nnumber2: 「始」5「末」,\nquestion: 「始」问运势「末」\n<<<[END_TOOL_REQUEST]>>>"
       },
       {
+        "command": "divine_by_time",
         "commandIdentifier": "divine_by_time",
         "description": "根据当前时间自动起卦，使用年支数+月+日+时辰计算。参数: question(可选,字符串,所问之事)。插件返回的content可用HTML格式渲染。",
         "example": "<<<[TOOL_REQUEST]>>>\ntool_name: 「始」PlumBlossomDivination「末」,\ncommand: 「始」divine_by_time「末」,\nquestion: 「始」问今日运势「末」\n<<<[END_TOOL_REQUEST]>>>"
       },
       {
+        "command": "divine_random",
         "commandIdentifier": "divine_random",
         "description": "由系统随机生成天机数进行起卦。参数: question(可选,字符串,所问之事)。插件返回的content可用HTML格式渲染。",
         "example": "<<<[TOOL_REQUEST]>>>\ntool_name: 「始」PlumBlossomDivination「末」,\ncommand: 「始」divine_random「末」,\nquestion: 「始」随机起卦「末」\n<<<[END_TOOL_REQUEST]>>>"

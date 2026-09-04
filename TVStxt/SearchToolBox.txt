@@ -1,3 +1,5 @@
+[===vcp_fold:0.1===]
+
 # VCP 联网与搜索工具箱能力收纳
 这里收纳了 VCP 强大的联网检索、网页爬取及深度研究工具。
 
@@ -52,7 +54,8 @@ include_raw_content:「始」'markdown'「末」 //获取原始内容
 ## 5. 专业级实时与垂直领域检索，AnySearch，单次最多五路真并发
 想查实时信息、专业资料或网页正文时用这个工具。普通搜索只给 query；垂直搜索再加 sub_domain 和必要的 params。
 
-[===vcp_fold:0.0::desc:AnySearch 基础搜索与编排===]
+[===vcp_fold:0::desc:AnySearch 基础搜索与编排===]
+
 核心参数:
 - query: 默认搜索词；sub_domain: 「域.子域」；params: 优先写 k=v,k2=v2；max_results: 1-10。
 - queries: 同一路线批量搜索 1-5 个词，用 | 分隔。
@@ -76,9 +79,11 @@ sub_domain2:「始」code.snippet「末」,
 sub_domain3:「始」general「末」,
 max_results:「始」3「末」
 <<<[END_TOOL_REQUEST]>>>
+
 [===vcp_fold:0.5===]
 
 [===vcp_fold:0.35::desc:AnySearch 批量搜索、正文提取与兼容参数===]
+
 同路多词用 queries，顶层 sub_domain/params/max_results 会注入每条:
 <<<[TOOL_REQUEST]>>>
 tool_name:「始」AnySearch「末」,
@@ -92,9 +97,11 @@ queries:「始」AI 芯片需求 2026|全球 EV 市场展望「末」
 tool_name:「始」AnySearch「末」,
 url:「始」https://example.com/article「末」
 <<<[END_TOOL_REQUEST]>>>
+
 [===vcp_fold:0.5===]
 
 [===vcp_fold:0.35::desc:AnySearch 复杂参数与多领域编排示例===]
+
 复杂参数调用原则：已知参数语义时，直接把多个参数写成逗号分隔的 k=v 文本；字段含义、枚举、格式或条件必填不确定时，先查 get_sub_domains，读完返回规则再搜索。不适用的参数不要传空值。
 
 指定软件包漏洞：
@@ -137,9 +144,11 @@ command:「始」get_sub_domains「末」,
 domain:「始」travel「末」
 <<<[END_TOOL_REQUEST]>>>
 读完返回的完整规则后，再按其中的子域、枚举、格式和条件要求调用搜索。
+
 [===vcp_fold:0.5===]
 
 [===vcp_fold:0.35::desc:学术与文献检索 academic===]
+
 想查学术论文、数据集、预印本、引用或生物医学文献时用 academic 领域。
 
 子域与必填参数:
@@ -167,9 +176,11 @@ params:「始」sort=date,source=MED,field=tiab,year_from=2024,has_pdf=true「�
 <<<[END_TOOL_REQUEST]>>>
 
 不确定参数含义时，用 command=get_sub_domains, domain=academic 查询完整 schema。
+
 [===vcp_fold:0.5===]
 
 [===vcp_fold:0.35::desc:金融与市场检索 finance===]
+
 想查股票、基金、宏观经济、日历或筛选器时用 finance 领域。
 
 子域与必填参数:
@@ -189,14 +200,18 @@ params:「始」type=stock,symbol=AAPL「末」
 <<<[END_TOOL_REQUEST]>>>
 
 不确定参数含义时，用 command=get_sub_domains, domain=finance 查询完整 schema。
+
 [===vcp_fold:0.5===]
 
 [===vcp_fold:0.35::desc:其他垂直领域选择===]
+
 其他常用领域：legal 法律，health 医药健康，business 商业/公司/职位，security 威胁情报与漏洞，energy 能源电力，travel 航班，gaming 游戏与电竞，resource 图片，social_media 社媒，ip IP 信息，environment 空气质量，agriculture 农业，film 影视资源。
 选择领域后使用「域.子域」；具体子域、必填项、枚举或罕见参数必须用 command=get_sub_domains, domain=域 查询，不要依赖此处静态复制。
+
 [===vcp_fold:0.5===]
 
 [===vcp_fold:0.35::desc:代码与技术文档检索 code===]
+
 想查编程文档或代码片段时用 code 领域。
 
 子域与必填参数:
@@ -210,4 +225,5 @@ query:「始」Go 1.26 release notes「末」,
 sub_domain:「始」code.doc「末」,
 params:「始」library=golang「末」
 <<<[END_TOOL_REQUEST]>>>
+
 [===vcp_fold:0.5===]

@@ -6,9 +6,14 @@
   "author": "Aemeath",
   "pluginType": "hybridservice",
   "communication": { "protocol": "direct" },
+  "entryPoint": {
+    "type": "nodejs",
+    "script": "ChKSzMusicFetch.js"
+  },
   "capabilities": {
     "invocationCommands": [
       {
+        "command": "search_music",
         "commandIdentifier": "search_music",
         "description": "搜索音乐(支持163/qq/kugou)",
         "arguments": {
@@ -17,6 +22,7 @@
         }
       },
       {
+        "command": "get_music_url",
         "commandIdentifier": "get_music_url",
         "description": "获取音乐直链",
         "arguments": {

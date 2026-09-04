@@ -31,11 +31,13 @@
     "capabilities": {
         "invocationCommands": [
             {
+                "command": "EnglishHelperCore",
                 "commandIdentifier": "EnglishHelperCore",
                 "description": "英语学习主入口。通过 command 指定子功能。\\n\\n参数:\\n- command (字符串, 必需): 功能指令。\\n- text/sentence (字符串, 可选): 句子输入。\\n- word (字符串, 可选): 单词输入。\\n- grammar (字符串, 可选): 指定语法点。\\n- 其他参数按具体 command 传入。\\n\\n支持的 command:\\nanalyze_sentence, sentence_split, lookup_word, grammar_explain, phrase_pattern, rewrite_sentence, quiz_generate, wrongbook_add, review_due_list, review_submit, health_check, reading_aid_v2。\\n\\n调用示例:\\ntool_name=EnglishHelper, command=grammar_explain, grammar=present perfect\\ntool_name=EnglishHelper, command=review_submit, item_id=apple, result=记住\\ntool_name=EnglishHelper, command=reading_aid_v2, text=She is running in the park every morning., target_level=B2",
                 "example": "tool_name=EnglishHelper, command=grammar_explain, grammar=past perfect"
             },
             {
+                "command": "EnglishHelperLookup",
                 "commandIdentifier": "EnglishHelperLookup",
                 "description": "查词与消歧。支持本地词典+在线并联查询。\\n\\n参数:\\n- command (字符串, 必需): lookup_word\\n- word (字符串, 必需): 要查询的词\\n\\n调用示例:\\ntool_name=EnglishHelper, command=lookup_word, word=compromise",
                 "example": "tool_name=EnglishHelper, command=lookup_word, word=study"

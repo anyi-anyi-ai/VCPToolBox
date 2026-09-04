@@ -1065,14 +1065,18 @@ class PluginManager extends EventEmitter {
             if (plugin.capabilities && plugin.capabilities.invocationCommands && plugin.capabilities.invocationCommands.length > 0) {
                 let pluginSpecificDescriptions = [];
                 plugin.capabilities.invocationCommands.forEach(cmd => {
-                    if (cmd.description) {
-                        let commandDescription = `- ${plugin.displayName} (${plugin.name}) - 命令: ${cmd.command || 'N/A'}:\n`; // Assuming cmd might have a 'command' field or similar identifier
-                        const indentedCmdDescription = cmd.description.split('\n').map(line => `    ${line}`).join('\n');
+                    if (cmd && (cmd.command || cmd.commandIdentifier || cmd.name || cmd.description)) {
+                        const cmdName = cmd.command || cmd.commandIdentifier || cmd.name || 'N/A';
+                        const displayName = plugin.displayName || plugin.name;
+                        let commandDescription = `- ${displayName} (${plugin.name}) - 命令: ${cmdName}:\n`;
+                        const desc = typeof cmd.description === 'string' ? cmd.description : (cmd.description ? String(cmd.description) : '');
+                        const indentedCmdDescription = desc.split('\n').map(line => `    ${line}`).join('\n');
                         commandDescription += `${indentedCmdDescription}`;
 
                         if (cmd.example) {
                             const exampleHeader = `\n  调用示例:\n`;
-                            const indentedExample = cmd.example.split('\n').map(line => `    ${line}`).join('\n');
+                            const exampleStr = typeof cmd.example === 'string' ? cmd.example : String(cmd.example);
+                            const indentedExample = exampleStr.split('\n').map(line => `    ${line}`).join('\n');
                             commandDescription += exampleHeader + indentedExample;
                         }
                         pluginSpecificDescriptions.push(commandDescription);

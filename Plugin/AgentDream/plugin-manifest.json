@@ -30,14 +30,17 @@
         "invocationCommands": [
             {
                 "command": "DiaryMerge",
+                "commandIdentifier": "DiaryMerge",
                 "description": "功能: 合并多篇日记为一篇新日记。AI提供需要合并的日记路径列表和合并后的新日记正文。系统会自动读取源日记的原始内容，连同新内容一起记录到梦操作JSON供管理员审批。此操作不会立即执行。\n参数:\n- sourceDiaries (字符串, 必需): 需要合并的日记文件URL列表，多个用逗号分隔。\n- newContent (字符串, 必需): 合并后的全新日记正文，末尾必须包含Tag行。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」AgentDream「末」,\ncommand1:「始」DiaryMerge「末」,\nsourceDiaries1:「始」file:///path/a.txt,file:///path/b.txt「末」,\nnewContent1:「始」合并后的完整日记正文\nTag: 标签1, 标签2「末」\n<<<[END_TOOL_REQUEST]>>>"
             },
             {
                 "command": "DiaryDelete",
+                "commandIdentifier": "DiaryDelete",
                 "description": "功能: 标记一篇冗余日记待删除。AI只需提供日记路径和删除理由，系统会自动读取该日记的完整内容并记录到梦操作JSON供管理员审批。此操作不会立即执行。\n参数:\n- targetDiary (字符串, 必需): 待删除的日记文件URL。\n- reason (字符串, 必需): 删除理由。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」AgentDream「末」,\ncommand1:「始」DiaryDelete「末」,\ntargetDiary1:「始」file:///path/c.txt「末」,\nreason1:「始」内容与 a.txt 完全重复「末」\n<<<[END_TOOL_REQUEST]>>>"
             },
             {
                 "command": "DreamInsight",
+                "commandIdentifier": "DreamInsight",
                 "description": "功能: 基于参考日记产生梦感悟，创建一篇全新的感悟日记。AI提供触发感悟的参考日记路径和梦感悟正文。此操作不会立即执行，记录到梦操作JSON供管理员审批。\n参数:\n- referenceDiaries (字符串, 必需): 触发感悟的参考日记URL列表，多个用逗号分隔。\n- insightContent (字符串, 必需): 梦感悟的完整正文，末尾必须包含Tag行。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」AgentDream「末」,\ncommand1:「始」DreamInsight「末」,\nreferenceDiaries1:「始」file:///path/a.txt,file:///path/d.txt「末」,\ninsightContent1:「始」梦感悟的完整正文\nTag: 梦感悟, 联想「末」\n<<<[END_TOOL_REQUEST]>>>"
             }
         ],

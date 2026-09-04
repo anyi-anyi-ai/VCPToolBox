@@ -1,0 +1,84 @@
+# 流浪小说工程 (NovelEngineering) 创作与设定管理工具箱
+收纳了小说世界树扫描、上下文构建、安全草稿写入、7维正史防泄露巡检及叙事债务管理工具。
+
+## 1. 编译上下文构建 (BuildVCPContext)
+构建包含全局世界公理、出场实体正史、时间线与外部记忆的标准上下文快照。
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」NovelEngineering「末」,
+command:「始」BuildVCPContext「末」,
+projectId:「始」default「末」,
+chapterId:「始」1「末」,
+focusEntities:「始」主角名,关键地点「末」
+<<<[END_TOOL_REQUEST]>>>
+
+## 2. 篇章草稿安全写入 (SaveChapterDraft)
+将新写的章节正文安全存入受控沙箱目录，严禁直写或篡改核心设定源文件。
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」NovelEngineering「末」,
+command:「始」SaveChapterDraft「末」,
+chapterNumber:「始」1「末」,
+chapterTitle:「始」第一章 启程「末」,
+content:「始」正文内容...「末」
+<<<[END_TOOL_REQUEST]>>>
+
+## 3. 7维度正史泄露与幻觉巡检 (EvaluateCanonLeakage)
+草稿撰写完成后必跑！自动检测是否引用废弃设定、全知越权、未确认提案或跨线串味。
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」NovelEngineering「末」,
+command:「始」EvaluateCanonLeakage「末」,
+draftContent:「始」本章草稿正文...「末」
+<<<[END_TOOL_REQUEST]>>>
+
+## 4. 叙事债务与微兑现管理 (GetDebtPressure & RecordMicroPayoff)
+检查本章悬念紧迫度，记录微兑现释放追读压力。
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」NovelEngineering「末」,
+command:「始」GetDebtPressure「末」,
+chapterNumber:「始」1「末」
+<<<[END_TOOL_REQUEST]>>>
+
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」NovelEngineering「末」,
+command:「始」RecordMicroPayoff「末」,
+debtId:「始」debt_123456「末」,
+chapterNumber:「始」1「末」,
+description:「始」主角在密室发现了关于该伏笔的半块残玉「末」
+<<<[END_TOOL_REQUEST]>>>
+
+[===vcp_fold:0.5===]
+
+## 5. 世界树扫描与实体检索 (ScanWorldTree & QueryEntities)
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」NovelEngineering「末」,
+command:「始」ScanWorldTree「末」,
+cleanScan:「始」false「末」
+<<<[END_TOOL_REQUEST]>>>
+
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」NovelEngineering「末」,
+command:「始」QueryEntities「末」,
+query:「始」量子跃迁引擎「末」,
+limit:「始」10「末」
+<<<[END_TOOL_REQUEST]>>>
+
+## 6. 一致性校验与正史升格 (CheckConsistency & PromoteSourceToCanon)
+在设定变更或晋升正史前校验冲突。升格需携带安全令牌 CONFIRM_CANON_CHANGE。
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」NovelEngineering「末」,
+command:「始」CheckConsistency「末」
+<<<[END_TOOL_REQUEST]>>>
+
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」NovelEngineering「末」,
+command:「始」PromoteSourceToCanon「末」,
+relativePath:「始」03_科技力量/反物质聚变.md「末」,
+confirmationToken:「始」CONFIRM_CANON_CHANGE「末」
+<<<[END_TOOL_REQUEST]>>>
+
+## 7. 记忆提炼与 VCP 记忆沉淀 (SuggestMemoryUpdate & PublishToVCPMemory)
+草稿定稿后，提炼摘要并经作者确认后安全沉淀至 VCP 长期记忆库。
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」NovelEngineering「末」,
+command:「始」SuggestMemoryUpdate「末」,
+draftContent:「始」草稿正文...「末」
+<<<[END_TOOL_REQUEST]>>>

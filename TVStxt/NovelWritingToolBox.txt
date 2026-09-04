@@ -1,0 +1,158 @@
+[===vcp_fold:0.3===]
+
+# VCP 小说文字与设定创作主箱 (NovelWritingToolBox)
+专为长篇小说正文撰写、世界观设定治理、剧情大纲设计与灵感沉淀打造的主控工具箱。
+深度整合 Nova 浪潮小说工程、Obsidian 本地设定库读写、节点精准局部写作及灵感网状聚类能力。
+不包含生图与联网搜索干扰，为码字工位提供纯净、低延迟、防幻觉的创作环境。
+
+======================================================================
+【小说创作 6 步防幻觉闭环流程】
+1. 编译章节上下文 (BuildVCPContext) -> 2. 查阅叙事债务压力 (GetDebtPressure) ->
+3. 撰写章节草稿 (SaveChapterDraft)   -> 4. 7维正史防泄露巡检 (EvaluateCanonLeakage) ->
+5. 提炼本章剧情记忆 (SuggestMemoryUpdate) -> 6. 知识库与长期记忆沉淀 (PublishToVCPMemory / ObsidianBridge)
+======================================================================
+
+[===vcp_fold:0.25::desc:小说正文码字、草稿存盘与即时质检===]
+
+## 1. 篇章上下文标准编译 (NovelEngineering: BuildVCPContext)
+动笔前必调！自动聚合世界公理、出场实体正史、时间线与开放伏笔，杜绝自相矛盾。
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」NovelEngineering「末」,
+command:「始」BuildVCPContext「末」,
+projectId:「始」default「末」,
+chapterId:「始」1「末」,
+focusEntities:「始」主角名,核心地点「末」
+<<<[END_TOOL_REQUEST]>>>
+
+## 2. 篇章草稿安全写入沙箱 (NovelEngineering: SaveChapterDraft)
+将新写好的章节正文安全存入受控隔离目录 (13_小说工程插件/篇章草稿/)，严禁篡改设定源文件。
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」NovelEngineering「末」,
+command:「始」SaveChapterDraft「末」,
+chapterNumber:「始」1「末」,
+chapterTitle:「始」第一章 启程「末」,
+content:「始」章节正文文本...「末」
+<<<[END_TOOL_REQUEST]>>>
+
+## 3. 7维度正史泄露与全知越权巡检 (NovelEngineering: EvaluateCanonLeakage)
+草稿写完必调！自动拦截废弃归档设定、角色越权全知信息、提前剧透未发生事件或未确认设定。
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」NovelEngineering「末」,
+command:「始」EvaluateCanonLeakage「末」,
+draftContent:「始」本章草稿正文...「末」
+<<<[END_TOOL_REQUEST]>>>
+
+## 4. 叙事债务与微兑现雷达 (NovelEngineering: GetDebtPressure & RecordMicroPayoff)
+检查本章逾期悬念与紧迫度压力向量；记录微兑现释放追读疲劳并抵扣债务本金。
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」NovelEngineering「末」,
+command:「始」GetDebtPressure「末」,
+chapterNumber:「始」1「末」
+<<<[END_TOOL_REQUEST]>>>
+
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」NovelEngineering「末」,
+command:「始」RecordMicroPayoff「末」,
+debtId:「始」debt_123456「末」,
+chapterNumber:「始」1「末」,
+description:「始」主角在密室发现了关于该伏笔的残存信物「末」
+<<<[END_TOOL_REQUEST]>>>
+
+## 5. 本地设定库检索与读写 (ObsidianBridge: read / create / append)
+直接检索、创建或更新本地 Obsidian 笔记库中的人设卡、地理志或分卷大纲。
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」ObsidianBridge「末」,
+command:「始」read「末」,
+file:「始」设定库/主角人设卡「末」
+<<<[END_TOOL_REQUEST]>>>
+
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」ObsidianBridge「末」,
+command:「始」create「末」,
+name:「始」卷一大纲-细化版「末」,
+folder:「始」小说设定/大纲「末」,
+content:「始」# 卷一：星火燎原\n\n- 第1章：...\n- 第2章：...「末」
+<<<[END_TOOL_REQUEST]>>>
+
+## 6. 节点精准局部覆写 (ObsidianBridge: node_text_replace)
+利用隐形注释锚点，按 tag 局部替换大纲或设定中的某个段落，无需提供原文且不损坏 LaTeX。
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」ObsidianBridge「末」,
+command:「始」node_text_replace「末」,
+file:「始」小说设定/世界观公理「末」,
+tag:「始」magic_system「末」,
+content:「始」修改后的最新魔法力学法则：能量守恒与精神共振...「末」
+<<<[END_TOOL_REQUEST]>>>
+
+[===vcp_fold:0.45::desc:世界观治理、灵感聚类与长期记忆沉淀===]
+
+## 7. 世界观一致性校验与正史升格 (NovelEngineering: CheckConsistency & PromoteSourceToCanon)
+在设定变更、合并分卷大纲前校验冲突；审核通过后执行正史升格（要求携带确认令牌）。
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」NovelEngineering「末」,
+command:「始」CheckConsistency「末」
+<<<[END_TOOL_REQUEST]>>>
+
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」NovelEngineering「末」,
+command:「始」PromoteSourceToCanon「末」,
+relativePath:「始」02_地理与势力/浮空城架构.md「末」,
+confirmationToken:「始」CONFIRM_CANON_CHANGE「末」
+<<<[END_TOOL_REQUEST]>>>
+
+## 8. 伏笔追踪与时间线编年史管理 (NovelEngineering: ManageForeshadowing & ManageTimeline)
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」NovelEngineering「末」,
+command:「始」ManageForeshadowing「末」,
+action:「始」create「末」,
+clueName:「始」断剑上的古代铭文「末」,
+targetChapter:「始」15「末」,
+description:「始」第三章在旧货铺所得，实为神皇佩剑残片「末」
+<<<[END_TOOL_REQUEST]>>>
+
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」NovelEngineering「末」,
+command:「始」ManageTimeline「末」,
+action:「始」add_event「末」,
+title:「始」陨星之变「末」,
+timestamp:「始」新历384年春「末」,
+impactLevel:「始」MAJOR「末」
+<<<[END_TOOL_REQUEST]>>>
+
+## 9. 散碎灵感与剧情网状思维聚类 (ThoughtClusterManager)
+用于头脑风暴、发散性构思，将零散的灵感碎片聚类归纳为故事支线或剧情冲突点。
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」ThoughtClusterManager「末」,
+command:「始」CreateClusterFile「末」,
+clusterName:「始」反派隐藏动机推演「末」,
+content:「始」- 假说A：复仇\n- 假说B：被更高维度文明同化\n- 矛盾冲突点：与主角初次相遇时的怜悯表现「末」
+<<<[END_TOOL_REQUEST]>>>
+
+## 10. 剧情记忆提炼与 VCP 记忆沉淀 (NovelEngineering: SuggestMemoryUpdate & PublishToVCPMemory)
+章节定稿后，提炼本章关键剧情增量并经作者确认后存入 VCP 长期记忆，确保长篇连载不遗忘。
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」NovelEngineering「末」,
+command:「始」SuggestMemoryUpdate「末」,
+draftContent:「始」本章定稿正文...「末」
+<<<[END_TOOL_REQUEST]>>>
+
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」NovelEngineering「末」,
+command:「始」PublishToVCPMemory「末」,
+confirmedBy:「始」author「末」,
+memories:「始」[{"memoryType":"PLOT_FACT","title":"主角与影卫结盟","suggestedContent":"在第四章主角成功说服影卫首领"}]「末」
+<<<[END_TOOL_REQUEST]>>>
+
+## 11. Obsidian 知识库语境检索与大纲提取 (ObsidianBridge: search_context & outline)
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」ObsidianBridge「末」,
+command:「始」search_context「末」,
+query:「始」灵能跃迁引擎「末」,
+limit:「始」5「末」
+<<<[END_TOOL_REQUEST]>>>
+
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」ObsidianBridge「末」,
+command:「始」outline「末」,
+file:「始」卷二大纲草案「末」
+<<<[END_TOOL_REQUEST]>>>

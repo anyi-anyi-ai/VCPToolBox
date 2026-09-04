@@ -16,6 +16,7 @@
     "invocationCommands": [
       {
         "command": "ExecuteTest",
+        "commandIdentifier": "ExecuteTest",
         "description": "测试 river 语法的命令",
         "example": "river:「始」text「末」"
       }

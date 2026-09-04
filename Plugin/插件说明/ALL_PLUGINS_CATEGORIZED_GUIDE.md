@@ -623,3 +623,27 @@
 **类型:** 🕹️ 静默系统服务  
 **简述:** 提供实时的天气信息，并将其集成到系统提示词的 {{VCPWeatherInfo}} 占位符中。  
 
+
+### 流浪小说工程 (NovelEngineering)
+**类型:** 🧩 可用交互工具  
+**功能简述:** 大型小说世界观设定、篇章草稿创作与叙事治理中枢。集成 SQLite 结构化正史图谱、Context v3/v4 漏斗编译、7 维正史泄露与幻觉巡检、叙事债务借贷引擎与 VCP 记忆沉淀。
+* **支持的主控命令 (39项)**: ScanWorldTree, BuildVCPContext, SaveChapterDraft, EvaluateCanonLeakage, GetDebtPressure, CheckConsistency, PromoteSourceToCanon, ManageForeshadowing 等  
+💡 详见插件根目录下的 COMMANDS_GUIDE.md 与 README.md。
+
+### Obsidian 笔记桥接器 (ObsidianBridge)
+**类型:** 🧩 可用交互工具  
+**功能简述:** 通过 Obsidian 官方 CLI (Obsidian.com, v1.12+) 桥接本地笔记库。支持全文读写、语义搜索、每日笔记、标签/属性管理、以及 v1.4.0 独创的「节点局部写作模式」（以不可见注释锚点实现块级精准替换与读写分离，零损失保留 LaTeX 公式）。
+* **需配置环境变量**: OBSIDIAN_CLI_PATH  
+* **支持的主控命令 (28项)**: 
+ead, create, ppend, search_context, daily_append, 
+ode_create, 
+ode_read, 
+ode_text_replace, 
+ode_delete 等  
+💡 详见插件根目录下的 COMMANDS_GUIDE.md。
+
+### 小说创作专属集合工具箱（双箱制·主辅分离）
+**收录位置:** TVStxt/NovelWritingToolBox.txt & TVStxt/NovelVisualToolBox.txt  
+**系统占位符:** {{VCPNovelWriting}} & {{VCPNovelVisual}}  
+- **小说文字与设定主箱 (VCPNovelWriting)**: 专为长篇小说码字打造。整合 NovelEngineering（上下文编译/草稿存盘/7维防泄露/叙事债务微兑现/时间线/正史升格）、ObsidianBridge（本地设定库读写与节点精准局部覆写）及 ThoughtClusterManager（散碎灵感网状聚类）。两级动态语义折叠 (0.0 / 0.45)，零生图干扰。
+- **立绘设计与考据辅箱 (VCPNovelVisual)**: 整合 ZImageTurboGen / DoubaoGen（角色形象卡、名场面概念氛围图）及 TavilySearch / AnySearch（硬核科学力学与历史事实考据）。

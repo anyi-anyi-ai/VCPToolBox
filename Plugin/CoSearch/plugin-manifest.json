@@ -39,6 +39,7 @@
   "capabilities": {
     "invocationCommands": [
       {
+        "command": "CoSearch",
         "commandIdentifier": "CoSearch",
         "description": "执行深度研究检索。\n参数:\n- SearchTopic (字符串, 必需): 研究主题。\n- Keywords (字符串或数组, 必需): 检索关键词（逗号/换行分隔也可）。\n- ShowURL (布尔值, 可选, 默认 true): 是否展示证据 URL。\n- Mode (字符串, 可选): lite | standard | deep。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」CoSearch「末」,\nSearchTopic:「始」2026 AI Agent 框架演进「末」,\nKeywords:「始」OpenAI Agents SDK, LangGraph, AutoGen, CrewAI「末」,\nShowURL:「始」true「末」,\nMode:「始」standard「末」\n<<<[END_TOOL_REQUEST]>>>"
       }

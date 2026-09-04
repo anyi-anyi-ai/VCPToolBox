@@ -30,5 +30,21 @@
   "VCPEnglishHelper": {
     "file": "EnglishHelper.txt",
     "description": "英语学习"
+  },
+  "VCPObsidianBridge": {
+    "file": "ObsidianBridge.txt",
+    "description": "Obsidian 官方 CLI 本地笔记库桥接器，支持全文读写搜索与节点局部写作"
+  },
+  "VCPNovelWriting": {
+    "file": "NovelWritingToolBox.txt",
+    "description": "小说纯文本撰写、世界观设定治理、防泄露巡检、Obsidian 笔记读写及灵感网状聚类主箱（零画图干扰，专注长篇码字）"
+  },
+  "VCPNovelVisual": {
+    "file": "NovelVisualToolBox.txt",
+    "description": "小说角色立绘概念设计、名场面概念插画绘制及硬核科学/历史背景深度考据辅箱（多模态视觉与考据辅助）"
+  },
+  "vcpxiaoshuo": {
+    "file": "NovelWritingToolBox.txt",
+    "description": "文本处理"
   }
 }

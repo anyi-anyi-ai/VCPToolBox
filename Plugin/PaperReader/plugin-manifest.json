@@ -87,126 +87,157 @@
   "capabilities": {
     "invocationCommands": [
       {
+        "command": "IngestPDF",
         "commandIdentifier": "IngestPDF",
         "description": "Legacy VCP alias for `ingest_source`. Required fields: `filePath`. Optional fields: `paperId`. Produces normalized workspace artifacts and returns a reusable `document_id`."
       },
       {
+        "command": "Read",
         "commandIdentifier": "Read",
         "description": "Legacy VCP alias for `read_document(mode=auto)`. Required fields: `paperId`. Optional: `goal`, `forceReread`. Recommended default reading entrypoint."
       },
       {
+        "command": "ReadSkeleton",
         "commandIdentifier": "ReadSkeleton",
         "description": "Legacy VCP alias for `read_document(mode=survey_only)`. Required fields: `paperId`. Optional: `focus`."
       },
       {
+        "command": "ReadDeep",
         "commandIdentifier": "ReadDeep",
         "description": "Legacy VCP alias for `read_document(mode=deep_focus)`. Required fields: `paperId`. Optional: `goal`."
       },
       {
+        "command": "Query",
         "commandIdentifier": "Query",
         "description": "Legacy VCP alias for `retrieve_evidence`. Required fields: `paperId`, `question`."
       },
       {
+        "command": "bootstrap_workspace",
         "commandIdentifier": "bootstrap_workspace",
         "description": "Create or validate the Rust workspace and return the health snapshot artifact reference."
       },
       {
+        "command": "describe_runtime",
         "commandIdentifier": "describe_runtime",
         "description": "Return supported commands, capabilities, and the latest health snapshot artifact reference."
       },
       {
+        "command": "get_health_snapshot",
         "commandIdentifier": "get_health_snapshot",
         "description": "Return the current runtime health snapshot."
       },
       {
+        "command": "ingest_source",
         "commandIdentifier": "ingest_source",
         "description": "Canonical single-source ingestion entrypoint. Required fields: one of `source_uri`, `source_path`, or `source_text`. Optional: `source_type`, `document_name`, `document_id`."
       },
       {
+        "command": "ingest_collection",
         "commandIdentifier": "ingest_collection",
         "description": "Create a collection from multiple sources and persist collection manifests/maps. Provide either `sources` or `document_ids` plus `collection_id`."
       },
       {
+        "command": "refresh_ingestion",
         "commandIdentifier": "refresh_ingestion",
         "description": "Re-run ingestion for an existing document using its persisted source manifest. Required field: `document_id`."
       },
       {
+        "command": "read_document",
         "commandIdentifier": "read_document",
         "description": "Canonical document-reading entrypoint. Required fields: `document_id`. Optional: `goal`, `mode` (`auto|survey_only|deep_focus|recursive`), `resume_from_state`, `constraints`."
       },
       {
+        "command": "resume_read",
         "commandIdentifier": "resume_read",
         "description": "Resume or continue a document read from persisted reading state. Required field: `document_id`."
       },
       {
+        "command": "audit_document",
         "commandIdentifier": "audit_document",
         "description": "Generate an audit report for a previously read document. Required field: `document_id`."
       },
       {
+        "command": "trace_claim_in_document",
         "commandIdentifier": "trace_claim_in_document",
         "description": "Trace a claim against a document and persist claim/evidence artifacts. Required fields: `document_id`, `claim_text`."
       },
       {
+        "command": "survey_collection",
         "commandIdentifier": "survey_collection",
         "description": "Persist collection manifest/member/map artifacts. Required fields: `collection_id`, `document_ids`."
       },
       {
+        "command": "synthesize_collection",
         "commandIdentifier": "synthesize_collection",
         "description": "Canonical collection entrypoint. Required fields: `collection_id`. Optional: `document_ids`, `mode` (`synthesis|compare|conflict_audit`), `document_roles`, `constraints`."
       },
       {
+        "command": "compare_documents",
         "commandIdentifier": "compare_documents",
         "description": "Build a collection comparison table. Required fields: `collection_id`, `document_ids` (at least two members)."
       },
       {
+        "command": "audit_collection_conflicts",
         "commandIdentifier": "audit_collection_conflicts",
         "description": "Audit aligned claims and conflicts across a collection. Required fields: `collection_id`, `document_ids`."
       },
       {
+        "command": "retrieve_evidence",
         "commandIdentifier": "retrieve_evidence",
         "description": "Retrieve ranked evidence for one document or a collection. Required fields: `document_id` or `collection_id`, plus `query_text`."
       },
       {
+        "command": "build_evidence_pack",
         "commandIdentifier": "build_evidence_pack",
         "description": "Build a persisted evidence pack for one document or a collection. Required fields: `document_id` or `collection_id`, plus `query_text`."
       },
       {
+        "command": "plan_research",
         "commandIdentifier": "plan_research",
         "description": "Create a research graph for a document or collection scope and persist run metadata."
       },
       {
+        "command": "run_research_graph",
         "commandIdentifier": "run_research_graph",
         "description": "Execute a research run. `execution.mode=async` returns `accepted` and continues in a detached worker process."
       },
       {
+        "command": "resume_research_graph",
         "commandIdentifier": "resume_research_graph",
         "description": "Resume a persisted run from its latest checkpoint or execute the pending run if no checkpoint exists."
       },
       {
+        "command": "stream_run_events",
         "commandIdentifier": "stream_run_events",
         "description": "Read persisted run events with cursor-based polling semantics."
       },
       {
+        "command": "get_run_state",
         "commandIdentifier": "get_run_state",
         "description": "Run-state polling seam for async research. Required field: `run_id`. Currently aliases `get_workspace_state(run_id=...)`."
       },
       {
+        "command": "cancel_run",
         "commandIdentifier": "cancel_run",
         "description": "Abort an accepted/running run and persist lifecycle trace artifacts. Required field: `run_id`."
       },
       {
+        "command": "get_workspace_state",
         "commandIdentifier": "get_workspace_state",
         "description": "Return workspace, run, graph, and budget state with normalized artifact refs."
       },
       {
+        "command": "list_artifacts",
         "commandIdentifier": "list_artifacts",
         "description": "List discoverable artifacts for the workspace, a run, a document, or a collection."
       },
       {
+        "command": "get_artifact",
         "commandIdentifier": "get_artifact",
         "description": "Load one artifact by normalized or legacy ref. Required field: `artifact_path`."
       },
       {
+        "command": "reset_run",
         "commandIdentifier": "reset_run",
         "description": "Clear run-scoped volatile outputs and restart the persisted run state. Required field: `run_id`."
       }

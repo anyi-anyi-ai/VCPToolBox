@@ -18,6 +18,7 @@
     "invocationCommands": [
       {
         "command": "anki_add_note",
+        "commandIdentifier": "anki_add_note",
         "description": "向 Anki 添加一条新笔记。支持指定牌组、模板、字段及标签。",
         "args": [
           {
@@ -44,6 +45,7 @@
       },
       {
         "command": "anki_update_note",
+        "commandIdentifier": "anki_update_note",
         "description": "更新现有笔记的字段内容。",
         "args": [
           {
@@ -60,6 +62,7 @@
       },
       {
         "command": "anki_suspend",
+        "commandIdentifier": "anki_suspend",
         "description": "挂起或取消挂起卡片。",
         "args": [
           {
@@ -76,6 +79,7 @@
       },
       {
         "command": "anki_reschedule",
+        "commandIdentifier": "anki_reschedule",
         "description": "重新调度卡片的复习日期。",
         "args": [
           {

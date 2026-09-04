@@ -1,0 +1,66 @@
+# Obsidian 笔记桥接器 (ObsidianBridge v1.4.0)
+通过官方 CLI (Obsidian.com) 桥接 Obsidian 本地库，支持笔记读写、全文搜索与节点局部写作。
+
+## 1. 基础笔记读取与检索 (read & search)
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」ObsidianBridge「末」,
+command:「始」read「末」,
+file:「始」笔记名称「末」
+<<<[END_TOOL_REQUEST]>>>
+
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」ObsidianBridge「末」,
+command:「始」search_context「末」,
+query:「始」搜索关键词「末」,
+limit:「始」5「末」
+<<<[END_TOOL_REQUEST]>>>
+
+## 2. 笔记创建与追加 (create & append)
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」ObsidianBridge「末」,
+command:「始」create「末」,
+name:「始」新笔记名称「末」,
+folder:「始」文件夹路径「末」,
+content:「始」正文内容\n第二行「末」
+<<<[END_TOOL_REQUEST]>>>
+
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」ObsidianBridge「末」,
+command:「始」append「末」,
+file:「始」笔记名称「末」,
+content:「始」\n追加的新内容「末」
+<<<[END_TOOL_REQUEST]>>>
+
+## 3. 今日每日笔记 (daily_read & daily_append)
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」ObsidianBridge「末」,
+command:「始」daily_append「末」,
+content:「始」\n- 追加到今日日记「末」
+<<<[END_TOOL_REQUEST]>>>
+
+[===vcp_fold:0.5===]
+
+## 4. v1.4.0 节点局部写作模式 (node_*)
+使用中文双间隔号 ··内容·· 标记节点，实现局部精准替换与读写分离（防LaTeX损坏）。
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」ObsidianBridge「末」,
+command:「始」node_create「末」,
+name:「始」带节点的新笔记「末」,
+content:「始」普通引言\n··核心观点段落··\n总结「末」,
+tags:「始」core_view「末」
+<<<[END_TOOL_REQUEST]>>>
+
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」ObsidianBridge「末」,
+command:「始」node_read「末」,
+file:「始」笔记名称「末」,
+mode:「始」tags「末」
+<<<[END_TOOL_REQUEST]>>>
+
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」ObsidianBridge「末」,
+command:「始」node_text_replace「末」,
+file:「始」笔记名称「末」,
+tag:「始」core_view「末」,
+content:「始」更新后的核心观点段落「末」
+<<<[END_TOOL_REQUEST]>>>

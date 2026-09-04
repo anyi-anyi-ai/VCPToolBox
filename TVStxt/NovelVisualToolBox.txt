@@ -1,0 +1,39 @@
+﻿# VCP 小说立绘设计与背景考据工具箱 (NovelVisualToolBox)
+专为小说角色外观立绘概念设计、名场面概念图绘制及硬核科学/历史背景深度考据打造。
+独立于日常正文码字工位，在需要视觉化角色或查阅复杂科学/历史设定时挂载启用。
+
+[===vcp_fold:0.0::desc:小说角色立绘与概念插图生成===]
+
+## 1. 角色设定立绘与名场面插画 (ZImageTurboGen: GenerateImage)
+为小说主要角色生成形象设定卡、面部特征肖像，或为高潮名场面生成氛围插画。
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」ZImageTurboGen「末」,
+command:「始」GenerateImage「末」,
+prompt:「始」A handsome young cyber-monk with glowing cybernetic tattoos, dark futuristic robes, standing on a rainy neon rooftop, dramatic cinematic lighting, photorealistic, 8k「末」
+<<<[END_TOOL_REQUEST]>>>
+
+## 2. 豆包高清图像生成 (DoubaoGen: DoubaoGenerateImage)
+支持多风格高质量概念艺术图生成。
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」DoubaoGen「末」,
+command:「始」DoubaoGenerateImage「末」,
+prompt:「始」A vast sci-fi space station orbiting a ringed gas giant planet, epic scale, concept art, highly detailed「末」
+<<<[END_TOOL_REQUEST]>>>
+
+[===vcp_fold:0.5::desc:硬核科学与历史事实深度考据===]
+
+## 3. 专业级全能学术与背景考据 (TavilySearch)
+针对硬核科幻力学、天体物理、历史冷兵器、古代官职爵位等背景事实进行深度求证，杜绝常识性硬伤。
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」TavilySearch「末」,
+command:「始」TavilySearch「末」,
+query:「始」史瓦西黑洞吸积盘的多普勒红移与光线偏折计算公式「末」,
+search_depth:「始」advanced「末」
+<<<[END_TOOL_REQUEST]>>>
+
+## 4. 垂直领域多路并发检索 (AnySearch)
+适用于同时针对多个不同学科领域进行横向对比考据。
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」AnySearch「末」,
+query:「始」中世纪火炮弹道学原理「末」
+<<<[END_TOOL_REQUEST]>>>

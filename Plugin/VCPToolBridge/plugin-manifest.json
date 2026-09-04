@@ -34,6 +34,7 @@
     "invocationCommands": [
       {
         "command": "GetStatus",
+        "commandIdentifier": "GetStatus",
         "description": "获取桥接器运行状态",
         "example": "{\"command\": \"GetStatus\"}"
       }

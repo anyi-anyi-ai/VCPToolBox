@@ -31,6 +31,7 @@
   "capabilities": {
     "invocationCommands": [
       {
+        "command": "VolcAskEchoSearch",
         "commandIdentifier": "VolcAskEchoSearch",
         "description": "调用此工具使用火山引擎 AskEcho Search Infinity 进行高级网络搜索。能够快速检索网络最新新闻、实时资讯、技术文档等。请在您的回复中，使用以下精确格式来请求搜索，确保所有参数值都用「始」和「末」准确包裹：\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」VolcAskEchoSearch「末」,\nquery:「始」(必需) 搜索的关键词或问题「末」\n<<<[END_TOOL_REQUEST]>>>",
         "example": "```text\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」VolcAskEchoSearch「末」,\nquery:「始」火山引擎 MCP 接入指南与最新功能「末」\n<<<[END_TOOL_REQUEST]>>>\n```"

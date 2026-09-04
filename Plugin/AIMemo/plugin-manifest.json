@@ -15,6 +15,7 @@
   "capabilities": {
     "invocationCommands": [
       {
+        "command": "SearchHistory",
         "commandIdentifier": "SearchHistory",
         "description": "按关键词检索历史会话。参数：keyword(必需), window_size(可选), maid(可选), userDataPath(可选), currentTopicId(可选)。"
       }

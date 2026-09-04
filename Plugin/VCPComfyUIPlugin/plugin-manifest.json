@@ -53,51 +53,61 @@
     "invocationCommands": [
       {
         "command": "generate_image",
+        "commandIdentifier": "generate_image",
         "description": "Generates an image using ComfyUI. Provide either 'workflow_id' to use a pre-existing workflow file or 'workflow_json' to use a dynamically generated one. Optional parameters: prompt, negative_prompt, model_name, seed, steps, cfg, loras (array of {lora_name, strength}), auto_match_lora (boolean).",
         "example": "<<<[TOOL_REQUEST]>>>\\ntool_name:「始」VCPComfyUIPlugin「末」,\\nworkflow_id:「始」basic_txt2img.json「末」,\\nprompt:「始」a beautiful landscape painting「末」,\\nloras:「始」[{\"lora_name\": \"detail_tweaker.safetensors\", \"strength\": 0.8}]「末」,\\nseed:「始」12345「末」\\n<<<[END_TOOL_REQUEST]>>>"
       },
       {
         "command": "list_workflows",
+        "commandIdentifier": "list_workflows",
         "description": "Lists all available ComfyUI workflow files found in the plugin's configured workflows directory.",
         "example": "<<<[TOOL_REQUEST]>>>\\ntool_name:「始」VCPComfyUIPlugin「末」,\\ncommand:「始」list_workflows「末」\\n<<<[END_TOOL_REQUEST]>>>"
       },
       {
         "command": "discover_environment",
+        "commandIdentifier": "discover_environment",
         "description": "Discovers all available resources from the ComfyUI instance, including checkpoints, LoRAs, samplers, schedulers, VAEs, and available nodes.",
         "example": "<<<[TOOL_REQUEST]>>>\\ntool_name:「始」VCPComfyUIPlugin「末」,\\ncommand:「始」discover_environment「末」\\n<<<[END_TOOL_REQUEST]>>>"
       },
       {
         "command": "generate_workflow",
+        "commandIdentifier": "generate_workflow",
         "description": "Generates a ComfyUI workflow JSON from an AI-provided abstract description. Parameters: ai_workflow_description (string, required).",
         "example": "<<<[TOOL_REQUEST]>>>\\ntool_name:「始」VCPComfyUIPlugin「末」,\\ncommand:「始」generate_workflow「末」,\\nai_workflow_description:「始」{\\\"nodes\\\":[{\\\"ai_node_id\\\":\\\"loader\\\",\\\"class_type\\\":\\\"CheckpointLoaderSimple\\\",\\\"inputs\\\":{\\\"ckpt_name\\\":\\\"v1-5-pruned-emaonly.safetensors\\\"}}]}「末」\\n<<<[END_TOOL_REQUEST]>>>"
       },
       {
         "command": "list_loras",
+        "commandIdentifier": "list_loras",
         "description": "Lists all registered LoRAs with their metadata. Parameters: refresh (boolean, scan ComfyUI for new LoRAs), auto_register (boolean, automatically infer metadata for new LoRAs), use_civitai (boolean, fetch metadata from Civitai API).",
         "example": "<<<[TOOL_REQUEST]>>>\\ntool_name:「始」VCPComfyUIPlugin「末」,\\ncommand:「始」list_loras「末」,\\nrefresh:「始」true「末」,\\nauto_register:「始」true「末」\\n<<<[END_TOOL_REQUEST]>>>"
       },
       {
         "command": "get_lora_info",
+        "commandIdentifier": "get_lora_info",
         "description": "Gets detailed information about a specific LoRA including description, tags, trigger words, and usage statistics.",
         "example": "<<<[TOOL_REQUEST]>>>\\ntool_name:「始」VCPComfyUIPlugin「末」,\\ncommand:「始」get_lora_info「末」,\\nlora_name:「始」detail_tweaker.safetensors「末」\\n<<<[END_TOOL_REQUEST]>>>"
       },
       {
         "command": "register_lora",
+        "commandIdentifier": "register_lora",
         "description": "Manually registers or updates a LoRA with metadata. Parameters: lora_name (required), description, tags (array), trigger_words (array), strength_range, default_strength, compatible_styles (array).",
         "example": "<<<[TOOL_REQUEST]>>>\\ntool_name:「始」VCPComfyUIPlugin「末」,\\ncommand:「始」register_lora「末」,\\nlora_name:「始」anime_style.safetensors「末」,\\ndescription:「始」Anime style LoRA for generating anime-like images「末」,\\ntags:「始」[\"anime\", \"style\", \"illustration\"]「末」,\\ntrigger_words:「始」[\"anime style\", \"anime art\"]「末」,\\ndefault_strength:「始」0.8「末」\\n<<<[END_TOOL_REQUEST]>>>"
       },
       {
         "command": "auto_register_all_loras",
+        "commandIdentifier": "auto_register_all_loras",
         "description": "Automatically registers ALL LoRAs from ComfyUI with inferred metadata. Parameters: use_civitai (boolean, fetch from Civitai API, default true), force_update (boolean, update existing entries, default false). This command scans all LoRAs and infers metadata from filename patterns and Civitai.",
         "example": "<<<[TOOL_REQUEST]>>>\\ntool_name:「始」VCPComfyUIPlugin「末」,\\ncommand:「始」auto_register_all_loras「末」,\\nuse_civitai:「始」true「末」,\\nforce_update:「始」false「末」\\n<<<[END_TOOL_REQUEST]>>>"
       },
       {
         "command": "match_loras",
+        "commandIdentifier": "match_loras",
         "description": "Intelligently matches LoRAs based on context, prompt, and style hints. Returns ranked list of matching LoRAs with recommended strengths.",
         "example": "<<<[TOOL_REQUEST]>>>\\ntool_name:「始」VCPComfyUIPlugin「末」,\\ncommand:「始」match_loras「末」,\\nprompt:「始」a beautiful anime girl with long hair「末」,\\ncontext:「始」user wants anime style illustration「末」,\\nmax_results:「始」3「末」\\n<<<[END_TOOL_REQUEST]>>>"
       },
       {
         "command": "scan_local_loras",
+        "commandIdentifier": "scan_local_loras",
         "description": "Scans local LoRA directory for .safetensors files and reads embedded metadata. This command directly reads LoRA files from disk, extracting training parameters, tags, and trigger words from the safetensors header. Parameters: lora_dir (optional, uses COMFYUI_LORA_PATH config if not specified).",
         "example": "<<<[TOOL_REQUEST]>>>\\ntool_name:「始」VCPComfyUIPlugin「末」,\\ncommand:「始」scan_local_loras「末」\\n<<<[END_TOOL_REQUEST]>>>"
       }

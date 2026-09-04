@@ -18,6 +18,7 @@
     "invocationCommands": [
       {
         "command": "anki_search_cards",
+        "commandIdentifier": "anki_search_cards",
         "description": "使用 Anki 查询语法搜索卡片。例如：'deck:默认 is:due' 查找到期卡片。",
         "args": [
           {
@@ -29,11 +30,13 @@
       },
       {
         "command": "anki_get_decks",
+        "commandIdentifier": "anki_get_decks",
         "description": "获取所有牌组列表及其学习统计信息（新卡、到期卡等）。",
         "args": []
       },
       {
         "command": "anki_get_models",
+        "commandIdentifier": "anki_get_models",
         "description": "获取所有笔记类型（Model）及其字段结构。",
         "args": []
       }

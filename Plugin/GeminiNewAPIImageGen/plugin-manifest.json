@@ -1,10 +1,10 @@
 {
   "manifestVersion": "1.0.0",
   "name": "GeminiNewAPIImageGen",
-  "displayName": "Gemini NewAPI 图像生成与编辑",
+  "displayName": "Gemini 图像生成(NewAPI通道)",
   "version": "1.0.0",
-  "description": "通过 NewAPI 中转站调用 Gemini 图像模型进行图片生成与编辑。",
-  "author": "Nova",
+  "description": "通过 NewAPI 聚合中转站调用 Gemini 图像模型进行高级图像生成与编辑。",
+  "author": "VCP Community",
   "pluginType": "synchronous",
   "entryPoint": {
     "type": "nodejs",
@@ -23,6 +23,23 @@
   "capabilities": {
     "invocationCommands": [
       {
-        "commandIdentifier": "GeminiNewAPIGenerateImage",
+        "command": "generate",
+        "commandIdentifier": "generate",
         "description": "通过 NewAPI 中转站调用 Gemini 图像模型生成一张新图片。",
-        "example": "```text\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」GeminiNewAPIImageGen
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」GeminiNewAPIImageGen「末」,\ncommand:「始」generate「末」,\nprompt:「始」A futuristic cyberpunk city with neon lights「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "edit",
+        "commandIdentifier": "edit",
+        "description": "通过 NewAPI 中转站调用 Gemini 图像模型编辑已有图片。",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」GeminiNewAPIImageGen「末」,\ncommand:「始」edit「末」,\nprompt:「始」Add a flying spaceship in the sky「末」,\nimage_url:「始」https://example.com/image.png「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "check",
+        "commandIdentifier": "check",
+        "description": "检查 NewAPI 图像生成服务的配置与连通性。",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」GeminiNewAPIImageGen「末」,\ncommand:「始」check「末」\n<<<[END_TOOL_REQUEST]>>>"
+      }
+    ]
+  }
+}
