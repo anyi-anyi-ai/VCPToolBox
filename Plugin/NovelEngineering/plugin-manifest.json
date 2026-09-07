@@ -85,6 +85,36 @@
       "type": "boolean",
       "default": false,
       "description": "是否输出详细调试日志至 stderr"
+    },
+    "EMBEDDING_BASE_URL": {
+      "type": "string",
+      "default": "https://api.openai.com/v1",
+      "description": "OpenAI 兼容的 Embedding 接口基地址"
+    },
+    "EMBEDDING_API_KEY": {
+      "type": "string",
+      "default": "",
+      "description": "Embedding API 鉴权密钥（未配置时自动启用 BM25 关键词兜底）"
+    },
+    "EMBEDDING_MODEL": {
+      "type": "string",
+      "default": "text-embedding-3-small",
+      "description": "使用的嵌入模型名称（如 text-embedding-3-small, BAAI/bge-m3）"
+    },
+    "EMBEDDING_DIMENSIONS": {
+      "type": "integer",
+      "default": 1536,
+      "description": "向量期望维度（在写入时进行严格一致性断言校验）"
+    },
+    "SUMMARY_REL_DIR": {
+      "type": "string",
+      "default": "00_总览与索引",
+      "description": "世界树根目录下的定位概览文件相对目录"
+    },
+    "VECTOR_STORE_DIR": {
+      "type": "string",
+      "default": "data/vector_store",
+      "description": "纯 JS 本地向量索引数据存储目录"
     }
   },
   "capabilities": {
@@ -322,6 +352,132 @@
         "commandIdentifier": "EvaluateDebtHealth",
         "description": "功能: (Phase 5) 评估故事叙事债务健康度与追读节奏诊断，检测逾期债务 (ANOM_DEBT_OVERDUE)、微兑现干涸 (ANOM_PAYOFF_DROUGHT) 与钩子类型单一化 (ANOM_HOOK_MONOTONY)，输出五级健康评级 ('A'/'B'/'C'/'D'/'F')、0-100 健康得分、结构化指标与针对性创作建议。\n参数:\n- `currentChapter` (整数, 可选, 默认当前最新章节): 评估章节进度。\n- `projectId` (字符串, 可选, 默认 'default'): 项目标识符。\n- `droughtThreshold` (整数, 可选, 默认 5): 兑现干涸判定章节数阈值。\n- `monotonyThreshold` (数值, 可选, 默认 0.60): 钩子单一化判定比例阈值。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」EvaluateDebtHealth「末」,\ncurrentChapter:「始」10「末」\n<<<[END_TOOL_REQUEST]>>>",
         "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」EvaluateDebtHealth「末」,\ncurrentChapter:「始」10「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "SearchWorldTree",
+        "commandIdentifier": "SearchWorldTree",
+        "description": "功能: [首选设定检索] 对 Obsidian 世界树设定库执行两阶段层级语义检索（Summary-to-Detail）。第一阶段通过浓缩概览向量召回，第二阶段按 heading 和 line range 精准切片原件正文（受 charLimit 截断保护），杜绝盲目读取全文件。支持 BM25 自动兜底与源文件变更失效 (STALE) 检测。\n参数:\n- `query` (字符串, 必填): 自然语言检索词或设定问题（如 '浮空城的能源核心公理'、'艾莉亚的能力与背景'）。\n- `topK` (整数, 可选, 默认 3): 召回的最大条目数。\n- `fetchDetail` (布尔值, 可选, 默认 true): 是否一步到位提取对应原件的精准章节段落。\n- `category` (字符串, 可选): 分类过滤（'character', 'planet', 'technology', 'organization', 'lore'）。\n- `canonOnly` (布尔值, 可选, 默认 false): 是否严格只返回核心正史 (canon_level>=2)。\n- `charLimit` (整数, 可选, 默认 3000): 单条原件切片字符截断上限。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」SearchWorldTree「末」,\nquery:「始」反重力引擎的运作公理「末」,\ntopK:「始」3「末」,\nfetchDetail:「始」true「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」SearchWorldTree「末」,\nquery:「始」主角的核心武器设定「末」,\nfetchDetail:「始」true「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "BuildSummaryIndex",
+        "commandIdentifier": "BuildSummaryIndex",
+        "description": "功能: 扫描世界树 00_总览与索引/ 目录，通过 mtime + SHA-256 双重增量检测为概览文件生成或更新本地向量索引。自动追踪对应源文件哈希，若源文件已变更自动标记对应概览为 STALE。\n参数:\n- `vaultPath` (字符串, 可选): 世界树根目录（缺省使用 config.env 中配置）。\n- `summaryRelDir` (字符串, 可选, 默认 '00_总览与索引'): 概览目录相对路径。\n- `forceReindex` (布尔值, 可选, 默认 false): 是否强制全量重新调用 Embedding 接口更新。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」BuildSummaryIndex「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」BuildSummaryIndex「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "GenerateSummarySkeleton",
+        "commandIdentifier": "GenerateSummarySkeleton",
+        "description": "功能: 自动扫描世界树中的设定文件，提取 Frontmatter、标题结构与首段摘要，在 00_总览与索引/ 下生成初始定位型概览文件骨架。为写操作，强制要求安全令牌。\n参数:\n- `confirmationToken` (字符串, 必填): 必须输入 'CONFIRM_GENERATE_SKELETON'。\n- `targetCategory` (字符串, 可选): 指定提取分类（如 'character'）。\n- `forceOverwrite` (布尔值, 可选, 默认 false): 是否强制覆盖已存在概览（默认保留用户已润色内容）。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」GenerateSummarySkeleton「末」,\nconfirmationToken:「始」CONFIRM_GENERATE_SKELETON「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」GenerateSummarySkeleton「末」,\nconfirmationToken:「始」CONFIRM_GENERATE_SKELETON「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "PlanSceneBeats",
+        "commandIdentifier": "PlanSceneBeats",
+        "description": "功能: (Phase 6) 为指定章节编排规划场景节拍 (Scene Beats)，绑定核心戏剧目标、冲突、登场角色、地点、世界公理与叙事债务动作。初始状态为 draft。\n参数:\n- `chapterId` (字符串/整数, 必填): 目标章节标识 (如 'CH001' 或 '1')。\n- `beats` (对象数组, 必填): 节拍清单，每项必须包含 `sceneGoal`，可选 `beatId`, `title`, `conflict`, `characters`, `location`, `worldRules`, `debtAction`, `emotionalTone`, `inputState`, `expectedOutput`。\n- `overwrite` (布尔值, 可选, 默认 false): 是否清空覆盖当前章节已有节拍。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」PlanSceneBeats「末」,\nchapterId:「始」CH001「末」,\nbeats:「始」[{\"title\":\"遭遇战\",\"sceneGoal\":\"主角探明敌方先遣队意图\"}]「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」PlanSceneBeats「末」,\nchapterId:「始」CH001「末」,\nbeats:「始」[{\"title\":\"遭遇战\",\"sceneGoal\":\"主角探明敌方先遣队意图\"}]「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "GetSceneBeats",
+        "commandIdentifier": "GetSceneBeats",
+        "description": "功能: (Phase 6) 获取指定章节按 beat_order 升序排列的全部场景节拍，返回各状态节拍统计与是否已就绪章节正文批处理起草 (allConfirmed)。\n参数:\n- `chapterId` (字符串/整数, 必填): 目标章节标识。\n- `status` (字符串, 可选, 默认 'all'): 状态过滤 ('all', 'draft', 'confirmed', 'expanded', 'revised')。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」GetSceneBeats「末」,\nchapterId:「始」CH001「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」GetSceneBeats「末」,\nchapterId:「始」CH001「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "UpdateSceneBeat",
+        "commandIdentifier": "UpdateSceneBeat",
+        "description": "功能: (Phase 6) 增量修改单个场景节拍属性（标题、目标、公理、角色、债务动作等），自动递增版本号 (version)。若结构性大改可标记 resetStatus 为 true 退回 draft。\n参数:\n- `beatId` (字符串, 必填): 目标节拍唯一标识 (如 'BEAT_CH001_01')。\n- `updates` (对象, 必填): 更新字段映射对象。\n- `resetStatus` (布尔值, 可选, 默认 false): 是否将节拍状态重置回 draft 重新进入待确认状态。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」UpdateSceneBeat「末」,\nbeatId:「始」BEAT_CH001_01「末」,\nupdates:「始」{\"sceneGoal\":\"修改后的核心目标\"}「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」UpdateSceneBeat「末」,\nbeatId:「始」BEAT_CH001_01「末」,\nupdates:「始」{\"sceneGoal\":\"修改后的核心目标\"}「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "ReorderSceneBeats",
+        "commandIdentifier": "ReorderSceneBeats",
+        "description": "功能: (Phase 6) 原子化重排章节内全部节拍的顺序，内部使用两阶段负序事务 (Two-Phase Transaction) 杜绝 SQLite UNIQUE 约束冲突，并递增各节拍版本号。\n参数:\n- `chapterId` (字符串/整数, 必填): 目标章节标识。\n- `orderedBeatIds` (字符串数组, 必填): 包含本章节全部节拍 ID 的期望顺序清单。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」ReorderSceneBeats「末」,\nchapterId:「始」CH001「末」,\norderedBeatIds:「始」[\"BEAT_CH001_02\",\"BEAT_CH001_01\"]「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」ReorderSceneBeats「末」,\nchapterId:「始」CH001「末」,\norderedBeatIds:「始」[\"BEAT_CH001_02\",\"BEAT_CH001_01\"]「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "ConfirmSceneBeats",
+        "commandIdentifier": "ConfirmSceneBeats",
+        "description": "功能: (Phase 6) 校验并锁定场景节拍，将其状态从 draft 跃迁为 confirmed。若章节内存在任何 draft 节拍，后续章节起草 (ComposeChapterDraft) 将触发硬性质量闸门拦截。\n参数:\n- `chapterId` (字符串/整数, 必填): 目标章节标识。\n- `beatIds` (字符串数组, 可选): 指定确认的节拍 ID 清单（缺省时确认当前章节内所有 draft 节拍）。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」ConfirmSceneBeats「末」,\nchapterId:「始」CH001「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」ConfirmSceneBeats「末」,\nchapterId:「始」CH001「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "ExpandSceneBeat",
+        "commandIdentifier": "ExpandSceneBeat",
+        "description": "功能: (Phase 6 M2) 单节拍交互式起草扩写，针对已确认 (confirmed) 节拍生成 600-800 字正文，注入前序节拍上下文与连续性约束，并严格包裹 Markdown 隐形边界信封 (<!-- BEAT_START ... --> ... <!-- BEAT_END ... -->)。节拍状态跃迁为 expanded。\n参数:\n- `beatId` (字符串, 必填): 目标节拍标识 (如 'BEAT_CH001_01')。\n- `chapterId` (字符串/整数, 可选): 所属章节标识。\n- `styleProfile` (字符串, 可选, 默认 'standard'): 文风设定 ('standard', 'hard_sci_fi_gritty' 等)。\n- `customDirectives` (字符串, 可选): 定向扩写指令。\n- `targetWordCount` (整数, 可选, 默认 700): 目标字数 (600-800)。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」ExpandSceneBeat「末」,\nbeatId:「始」BEAT_CH001_01「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」ExpandSceneBeat「末」,\nbeatId:「始」BEAT_CH001_01「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "ReviseSceneBeat",
+        "commandIdentifier": "ReviseSceneBeat",
+        "description": "功能: (Phase 6 M2) 节拍级精准作者反馈修订，在保留 Markdown 边界信封的前提下针对节奏、动作或感官进行定向改写，或直接接收作者修订文本。更新节拍状态为 revised 并自增修订版本号。\n参数:\n- `beatId` (字符串, 必填): 目标节拍标识。\n- `authorFeedback` (字符串, 可选): 作者自然语言修改意见。\n- `newContent` (字符串, 可选): 直接替换的修订正文。\n- `focusAreas` (字符串数组, 可选): 重点优化领域 (如 ['pacing', 'combat_tension'])。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」ReviseSceneBeat「末」,\nbeatId:「始」BEAT_CH001_01「末」,\nauthorFeedback:「始」强化环境冷雨的感官描写与紧张感「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」ReviseSceneBeat「末」,\nbeatId:「始」BEAT_CH001_01「末」,\nauthorFeedback:「始」强化环境冷雨的感官描写与紧张感「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "ComposeChapterDraft",
+        "commandIdentifier": "ComposeChapterDraft",
+        "description": "功能: (Phase 6 M2) 章节级批处理起草拼装，串联章节内全部已确认/已扩写节拍，生成约 3000 字完整章节草稿。硬性质量闸门拦截：若章节内有任何 draft 节拍立即拒绝 (COMPOSITION_BLOCKED_UNCONFIRMED_BEATS)。在 draft_versions 表持久化草稿版本快照。\n参数:\n- `chapterId` (字符串/整数, 必填): 目标章节标识 (如 'CH001')。\n- `title` (字符串, 可选): 章节标题。\n- `styleProfile` (字符串, 可选, 默认 'standard'): 整体文风设定。\n- `saveToDisk` (布尔值, 可选, 默认 false): 是否将草稿同步写入磁盘。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」ComposeChapterDraft「末」,\nchapterId:「始」CH001「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」ComposeChapterDraft「末」,\nchapterId:「始」CH001「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "PolishSceneSnippet",
+        "commandIdentifier": "PolishSceneSnippet",
+        "description": "功能: (Phase 6 M2) 局部微观外科手术级润色，支持感官沉浸 (sensory)、战斗张力 (combat_tension) 与对话潜台词 (dialogue_subtext) 强化。严格受控于 4 大刚性不变量 (正史事实实体、角色物理伤情、时间因果时序、核心叙事胜败结果)，违背不变量即刻硬性拦截 (POLISH_INVARIANT_VIOLATION)。\n参数:\n- `snippet` (字符串, 必填): 待润色片段或带修改对照的文本。\n- `polishType` (字符串, 必填): 润色类型 ('sensory', 'combat_tension', 'dialogue_subtext')。\n- `intensity` (字符串, 可选, 默认 'moderate'): 强化强度 ('subtle', 'moderate', 'high')。\n- `contextEntities` (对象数组, 可选): 登场实体及伤情上下文。\n- `expectedOutcome` (字符串, 可选): 预期胜败结局锚点。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」PolishSceneSnippet「末」,\nsnippet:「始」沈澈握紧枪托，在雨中注视着前方的巡逻机。「末」,\npolishType:「始」sensory「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」PolishSceneSnippet「末」,\nsnippet:「始」沈澈握紧枪托，在雨中注视着前方的巡逻机。「末」,\npolishType:「始」sensory「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "EvaluateDraftIntegrity",
+        "commandIdentifier": "EvaluateDraftIntegrity",
+        "description": "功能: (Phase 6 M3) 四维多维质检门禁评估，并发或顺序执行 4 大 Guard（正史泄露/废弃设定引用、角色 OOC/性格漂移、世界公理与资源冲突、叙事结构断裂），返回结构化诊断、行号定位、严重度分类与阻断标识 (canSettle)。\n参数:\n- `content` (字符串, 可选): 草稿正文。\n- `draftVersionId` (字符串, 可选): 关联草稿版本快照 ID。\n- `chapterId` (字符串/整数, 可选): 所属章节标识。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」EvaluateDraftIntegrity「末」,\nchapterId:「始」CH001「末」,\ncontent:「始」草稿正文内容...「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」EvaluateDraftIntegrity「末」,\nchapterId:「始」CH001「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "CreateRevisionTasks",
+        "commandIdentifier": "CreateRevisionTasks",
+        "description": "功能: (Phase 6 M3) 将质量门禁检测出的问题转化为结构化、可追踪的作者修订任务清单，包含行号范围、优先级、错误代码与修改建议。\n参数:\n- `draftVersionId` (字符串, 必填): 目标草稿版本 ID。\n- `issues` (对象数组, 必填): 质检问题清单。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」CreateRevisionTasks「末」,\ndraftVersionId:「始」DV001「末」,\nissues:「始」[...]「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」CreateRevisionTasks「末」,\ndraftVersionId:「始」DV001「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "ExtractStateMutations",
+        "commandIdentifier": "ExtractStateMutations",
+        "description": "功能: (Phase 6 M4) 从章节正文提取实体状态漂移（角色物理伤残/健康、好感度与阵营声望、道具与装备流转、世界规则），生成包含完整 pre-mutation 镜像 (old_value_json) 的候选增量暂存记录。\n参数:\n- `chapterId` (字符串/整数, 必填): 目标章节标识。\n- `draftVersionId` (字符串, 必填): 目标草稿版本 ID。\n- `content` (字符串, 可选): 正文文本（缺省从 draftVersion 读取）。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」ExtractStateMutations「末」,\nchapterId:「始」CH001「末」,\ndraftVersionId:「始」DV001「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」ExtractStateMutations「末」,\nchapterId:「始」CH001「末」,\ndraftVersionId:「始」DV001「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "ReviewStateMutations",
+        "commandIdentifier": "ReviewStateMutations",
+        "description": "功能: (Phase 6 M4) 状态演变提议审查与差异预览，支持查看正文引用行号、候选变更比对，并由作者或系统进行单项或批量批准/驳回。\n参数:\n- `draftVersionId` (字符串, 必填): 目标草稿版本 ID。\n- `action` (字符串, 可选, 默认 'query'): 操作类型 ('query', 'approve', 'reject')。\n- `mutationIds` (字符串数组, 可选): 指定批准/驳回的提议 ID 清单。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」ReviewStateMutations「末」,\ndraftVersionId:「始」DV001「末」,\naction:「始」query「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」ReviewStateMutations「末」,\ndraftVersionId:「始」DV001「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "ApplyStateMutations",
+        "commandIdentifier": "ApplyStateMutations",
+        "description": "功能: (Phase 6 M4) 在 SQLite 单一原子事务中固化状态演变。强制校验安全确认令牌 (CONFIRM_APPLY_MUTATIONS)，硬性阻断存在 blocker 质检未决项的草稿，自动记录审计日志与正史溯源，且严格支持幂等重试。\n参数:\n- `draftVersionId` (字符串, 必填): 目标草稿版本 ID。\n- `confirmationToken` (字符串, 必填): 必须精确为 'CONFIRM_APPLY_MUTATIONS'。\n- `chapterId` (字符串/整数, 可选): 所属章节标识。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」ApplyStateMutations「末」,\ndraftVersionId:「始」DV001「末」,\nconfirmationToken:「始」CONFIRM_APPLY_MUTATIONS「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」ApplyStateMutations「末」,\ndraftVersionId:「始」DV001「末」,\nconfirmationToken:「始」CONFIRM_APPLY_MUTATIONS「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "RollbackStateMutations",
+        "commandIdentifier": "RollbackStateMutations",
+        "description": "功能: (Phase 6 M4) 状态演变无损版本回滚，通过 old_value_json 镜像在单一原子事务中按 LIFO 倒序严格恢复实体属性、关系数值并冻结关联溯源记录。强制校验安全令牌 (CONFIRM_ROLLBACK_MUTATIONS)。\n参数:\n- `draftVersionId` (字符串, 必填): 目标草稿版本 ID。\n- `confirmationToken` (字符串, 必填): 必须精确为 'CONFIRM_ROLLBACK_MUTATIONS'。\n- `chapterId` (字符串/整数, 可选): 章节标识。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」RollbackStateMutations「末」,\ndraftVersionId:「始」DV001「末」,\nconfirmationToken:「始」CONFIRM_ROLLBACK_MUTATIONS「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」RollbackStateMutations「末」,\ndraftVersionId:「始」DV001「末」,\nconfirmationToken:「始」CONFIRM_ROLLBACK_MUTATIONS「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "GenerateLorePatch",
+        "commandIdentifier": "GenerateLorePatch",
+        "description": "功能: (Phase 6 M4) 针对已固化的状态演变生成非破坏性 Obsidian Vault Markdown 差异补丁 (Diff Patch)，标注章节来源与引用行号，绝对不覆写作者未经确认的手写笔记。\n参数:\n- `draftVersionId` (字符串, 必填): 目标草稿版本 ID。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」GenerateLorePatch「末」,\ndraftVersionId:「始」DV001「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」GenerateLorePatch「末」,\ndraftVersionId:「始」DV001「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "SyncLorePatch",
+        "commandIdentifier": "SyncLorePatch",
+        "description": "功能: (Phase 6 M4) 将生成的设定补丁安全回写至 Obsidian Vault，受 PathGuard 沙箱保护，且在语法错误时具备自动快照恢复与故障关闭 (Fail-Closed) 保护。强制校验安全令牌 (CONFIRM_SYNC_LORE_PATCH)。\n参数:\n- `draftVersionId` (字符串, 必填): 目标草稿版本 ID。\n- `confirmationToken` (字符串, 必填): 必须精确为 'CONFIRM_SYNC_LORE_PATCH'。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」SyncLorePatch「末」,\ndraftVersionId:「始」DV001「末」,\nconfirmationToken:「始」CONFIRM_SYNC_LORE_PATCH「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」SyncLorePatch「末」,\ndraftVersionId:「始」DV001「末」,\nconfirmationToken:「始」CONFIRM_SYNC_LORE_PATCH「末」\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "BuildBeatContext",
+        "commandIdentifier": "BuildBeatContext",
+        "description": "功能: (Phase 6 M5) 节拍级微观上下文毫秒级编译，严格组装 6 级优先级上下文：P1(节拍目标, 绝对豁免裁剪) → P2(活动角色状态) → P3(局部公理) → P4(关联叙事债务) → P5(前情摘要) → P6(权威正史事实)。在超出 Token 预算时自动按 P6->P2 级联裁剪。\n参数:\n- `beatId` (字符串, 必填): 目标节拍唯一标识。\n- `maxTokens` (整数, 可选, 默认 6000): Token 预算上限。\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」BuildBeatContext「末」,\nbeatId:「始」BEAT_CH001_01「末」,\nmaxTokens:「始」6000「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NovelEngineering「末」,\ncommand:「始」BuildBeatContext「末」,\nbeatId:「始」BEAT_CH001_01「末」\n<<<[END_TOOL_REQUEST]>>>"
       }
     ]
   }

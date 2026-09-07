@@ -1,13 +1,18 @@
 /**
  * @file m2_challenger1_stress.test.js
- * @description Adversarial stress tests for Phase 4 Milestone 2:
- *  - 11-level reverse budget cascade under extreme token boundaries (-10, 0, 1, 50, 1000, 1000000, NaN, Infinity)
- *  - Hard invariant: Priority 1 (AuthorDirectives) is NEVER dropped even at maxTokens = 1
- *  - Hard constraint: Priority 9 (Conflicts/Unresolved) attaches structured omission metadata and warnings
- *  - Anti-override security attacks (poisoning canon facts, overriding world rules, spoofing authority levels, prototype pollution)
- *  - Multilingual CJK/Latin/Emoji token estimation stress and edge cases
- *  - Lineage trace integrity and schema invariants
- * @module test/unit/m2_challenger1_stress
+ * @description Empirical Challenger 1 Adversarial Stress Test Suite for Milestone 2:
+ * Dual-Mode Steered Drafting & Surgical Polishing (R2).
+ *
+ * Covers:
+ *   1. Boundary Envelope Edge Cases (Malformed, Unclosed, Nested, Missing Attributes, Duplicate IDs)
+ *   2. Composition Gating Bypass Resistance (Mixed draft+confirmed, all draft, empty, adversarial bypass flags)
+ *   3. Polishing Invariant 1: Canon Facts & Entities (Characters, Locations, Directives)
+ *   4. Polishing Invariant 2: Physical Injury & State (Fracture healing, Amputation, Exhaustion/Fatigue)
+ *   5. Polishing Invariant 3: Timeline Causality & Order (Explosion/collapse sequence, Strike vs Death sequence)
+ *   6. Polishing Invariant 4: Key Narrative Outcomes (Defeat to Victory, Retreat to Conquest)
+ *   7. Interactive Step-by-Step Gating & State Progression
+ *
+ * @module test/unit/m2_challenger1_stress.test
  * @license MIT
  */
 
@@ -15,492 +20,681 @@
 
 const { describe, it, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert/strict');
-const crypto = require('crypto');
+const path = require('node:path');
+const fs = require('node:fs');
+const os = require('node:os');
 
 const DatabaseManager = require('../../src/db/DatabaseManager');
-const VCPContextBuilder = require('../../src/collaboration/VCPContextBuilder');
-const ContextBudgetEngine = require('../../src/collaboration/ContextBudgetEngine');
-const TraceManager = require('../../src/collaboration/TraceManager');
-const { CollaborationError } = require('../../src/errors');
+const { PathGuard } = require('../../src/security/PathGuard');
+const { CommandDispatcher } = require('../../src/commands/CommandDispatcher');
+const BeatCommands = require('../../src/commands/BeatCommands');
+const DraftingCommands = require('../../src/commands/DraftingCommands');
+const { BeatEnvelope, BeatExpander, calculateWordCount } = require('../../src/drafting/BeatExpander');
+const { ChapterComposer } = require('../../src/drafting/ChapterComposer');
+const { SnippetPolisher } = require('../../src/drafting/SnippetPolisher');
+const { NovelError } = require('../../src/errors');
 
-describe('Phase 4 Milestone 2 — Challenger 1 Adversarial Stress Test Suite', () => {
+function createTestSandbox() {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vcp_m2_challenger1_'));
+  const vaultDir = path.join(tempDir, 'WorldTree');
+  const sandboxDir = path.join(tempDir, 'Sandbox');
+
+  fs.mkdirSync(vaultDir, { recursive: true });
+  fs.mkdirSync(sandboxDir, { recursive: true });
+  fs.mkdirSync(path.join(sandboxDir, 'data'), { recursive: true });
+
+  const pathGuard = new PathGuard({
+    pluginRoot: sandboxDir,
+    vaultRoot: vaultDir
+  });
+
+  const dbPath = path.join(sandboxDir, 'data', 'novel_challenger_m2.db');
+  const dbManager = DatabaseManager.initDatabase(dbPath, { pathGuard });
+
+  const dispatcher = new CommandDispatcher({
+    basePath: sandboxDir,
+    pathGuard,
+    dbManager,
+    dbPath
+  });
+
+  return {
+    tempDir,
+    vaultDir,
+    sandboxDir,
+    pathGuard,
+    dbManager,
+    dbPath,
+    dispatcher,
+    cleanup: () => {
+      if (dbManager && dbManager.isOpen()) {
+        dbManager.close();
+      }
+      if (fs.existsSync(tempDir)) {
+        try {
+          fs.rmSync(tempDir, { recursive: true, force: true });
+        } catch (_) {}
+      }
+    }
+  };
+}
+
+describe('M2 Challenger 1: Adversarial Stress Test Suite', () => {
+  let sandbox;
   let dbManager;
-  let contextBuilder;
-  let traceManager;
+  let dispatcher;
 
   beforeEach(() => {
-    dbManager = new DatabaseManager(':memory:');
-    traceManager = new TraceManager(dbManager);
-    contextBuilder = new VCPContextBuilder(dbManager, { traceManager });
+    sandbox = createTestSandbox();
+    dbManager = sandbox.dbManager;
+    dispatcher = sandbox.dispatcher;
   });
 
   afterEach(() => {
-    if (dbManager && dbManager.isOpen()) {
-      dbManager.close();
-    }
+    sandbox.cleanup();
   });
 
   // =========================================================================
-  // SECTION 1: 11-Level Reverse Budget Cascade & Extreme Boundaries
+  // Section 1: Boundary Envelope Edge Cases & Stress
   // =========================================================================
-  describe('1. 11-Level Reverse Budget Cascade & Extreme Token Boundaries', () => {
-    it('CASCADE-01: Full 11-level cascade drops items in exact reverse priority order (11 -> 2)', () => {
-      // Construct a dense payload containing items across all 11 priority levels
-      const densePayload = {
-        authorDirectives: [
-          { directive: 'P1: 作者核心写作指令，绝对不可删除', priority: 1 }
-        ],
-        canonFacts: [
-          { canonicalName: 'P2: 全局硬规则', category: 'world_rule', ruleScope: 'global', priority: 2, content: '物理硬规则公理' },
-          { canonicalName: 'P2b: 区域局部规则', category: 'world_rule', ruleScope: 'scoped', priority: 2, content: '局部引力异常'.repeat(20) },
-          { title: 'P3: 前序篇章事实', category: 'chapter', isCurrentChapter: false, priority: 3, content: '第1章历史剧情'.repeat(20) },
-          { canonicalName: 'P4: 聚焦实体档案', category: 'planet', canonLevel: 2, priority: 4, content: '灰港星详细地理资料'.repeat(20) },
-          { canonicalName: 'P5: 角色当前状态', category: 'character', entityType: 'character', priority: 5, content: '李林上校心理与装备状态'.repeat(20) },
-          { title: 'P6: 时间线窗口事件', category: 'timeline', priority: 6, content: '星历204年舰队起航记录'.repeat(20) },
-          { title: 'P7: 活跃伏笔', category: 'foreshadowing', priority: 7, content: '失踪勘探船的暗号伏笔'.repeat(20) }
-        ],
-        reviewedMemories: [
-          { memoryId: 'mem_p8', priority: 8, content: 'P8: 已审核创作用长期记忆'.repeat(20) }
-        ],
-        conflicts: [
-          { title: 'P9: 设定冲突预警', priority: 9, message: '曲率超温冲突警报'.repeat(20) }
-        ],
-        unresolved: [
-          { title: 'P9: 未决设定', priority: 9, description: '未决空间跳跃协议'.repeat(20) }
-        ],
-        semanticCandidates: [
-          { title: 'P10: 语义候选素材', priority: 10, content: '外部RAG召回酒馆草案'.repeat(20) },
-          { title: 'P11: 低优扩展资料', priority: 11, content: '宇宙尘埃成分低相关说明'.repeat(20) }
-        ]
-      };
-
-      // Step A: Generous budget (100000) -> 0 trimmed
-      const resFull = ContextBudgetEngine.trimContext(densePayload, 100000);
-      assert.strictEqual(resFull.contextBudget.trimmed, false);
-      assert.strictEqual(resFull.contextBudget.omittedSections.length, 0);
-
-      // Step B: Progressive budget tightening to verify sequential shedding
-      // 1. Budget ~600: Priority 11 dropped first
-      const resTrim11 = ContextBudgetEngine.trimContext(densePayload, 600);
-      assert.strictEqual(resTrim11.contextBudget.trimmed, true);
-      assert.ok(
-        resTrim11.contextBudget.omittedSections.includes('extendedMaterials') ||
-        resTrim11.contextBudget.omittedSections.includes('semanticCandidates')
-      );
-
-      // 2. Budget ~350: Priority 10 & 9 & 8 progressively dropped
-      const resTrimP8 = ContextBudgetEngine.trimContext(densePayload, 350);
-      assert.strictEqual(resTrimP8.contextBudget.trimmed, true);
-      assert.ok(resTrimP8.reviewedMemories.length <= densePayload.reviewedMemories.length);
-
-      // 3. Budget ~100: Priority 7..3 dropped
-      const resTight = ContextBudgetEngine.trimContext(densePayload, 100);
-      assert.strictEqual(resTight.contextBudget.trimmed, true);
-      assert.strictEqual(resTight.authorDirectives.length, 1);
+  describe('Section 1: Boundary Envelope Edge Cases & Parsing Resilience', () => {
+    it('1.1 should detect unclosed tags (START without END)', () => {
+      const text = '<!-- BEAT_START: chapter_id="CH1" beat_id="B1" order="1" title="T1" -->\n这是一段没有闭合标签的正文。';
+      const check = BeatEnvelope.validateEnvelopes(text);
+      assert.strictEqual(check.valid, false, 'Unclosed envelope must be marked invalid');
+      assert.ok(check.errors.some(e => e.includes('Mismatched') || e.includes('unclosed')));
     });
 
-    it('CASCADE-02: Boundary stress with negative, zero, fractional, and massive token budgets', () => {
-      const payload = {
-        authorDirectives: [{ directive: '必须遵循的指令', priority: 1 }],
-        canonFacts: [{ canonicalName: '规则', category: 'world_rule', ruleScope: 'global', content: '公理' }],
-        semanticCandidates: [{ title: '候选', content: '候选内容'.repeat(50) }]
-      };
-
-      // Extreme test matrix
-      const testCases = [
-        { maxTokens: -1000, expectedMinTokens: 100 },
-        { maxTokens: -1, expectedMinTokens: 100 },
-        { maxTokens: 0, expectedMinTokens: 100 },
-        { maxTokens: 0.5, expectedMinTokens: 0.5 },
-        { maxTokens: 1, expectedMinTokens: 1 },
-        { maxTokens: 50, expectedMinTokens: 50 },
-        { maxTokens: 1000, expectedMinTokens: 1000 },
-        { maxTokens: 1000000, expectedMinTokens: 1000000 },
-        { maxTokens: '250', expectedMinTokens: 250 },
-        { maxTokens: 'invalid_string', expectedMinTokens: 30000 },
-        { maxTokens: null, expectedMinTokens: 30000 },
-        { maxTokens: undefined, expectedMinTokens: 30000 }
-      ];
-
-      for (const tc of testCases) {
-        const res = ContextBudgetEngine.trimContext(payload, tc.maxTokens);
-        assert.ok(res, `Result must exist for maxTokens: ${tc.maxTokens}`);
-        assert.strictEqual(res.authorDirectives.length, 1, `Author directives must survive maxTokens: ${tc.maxTokens}`);
-        assert.strictEqual(res.contextBudget.maxTokens, tc.expectedMinTokens);
-      }
+    it('1.2 should detect orphaned closing tags (END without START)', () => {
+      const text = '正文前置内容。\n<!-- BEAT_END: beat_id="B1" -->';
+      const check = BeatEnvelope.validateEnvelopes(text);
+      assert.strictEqual(check.valid, false, 'Orphaned closing tag must be marked invalid');
+      assert.ok(check.errors.some(e => e.includes('Mismatched')));
     });
 
-    it('CASCADE-03: Priority 1 (authorDirectives) is NEVER dropped even under maxTokens = 1', () => {
-      const massiveDirectives = [
-        { directive: '指令一：全书采用第三人称冷峻硬科幻视角。'.repeat(50), priority: 1 },
-        { directive: '指令二：绝对禁止出现超光速旅行与魔法设定。'.repeat(50), priority: 1 },
-        { directive: '指令三：本章重点刻画灰港星轨道站解体过程。'.repeat(50), priority: 1 }
-      ];
+    it('1.3 should detect nested beat envelopes (START inside another START)', () => {
+      const nested = [
+        '<!-- BEAT_START: chapter_id="CH1" beat_id="B_OUTER" order="1" title="外层节拍" -->',
+        '外层正文开始。',
+        '<!-- BEAT_START: chapter_id="CH1" beat_id="B_INNER" order="2" title="内层节拍" -->',
+        '内层正文。',
+        '<!-- BEAT_END: beat_id="B_INNER" -->',
+        '外层正文结束。',
+        '<!-- BEAT_END: beat_id="B_OUTER" -->'
+      ].join('\n');
 
-      const payload = {
-        authorDirectives: massiveDirectives,
-        canonFacts: [
-          { canonicalName: '世界公理', category: 'world_rule', ruleScope: 'global', content: '光速不可超越' }
-        ],
-        semanticCandidates: [
-          { title: '候选材料', content: '参考资料'.repeat(100) }
-        ],
-        conflicts: [
-          { title: '冲突', message: '严重冲突'.repeat(50) }
-        ]
-      };
-
-      // Test with starvation budget of 1 token
-      const res = ContextBudgetEngine.trimContext(payload, 1);
-
-      // Invariant: All 3 authorDirectives must be 100% intact
-      assert.strictEqual(res.authorDirectives.length, 3, 'Priority 1 must NEVER be trimmed at maxTokens = 1');
-      assert.strictEqual(res.authorDirectives[0].directive, massiveDirectives[0].directive);
-      assert.strictEqual(res.authorDirectives[1].directive, massiveDirectives[1].directive);
-      assert.strictEqual(res.authorDirectives[2].directive, massiveDirectives[2].directive);
-
-      // Other non-P1/P2 items should be pruned
-      assert.strictEqual(res.semanticCandidates.length, 0, 'Lower priority items must be trimmed');
-      assert.strictEqual(res.conflicts.length, 0, 'Conflicts must be trimmed when budget is 1');
-      assert.strictEqual(res.contextBudget.trimmed, true);
+      const check = BeatEnvelope.validateEnvelopes(nested);
+      assert.strictEqual(check.valid, false, 'Nested beat envelopes must be flagged as invalid');
+      assert.ok(check.errors.some(e => e.includes('nested') || e.includes('Mismatched')));
     });
 
-    it('CASCADE-04: Priority 9 (conflicts & unresolved) attaches structured omission metadata and warning when trimmed', () => {
-      const payload = {
-        authorDirectives: [{ directive: '核心指令', priority: 1 }],
-        canonFacts: [{ canonicalName: '规则', category: 'world_rule', ruleScope: 'global', content: '光速不变' }],
-        conflicts: [
-          { anomalyCode: 'ANOM_001', message: '曲率超温严重警告'.repeat(40), priority: 9 },
-          { anomalyCode: 'ANOM_002', message: '同名实体ID冲突'.repeat(40), priority: 9 }
-        ],
-        unresolved: [
-          { threadKey: 'FS_001', description: '未决伏笔：失踪勘探船'.repeat(40), priority: 9 }
-        ]
-      };
+    it('1.4 should detect missing attributes in envelope tags', () => {
+      // Missing chapter_id attribute
+      const missingChapterId = '<!-- BEAT_START: beat_id="B1" order="1" title="T1" -->\n缺少chapterId\n<!-- BEAT_END: beat_id="B1" -->';
+      const check1 = BeatEnvelope.validateEnvelopes(missingChapterId);
+      assert.strictEqual(check1.valid, false, 'Tag missing chapter_id must fail validation');
 
-      // Set budget tight enough to force Priority 9 trimming (e.g. 50 tokens)
-      const res = ContextBudgetEngine.trimContext(payload, 50);
+      // Missing beat_id attribute in START
+      const missingBeatId = '<!-- BEAT_START: chapter_id="CH1" order="1" title="T1" -->\n缺少beatId\n<!-- BEAT_END: beat_id="B1" -->';
+      const check2 = BeatEnvelope.validateEnvelopes(missingBeatId);
+      assert.strictEqual(check2.valid, false, 'Tag missing beat_id must fail validation');
+    });
 
-      assert.strictEqual(res.contextBudget.trimmed, true);
-      assert.strictEqual(res.contextBudget.trimReason, 'context_budget');
-      assert.ok(res.contextBudget.omittedSourceCount >= 3, 'omittedSourceCount must reflect dropped conflict/unresolved items');
+    it('1.5 should detect duplicate beat IDs across multiple envelopes', () => {
+      const duplicateText = [
+        BeatEnvelope.wrap({ chapterId: 'CH1', beatId: 'BEAT_SAME', order: 1, title: '节拍A', prose: '内容A' }),
+        BeatEnvelope.wrap({ chapterId: 'CH1', beatId: 'BEAT_SAME', order: 2, title: '节拍B', prose: '内容B' })
+      ].join('\n\n');
 
-      // Check omittedSections contains conflicts and unresolved
-      const omittedSections = res.contextBudget.omittedSections;
-      assert.ok(
-        omittedSections.includes('conflicts') || omittedSections.includes('unresolved'),
-        `omittedSections must include conflicts or unresolved, got: ${JSON.stringify(omittedSections)}`
-      );
+      const check = BeatEnvelope.validateEnvelopes(duplicateText);
+      assert.strictEqual(check.valid, false, 'Duplicate beat IDs must fail validation');
+      assert.ok(check.errors.some(e => e.includes('Duplicate beat envelope ID')));
+    });
 
-      // Check warning message attached
-      assert.ok(
-        res.warnings.some(w => w.includes('部分冲突与未决设定因Token预算受限已被裁剪，请参考元数据')),
-        `Warning must inform about trimmed conflicts, got: ${JSON.stringify(res.warnings)}`
-      );
+    it('1.6 should handle envelope tags with varying whitespace and tabs', () => {
+      const textWithSpaces = '<!--   BEAT_START:   chapter_id="CH_SPC"   beat_id="B_SPC"   order="3"   title="空格测试"   -->\n正文内容。\n<!--   BEAT_END:   beat_id="B_SPC"   -->';
+      const parsed = BeatEnvelope.parseEnvelopes(textWithSpaces);
+      assert.strictEqual(parsed.length, 1, 'Should parse envelope with loose spacing');
+      assert.strictEqual(parsed[0].chapterId, 'CH_SPC');
+      assert.strictEqual(parsed[0].beatId, 'B_SPC');
+      assert.strictEqual(parsed[0].order, 3);
+      assert.strictEqual(parsed[0].title, '空格测试');
+      assert.strictEqual(parsed[0].prose, '正文内容。');
+    });
+
+    it('1.7 should surgically replace beat prose in a multi-beat draft without altering neighbors', () => {
+      const draft = [
+        BeatEnvelope.wrap({ chapterId: 'CH1', beatId: 'B1', order: 1, title: 'T1', prose: '第一节原本内容' }),
+        BeatEnvelope.wrap({ chapterId: 'CH1', beatId: 'B2', order: 2, title: 'T2', prose: '第二节原本内容' }),
+        BeatEnvelope.wrap({ chapterId: 'CH1', beatId: 'B3', order: 3, title: 'T3', prose: '第三节原本内容' })
+      ].join('\n\n');
+
+      const updated = BeatEnvelope.replaceBeatProse(draft, 'B2', '第二节已经被精准手术式替换');
+      const parsed = BeatEnvelope.parseEnvelopes(updated);
+
+      assert.strictEqual(parsed.length, 3);
+      assert.strictEqual(parsed[0].prose, '第一节原本内容');
+      assert.strictEqual(parsed[1].prose, '第二节已经被精准手术式替换');
+      assert.strictEqual(parsed[2].prose, '第三节原本内容');
+    });
+
+    it('1.8 replaceBeatProse should return unchanged content if beatId does not exist', () => {
+      const draft = BeatEnvelope.wrap({ chapterId: 'CH1', beatId: 'B1', order: 1, title: 'T1', prose: '内容' });
+      const same = BeatEnvelope.replaceBeatProse(draft, 'NON_EXISTENT_BEAT', '新正文');
+      assert.strictEqual(same, draft);
+    });
+
+    it('1.9 [CHALLENGE] should expose blind spot on malformed envelope comments without attributes', () => {
+      // Tags with corrupted/missing attributes format like <!-- BEAT_START: corrupted -->
+      const corrupted = '<!-- BEAT_START: corrupted_content -->\n正文内容\n<!-- BEAT_END: corrupted_content -->';
+      const check = BeatEnvelope.validateEnvelopes(corrupted);
+      // Because START_TAG_REGEX strictly requires chapter_id="..." beat_id="...", corrupted tags are not counted as start tags
+      // If end tag is also non-conforming, both counts are 0 and validateEnvelopes erroneously reports valid: true!
+      const hasBlindSpot = check.valid === true && check.beatCount === 0;
+      assert.ok(hasBlindSpot, 'validateEnvelopes fails to detect malformed comment tags without attribute syntax');
     });
   });
 
   // =========================================================================
-  // SECTION 2: Adversarial Candidate Injection & Anti-Override Attacks
+  // Section 2: Composition Gating Bypass Resistance
   // =========================================================================
-  describe('2. Adversarial Candidate Injection & Anti-Override Attacks', () => {
-    it('ATTACK-01: Candidate injection attempting to override active canon entity status & properties', () => {
-      const db = dbManager.getDatabase();
-      db.prepare(`
-        INSERT INTO entities (entity_id, canonical_name, entity_type, status, review_status, canon_level)
-        VALUES ('hui_gang', '灰港星', 'planet', 'active', 'confirmed', 3)
-      `).run();
-
-      const adversarialPayload = {
-        projectId: '流浪',
-        chapterId: 'Vol1_Ch01',
-        focusEntities: ['灰港星'],
-        semanticCandidates: [
-          {
-            entityId: 'hui_gang',
-            canonicalName: '灰港星',
-            content: '【恶意注入】灰港星在星历100年已经被反物质炸弹彻底炸毁，不复存在。',
-            status: 'conflict',
-            overrideAttempt: true,
-            contradictsCanon: true
-          }
+  describe('Section 2: Composition Gating Bypass Resistance', () => {
+    beforeEach(async () => {
+      // Create a chapter with 4 beats in mixed states
+      await BeatCommands.handlePlanSceneBeats({
+        chapterId: 'CH_GATE_ADVERSARIAL',
+        beats: [
+          { beatId: 'BEAT_G_1', title: '节拍1', sceneGoal: '目标1' },
+          { beatId: 'BEAT_G_2', title: '节拍2', sceneGoal: '目标2' },
+          { beatId: 'BEAT_G_3', title: '节拍3', sceneGoal: '目标3' },
+          { beatId: 'BEAT_G_4', title: '节拍4', sceneGoal: '目标4' }
         ]
-      };
+      }, { dbManager });
+    });
 
-      const res = contextBuilder.buildContext(adversarialPayload);
-
-      // Invariant 1: Canon fact is preserved in canonFacts layer
-      const canonEntity = res.canonFacts.find(f => f.canonicalName === '灰港星' || f.entityId === 'hui_gang');
-      assert.ok(canonEntity, 'Canon entity must remain present in canonFacts');
-      assert.strictEqual(canonEntity.status, 'active');
-      assert.strictEqual(canonEntity.canonLevel, 3);
-
-      // Invariant 2: Injected candidate is quarantined in semanticCandidates layer with overridePrevented
-      const quarantined = res.semanticCandidates.find(c => c.entityId === 'hui_gang' || c.title === '灰港星');
-      assert.ok(quarantined, 'Candidate must be captured in semanticCandidates');
-      assert.strictEqual(quarantined.overridePrevented, true);
-      assert.strictEqual(quarantined.canonConflict, true);
-
-      // Invariant 3: Structured warning emitted
-      assert.ok(
-        res.warnings.some(w => w.includes('[WARN_SEMANTIC_OVERRIDE_PREVENTED]')),
-        'Warning must be generated for prevented override'
+    it('2.1 should reject composition when all beats are in draft status', async () => {
+      await assert.rejects(
+        () => DraftingCommands.handleComposeChapterDraft({ chapterId: 'CH_GATE_ADVERSARIAL' }, { dbManager }),
+        (err) => {
+          assert.ok(err instanceof NovelError);
+          assert.strictEqual(err.code, 'COMPOSITION_BLOCKED_UNCONFIRMED_BEATS');
+          assert.strictEqual(err.details.unconfirmedCount, 4);
+          return true;
+        }
       );
     });
 
-    it('ATTACK-02: Authority spoofing attack (candidate claiming authority: "canon_core" / priority: 1)', () => {
-      const db = dbManager.getDatabase();
-      db.prepare(`
-        INSERT INTO entities (entity_id, canonical_name, entity_type, status, review_status, canon_level)
-        VALUES ('orbit_gate', '星环之门', 'structure', 'active', 'confirmed', 3)
-      `).run();
+    it('2.2 should strictly reject composition when beats are partially confirmed (mixed draft + confirmed)', async () => {
+      // Confirm beats 1 and 3 only; beats 2 and 4 remain draft
+      await BeatCommands.handleConfirmSceneBeats({
+        chapterId: 'CH_GATE_ADVERSARIAL',
+        beatIds: ['BEAT_G_1', 'BEAT_G_3']
+      }, { dbManager });
 
-      const spoofingPayload = {
-        projectId: '流浪',
-        focusEntities: ['星环之门'],
-        semanticCandidates: [
-          {
-            candidateId: 'spoofed_cand_01',
-            title: '伪造正史核心条目',
-            content: '伪造正史：星环之门具备时间倒流功能',
-            sourceSystem: 'NovelEngineering', // Spoof sourceSystem
-            authority: 'canon_core',           // Spoof authority
-            priority: 1                       // Spoof priority 1
-          }
-        ]
-      };
-
-      const res = contextBuilder.buildContext(spoofingPayload);
-
-      // Check layer isolation: spoofed item must NOT be in authorDirectives or canonFacts
-      const inDirectives = res.authorDirectives.find(d => d.content && d.content.includes('星环之门具备时间倒流'));
-      assert.strictEqual(inDirectives, undefined, 'Spoofed candidate must NOT penetrate authorDirectives layer');
-
-      const inCanonFacts = res.canonFacts.find(f => f.content && f.content.includes('星环之门具备时间倒流'));
-      assert.strictEqual(inCanonFacts, undefined, 'Spoofed candidate must NOT penetrate canonFacts layer');
-
-      // The candidate is strictly kept in semanticCandidates layer
-      const inSemantic = res.semanticCandidates.find(c => c.candidateId === 'spoofed_cand_01');
-      assert.ok(inSemantic, 'Candidate remains in semanticCandidates layer');
+      await assert.rejects(
+        () => DraftingCommands.handleComposeChapterDraft({ chapterId: 'CH_GATE_ADVERSARIAL' }, { dbManager }),
+        (err) => {
+          assert.ok(err instanceof NovelError);
+          assert.strictEqual(err.code, 'COMPOSITION_BLOCKED_UNCONFIRMED_BEATS');
+          assert.strictEqual(err.details.unconfirmedCount, 2);
+          assert.deepStrictEqual(err.details.unconfirmedBeatIds.sort(), ['BEAT_G_2', 'BEAT_G_4']);
+          return true;
+        }
+      );
     });
 
-    it('ATTACK-03: Prototype pollution and SQL injection payload resilience in candidate fields', () => {
-      const maliciousPayload = {
-        projectId: "'; DROP TABLE entities; --",
-        chapterId: "<script>alert('xss')</script>",
-        authorDirectives: [
-          '__proto__.polluted = true',
-          'constructor.prototype.admin = true'
-        ],
-        semanticCandidates: [
-          {
-            candidateId: '__proto__',
-            title: "1' OR '1'='1",
-            content: 'SELECT * FROM source_files WHERE 1=1; --',
-            __proto__: { polluted: 'yes' }
-          }
-        ]
-      };
+    it('2.3 should strictly reject composition even if only ONE single beat remains in draft status', async () => {
+      // Confirm beats 1, 2, 3; beat 4 remains draft
+      await BeatCommands.handleConfirmSceneBeats({
+        chapterId: 'CH_GATE_ADVERSARIAL',
+        beatIds: ['BEAT_G_1', 'BEAT_G_2', 'BEAT_G_3']
+      }, { dbManager });
 
-      const res = contextBuilder.buildContext(maliciousPayload);
-
-      // Verify server did not suffer prototype pollution
-      assert.strictEqual({}.polluted, undefined, 'Global prototype must NOT be polluted');
-      assert.strictEqual({}.admin, undefined, 'Global prototype must NOT be polluted');
-
-      // Verify database still operates normally
-      const db = dbManager.getDatabase();
-      const count = db.prepare('SELECT COUNT(*) as count FROM entities').get().count;
-      assert.ok(typeof count === 'number');
-
-      // Verify response structure
-      assert.strictEqual(res.contextVersion, '4.0');
-      assert.strictEqual(res.authorDirectives.length, 2);
-      assert.strictEqual(res.semanticCandidates.length, 1);
+      await assert.rejects(
+        () => DraftingCommands.handleComposeChapterDraft({ chapterId: 'CH_GATE_ADVERSARIAL' }, { dbManager }),
+        (err) => {
+          assert.ok(err instanceof NovelError);
+          assert.strictEqual(err.code, 'COMPOSITION_BLOCKED_UNCONFIRMED_BEATS');
+          assert.strictEqual(err.details.unconfirmedCount, 1);
+          assert.deepStrictEqual(err.details.unconfirmedBeatIds, ['BEAT_G_4']);
+          return true;
+        }
+      );
     });
 
-    it('ATTACK-04: Unreviewed memory contradiction isolation', () => {
-      const db = dbManager.getDatabase();
-      db.prepare(`
-        INSERT INTO entities (entity_id, canonical_name, entity_type, status, review_status, canon_level)
-        VALUES ('alpha_fleet', '阿尔法远征舰队', 'fleet', 'active', 'confirmed', 2)
-      `).run();
+    it('2.4 should resist adversarial bypass parameters (force, bypassGating, ignoreUnconfirmed)', async () => {
+      // Only confirm beat 1
+      await BeatCommands.handleConfirmSceneBeats({
+        chapterId: 'CH_GATE_ADVERSARIAL',
+        beatIds: ['BEAT_G_1']
+      }, { dbManager });
 
-      const res = contextBuilder.buildContext({
-        projectId: '流浪',
-        focusEntities: ['阿尔法远征舰队'],
-        vcpMemoryRefs: [
-          {
-            memoryId: 'mem_poison',
-            title: '阿尔法远征舰队',
-            canonicalName: '阿尔法远征舰队',
-            content: '未经审核的 DailyNote：阿尔法远征舰队已全部叛变',
-            contradictionWithCanon: true,
-            status: 'unreviewed'
+      const bypassAttempts = [
+        { force: true },
+        { bypassGating: true },
+        { ignoreUnconfirmed: true },
+        { skipValidation: true },
+        { overrideGate: true }
+      ];
+
+      for (const attempt of bypassAttempts) {
+        await assert.rejects(
+          () => DraftingCommands.handleComposeChapterDraft(
+            { chapterId: 'CH_GATE_ADVERSARIAL', ...attempt },
+            { dbManager }
+          ),
+          (err) => {
+            assert.ok(err instanceof NovelError);
+            assert.strictEqual(err.code, 'COMPOSITION_BLOCKED_UNCONFIRMED_BEATS');
+            return true;
           },
-          {
-            memoryId: 'mem_safe',
-            title: '远征补给记录',
-            content: '星历198年远征补给完毕',
-            status: 'reviewed'
-          }
-        ]
-      });
-
-      // Contradicting unreviewed memory must be rejected from reviewedMemories
-      const poisonMem = res.reviewedMemories.find(m => m.memoryId === 'mem_poison');
-      assert.strictEqual(poisonMem, undefined, 'Contradicting unreviewed memory must be gated out');
-
-      const safeMem = res.reviewedMemories.find(m => m.memoryId === 'mem_safe');
-      assert.ok(safeMem, 'Valid reviewed memory must be preserved');
-      assert.ok(res.warnings.some(w => w.includes('[WARN_SEMANTIC_OVERRIDE_PREVENTED]')));
-    });
-  });
-
-  // =========================================================================
-  // SECTION 3: Multilingual Token Estimation Stress & Edge Cases
-  // =========================================================================
-  describe('3. Multilingual Token Estimation Stress & Edge Cases', () => {
-    it('TOKEN-01: CJK Simplified, Traditional, Japanese Kana, and Korean Hangul estimation', () => {
-      const cjkSamples = [
-        { text: '简体中文测试：灰港星是流浪舰队的重要枢纽港口。', len: 23 },
-        { text: '繁體中文測試：灰港星是流浪艦隊的重要樞紐港口。', len: 23 },
-        { text: '日本語テスト：ハイガン星は艦隊の重要な拠点です。', len: 23 },
-        { text: '한국어 테스트: 회강성은 함대의 중요한 기지입니다.', len: 26 }
-      ];
-
-      for (const sample of cjkSamples) {
-        const tokens = ContextBudgetEngine.estimateTokens(sample.text);
-        assert.ok(
-          tokens >= 15 && tokens <= 40,
-          `Expected tokens in range [15, 40] for CJK text "${sample.text}", got: ${tokens}`
+          `Bypass attempt ${JSON.stringify(attempt)} must NOT bypass composition gate!`
         );
       }
     });
 
-    it('TOKEN-02: Emojis, surrogate pairs, Zero-Width Joiners, and boundary strings', () => {
-      const emojiText = '🌌🚀🛸👨‍🚀 (Astronaut emoji ZWJ) \u200B\u200C\u200D\uFEFF Hidden Controls';
-      const tokens = ContextBudgetEngine.estimateTokens(emojiText);
-      assert.ok(tokens >= 1, `Tokens must be >= 1 for emoji text, got ${tokens}`);
+    it('2.5 should permit composition once ALL beats are confirmed, expanded, or revised', async () => {
+      // Confirm all beats
+      await BeatCommands.handleConfirmSceneBeats({
+        chapterId: 'CH_GATE_ADVERSARIAL'
+      }, { dbManager });
 
-      // Null, empty, undefined handling
-      assert.strictEqual(ContextBudgetEngine.estimateTokens(''), 0);
-      assert.strictEqual(ContextBudgetEngine.estimateTokens(null), 0);
-      assert.strictEqual(ContextBudgetEngine.estimateTokens(undefined), 0);
+      // Expand beat 1, revise beat 2, leave beat 3 and 4 confirmed
+      await DraftingCommands.handleExpandSceneBeat({ beatId: 'BEAT_G_1' }, { dbManager });
+      await DraftingCommands.handleExpandSceneBeat({ beatId: 'BEAT_G_2' }, { dbManager });
+      await DraftingCommands.handleReviseSceneBeat({ beatId: 'BEAT_G_2', authorFeedback: '微调' }, { dbManager });
 
-      // Non-empty string returns >= 1
-      assert.ok(ContextBudgetEngine.estimateTokens('   \n\t  ') >= 1);
+      const res = await DraftingCommands.handleComposeChapterDraft({
+        chapterId: 'CH_GATE_ADVERSARIAL'
+      }, { dbManager });
+
+      assert.strictEqual(res.status, 'success');
+      assert.strictEqual(res.beatCount, 4);
+      assert.ok(res.totalWordCount >= 2400);
+      assert.ok(res.draftVersionId.includes('CH_GATE_ADVERSARIAL'));
     });
 
-    it('TOKEN-03: Massive 100k character text token estimation performance and monotonicity', () => {
-      const smallText = '灰港星核心设定资料。'.repeat(10);
-      const mediumText = '灰港星核心设定资料。'.repeat(100);
-      const largeText = '灰港星核心设定资料。'.repeat(1000);
-      const hugeText = '灰港星核心设定资料。'.repeat(10000); // 100,000 chars
-
-      const startTime = Date.now();
-      const tSmall = ContextBudgetEngine.estimateTokens(smallText);
-      const tMed = ContextBudgetEngine.estimateTokens(mediumText);
-      const tLarge = ContextBudgetEngine.estimateTokens(largeText);
-      const tHuge = ContextBudgetEngine.estimateTokens(hugeText);
-      const elapsed = Date.now() - startTime;
-
-      // Performance check: 100k chars token estimation should take < 200ms
-      assert.ok(elapsed < 200, `Token estimation took ${elapsed}ms, should be < 200ms`);
-
-      // Monotonicity check
-      assert.ok(tSmall < tMed, 'Token count must grow monotonically: small < medium');
-      assert.ok(tMed < tLarge, 'Token count must grow monotonically: medium < large');
-      assert.ok(tLarge < tHuge, 'Token count must grow monotonically: large < huge');
-      assert.ok(tHuge >= 90000, `100k CJK chars should estimate to ~100k tokens, got ${tHuge}`);
+    it('2.6 should reject composition on empty or non-existent chapter', async () => {
+      await assert.rejects(
+        () => DraftingCommands.handleComposeChapterDraft({ chapterId: 'CH_NON_EXISTENT_9999' }, { dbManager }),
+        (err) => {
+          assert.ok(err instanceof NovelError);
+          assert.ok(err.code === 'CHAPTER_BEATS_EMPTY' || err.code === 'INVALID_PARAMETER');
+          return true;
+        }
+      );
     });
 
-    it('TOKEN-04: Non-string and complex circular/corrupted object handling in estimateTokens', () => {
-      assert.strictEqual(ContextBudgetEngine.estimateTokens(12345), ContextBudgetEngine.estimateTokens('12345'));
-      assert.strictEqual(ContextBudgetEngine.estimateTokens(true), ContextBudgetEngine.estimateTokens('true'));
-      assert.ok(ContextBudgetEngine.estimateTokens({ key: 'value', count: 42 }) > 0);
-      assert.ok(ContextBudgetEngine.estimateTokens([1, 2, 3, 'abc']) > 0);
-
-      // Circular reference object should not throw unhandled exception
-      const circular = { name: 'circular' };
-      circular.self = circular;
-      const circTokens = ContextBudgetEngine.estimateTokens(circular);
-      assert.strictEqual(circTokens, 0, 'Circular object should safely return 0 tokens without throwing');
+    it('2.7 should reject ExpandSceneBeat on an unconfirmed draft beat', async () => {
+      await assert.rejects(
+        () => DraftingCommands.handleExpandSceneBeat({ beatId: 'BEAT_G_4' }, { dbManager }),
+        (err) => {
+          assert.ok(err instanceof NovelError);
+          assert.strictEqual(err.code, 'BEAT_NOT_CONFIRMED');
+          assert.ok(err.message.includes('draft'));
+          return true;
+        }
+      );
     });
   });
 
   // =========================================================================
-  // SECTION 4: Lineage Trace & Schema 4.0 Invariant Stress
+  // Section 3: Hard Polishing Invariant 1 - Canon Facts & Entities
   // =========================================================================
-  describe('4. Lineage Trace & Schema 4.0 Invariant Stress', () => {
-    it('TRACE-01: Every source trace entry contains valid 3-tag provenance (sourceSystem, authority, sha256)', () => {
-      const db = dbManager.getDatabase();
-      db.prepare(`
-        INSERT INTO source_files (
-          id, file_path, relative_path, file_name, extension, size_bytes, mtime_ms,
-          status, review_status, canon_level, source_category, sha256_hash
-        ) VALUES (
-          1, 'H:/World/Rule.md', '01_World/Rule.md', 'Rule.md', '.md', 1024, 1600000000000,
-          'active', 'confirmed', 3, 'concept', 'abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890'
-        )
-      `).run();
+  describe('Section 3: Invariant 1 - Canon Facts & Entities Invariance', () => {
+    const polisher = new SnippetPolisher();
 
-      db.prepare(`
-        INSERT INTO entities (id, entity_id, canonical_name, entity_type, status, review_status, canon_level, source_file_id)
-        VALUES (1, 'ent_rule', '光速上限公理', 'concept', 'active', 'confirmed', 3, 1)
-      `).run();
-
-      const res = contextBuilder.buildContext({
-        projectId: '流浪',
-        chapterId: 'Vol1_Ch02',
-        focusEntities: ['光速上限公理'],
-        authorDirectives: ['作者指令：严格遵守公理'],
-        vcpMemoryRefs: [{ memoryId: 'mem_1', title: '记忆1', content: '记忆内容', status: 'reviewed' }],
-        semanticCandidates: [{ candidateId: 'cand_1', title: '候选1', content: '候选内容' }],
-        includeConflicts: true,
-        includeUnresolved: true
-      });
-
-      assert.ok(Array.isArray(res.sourceTrace), 'sourceTrace must be an array');
-      assert.ok(res.sourceTrace.length >= 3, 'sourceTrace must aggregate all layers');
-
-      for (const trace of res.sourceTrace) {
-        // Tag 1: sourceSystem
-        assert.ok(typeof trace.sourceSystem === 'string' && trace.sourceSystem.length > 0);
-        // Tag 2: authority
-        assert.ok(typeof trace.authority === 'string' && trace.authority.length > 0);
-        // Tag 3: sha256 (64 hex characters if present)
-        if (trace.sha256) {
-          assert.match(trace.sha256, /^[0-9a-f]{64}$/i, `Invalid sha256: ${trace.sha256}`);
+    it('3.1 should reject altering canonical character name via contextEntities', async () => {
+      await assert.rejects(
+        () => polisher.polishSnippet({
+          snippet: '原句：沈澈潜入指挥中心。修改：张三潜入指挥中心。',
+          polishType: 'dialogue_subtext',
+          contextEntities: [{ entityId: 'CHAR_01', name: '沈澈' }]
+        }),
+        (err) => {
+          assert.ok(err instanceof NovelError);
+          assert.strictEqual(err.code, 'POLISH_INVARIANT_VIOLATION');
+          assert.ok(err.details.violatedInvariants.includes('canon_facts_and_entities'));
+          return true;
         }
-      }
-
-      // Invariant: Trace record saved in DB
-      const traceRecord = traceManager.getTraceBySnapshotId(res.snapshotId);
-      assert.ok(traceRecord, 'Trace record must be queryable via TraceManager');
-      assert.strictEqual(traceRecord.snapshot_id, res.snapshotId);
-      assert.strictEqual(traceRecord.project_id, '流浪');
+      );
     });
 
-    it('TRACE-02: Global response envelope invariants (requestId UUID v4 & databaseRevision integer)', () => {
-      const res = contextBuilder.buildContext({
-        projectId: '流浪'
-      });
+    it('3.2 should reject omitting canonical secondary character name via contextEntities', async () => {
+      await assert.rejects(
+        () => polisher.polishSnippet({
+          snippet: '原句：艾森在掩体后装填弹药。修改：路人甲在掩体后装填弹药。',
+          polishType: 'combat_tension',
+          contextEntities: [{ entityId: 'CHAR_02', name: '艾森' }]
+        }),
+        (err) => {
+          assert.ok(err instanceof NovelError);
+          assert.strictEqual(err.code, 'POLISH_INVARIANT_VIOLATION');
+          assert.ok(err.details.violatedInvariants.includes('canon_facts_and_entities'));
+          return true;
+        }
+      );
+    });
 
-      // Verify UUID v4 format of requestId
-      assert.ok(
-        /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(res.requestId) ||
-        /^req_\d+_[0-9a-f]+$/i.test(res.requestId),
-        `requestId must be a valid UUID or fallback format, got: ${res.requestId}`
+    it('3.3 should reject altering canonical location name via contextEntities', async () => {
+      await assert.rejects(
+        () => polisher.polishSnippet({
+          snippet: '原句：队伍在云落峡谷遭遇伏击。修改：队伍在黑石荒原遭遇伏击。',
+          polishType: 'sensory',
+          contextEntities: [{ entityId: 'LOC_01', name: '云落峡谷' }]
+        }),
+        (err) => {
+          assert.ok(err instanceof NovelError);
+          assert.strictEqual(err.code, 'POLISH_INVARIANT_VIOLATION');
+          assert.ok(err.details.violatedInvariants.includes('canon_facts_and_entities'));
+          return true;
+        }
+      );
+    });
+
+    it('3.4 should reject altering common canonical entities even without contextEntities', async () => {
+      // Testing built-in common entities: 塔兰要塞
+      await assert.rejects(
+        () => polisher.polishSnippet({
+          snippet: '原句：主力部队进驻塔兰要塞。修改：主力部队进驻未知城堡。',
+          polishType: 'sensory'
+        }),
+        (err) => {
+          assert.ok(err instanceof NovelError);
+          assert.strictEqual(err.code, 'POLISH_INVARIANT_VIOLATION');
+          assert.ok(err.details.violatedInvariants.includes('canon_facts_and_entities'));
+          return true;
+        }
       );
 
-      // Verify databaseRevision is an integer
-      assert.strictEqual(typeof res.databaseRevision, 'number');
-      assert.ok(Number.isInteger(res.databaseRevision));
-      assert.ok(res.databaseRevision >= 4);
+      // Testing built-in common entities: 晨曦号
+      await assert.rejects(
+        () => polisher.polishSnippet({
+          snippet: '原句：晨曦号主炮充能完毕。修改：破浪号主炮充能完毕。',
+          polishType: 'combat_tension'
+        }),
+        (err) => {
+          assert.ok(err instanceof NovelError);
+          assert.strictEqual(err.code, 'POLISH_INVARIANT_VIOLATION');
+          assert.ok(err.details.violatedInvariants.includes('canon_facts_and_entities'));
+          return true;
+        }
+      );
+    });
 
-      // Verify contextVersion is strictly "4.0"
-      assert.strictEqual(res.contextVersion, '4.0');
+    it('3.5 should reject rename directives in customDirectives', async () => {
+      await assert.rejects(
+        () => polisher.polishSnippet({
+          snippet: '沈澈握紧了枪托。',
+          polishType: 'sensory',
+          customDirectives: '将主角改名为李四'
+        }),
+        (err) => {
+          assert.ok(err instanceof NovelError);
+          assert.strictEqual(err.code, 'POLISH_INVARIANT_VIOLATION');
+          assert.ok(err.details.violatedInvariants.includes('canon_facts_and_entities'));
+          return true;
+        }
+      );
+    });
+
+    it('3.6 should allow sensory polish when canonical entities are strictly preserved', async () => {
+      const res = await polisher.polishSnippet({
+        snippet: '沈澈握紧枪托，在雨中注视着前方的巡逻机。',
+        polishType: 'sensory',
+        contextEntities: [{ entityId: 'CHAR_01', name: '沈澈' }]
+      });
+
+      assert.strictEqual(res.status, 'success');
+      assert.strictEqual(res.invariantCheck.passed, true);
+      assert.ok(res.polishedSnippet.includes('沈澈'));
+    });
+  });
+
+  // =========================================================================
+  // Section 4: Hard Polishing Invariant 2 - Physical Injury & State
+  // =========================================================================
+  describe('Section 4: Invariant 2 - Physical Injury & State Invariance', () => {
+    const polisher = new SnippetPolisher();
+
+    it('4.1 should reject healing a fractured limb (骨折 -> 完好无损 / 双手持枪)', async () => {
+      await assert.rejects(
+        () => polisher.polishSnippet({
+          snippet: '原句：沈澈左臂骨折剧痛，只能勉强靠墙。修改：沈澈手臂完好无损，轻松双手持枪射击。',
+          polishType: 'combat_tension',
+          contextEntities: [{ entityId: 'CHAR_001', name: '沈澈', injury: 'left_arm_fracture' }]
+        }),
+        (err) => {
+          assert.ok(err instanceof NovelError);
+          assert.strictEqual(err.code, 'POLISH_INVARIANT_VIOLATION');
+          assert.ok(err.details.violatedInvariants.includes('physical_injury_state'));
+          return true;
+        }
+      );
+    });
+
+    it('4.2 should reject erasing an amputation (断臂 -> 生长如初 / 挥剑自如)', async () => {
+      await assert.rejects(
+        () => polisher.polishSnippet({
+          snippet: '原句：战士断臂淌血，退至石柱后。修改：战士手臂生长如初，挥剑自如击溃强敌。',
+          polishType: 'combat_tension',
+          contextEntities: [{ entityId: 'CHAR_002', name: '战士', injury: 'amputation' }]
+        }),
+        (err) => {
+          assert.ok(err instanceof NovelError);
+          assert.strictEqual(err.code, 'POLISH_INVARIANT_VIOLATION');
+          assert.ok(err.details.violatedInvariants.includes('physical_injury_state'));
+          return true;
+        }
+      );
+    });
+
+    it('4.3 should reject removing exhaustion / fatigue state when registered in contextEntities', async () => {
+      await assert.rejects(
+        () => polisher.polishSnippet({
+          snippet: '原句：沈澈体力严重透支，近乎瘫软。修改：沈澈完全康复，健步如飞冲上前去。',
+          polishType: 'combat_tension',
+          contextEntities: [{ entityId: 'CHAR_001', name: '沈澈', injury: 'severe_exhaustion' }]
+        }),
+        (err) => {
+          assert.ok(err instanceof NovelError);
+          assert.strictEqual(err.code, 'POLISH_INVARIANT_VIOLATION');
+          assert.ok(err.details.violatedInvariants.includes('physical_injury_state'));
+          return true;
+        }
+      );
+    });
+
+    it('4.4 should reject healing injuries detected directly in prose keywords', async () => {
+      // Detecting '重伤' and '剧痛' in original text, claiming '痊愈' and '行动如常'
+      await assert.rejects(
+        () => polisher.polishSnippet({
+          snippet: '原句：沈澈身负重伤剧痛难忍。修改：沈澈伤势彻底痊愈，行动如常继续巡逻。',
+          polishType: 'sensory'
+        }),
+        (err) => {
+          assert.ok(err instanceof NovelError);
+          assert.strictEqual(err.code, 'POLISH_INVARIANT_VIOLATION');
+          assert.ok(err.details.violatedInvariants.includes('physical_injury_state'));
+          return true;
+        }
+      );
+    });
+
+    it('4.5 should allow polish that preserves injury texture without healing', async () => {
+      const res = await polisher.polishSnippet({
+        snippet: '沈澈强忍着左臂骨折的刺骨剧痛，右手死死握住短刃。',
+        polishType: 'combat_tension',
+        contextEntities: [{ entityId: 'CHAR_001', name: '沈澈', injury: 'left_arm_fracture' }]
+      });
+
+      assert.strictEqual(res.status, 'success');
+      assert.strictEqual(res.invariantCheck.passed, true);
+    });
+
+    it('4.6 [CHALLENGE] should expose exhaustion keywords gap in pure prose without contextEntities', () => {
+      // In pure prose without contextEntities, exhaustion/fatigue keywords (虚脱, 透支, 力竭, exhaustion)
+      // are omitted from injuryKeywords, so removing them is NOT caught!
+      const check = polisher.verifyInvariants({
+        snippet: '原句：沈澈体力严重透支，极度虚脱。修改：沈澈完全康复，健步如飞冲上前去。',
+        polishType: 'sensory'
+      });
+      // Documenting the gap: check.passed is true because exhaustion is not in injuryKeywords!
+      assert.strictEqual(check.passed, true, 'Exhaustion keywords are missing from injuryKeywords list in SnippetPolisher');
+    });
+  });
+
+  // =========================================================================
+  // Section 5: Hard Polishing Invariant 3 - Timeline Causality & Order
+  // =========================================================================
+  describe('Section 5: Invariant 3 - Timeline Causality & Chronological Order', () => {
+    const polisher = new SnippetPolisher();
+
+    it('5.1 should reject reversing explosion -> bunker sequence', async () => {
+      await assert.rejects(
+        () => polisher.polishSnippet({
+          snippet: '原句：他先引爆了炸药，随后跃入地下掩体。修改：他跳进掩体后，数小时前炸药早已引爆。',
+          polishType: 'combat_tension'
+        }),
+        (err) => {
+          assert.ok(err instanceof NovelError);
+          assert.strictEqual(err.code, 'POLISH_INVARIANT_VIOLATION');
+          assert.ok(err.details.violatedInvariants.includes('timeline_causality_order'));
+          return true;
+        }
+      );
+    });
+
+    it('5.2 should reject reversing explosion -> gate collapse sequence', async () => {
+      await assert.rejects(
+        () => polisher.polishSnippet({
+          snippet: '原句：爆炸发生后，城门坍塌。修改：城门坍塌后很久，炸药才被点燃。',
+          polishType: 'combat_tension'
+        }),
+        (err) => {
+          assert.ok(err instanceof NovelError);
+          assert.strictEqual(err.code, 'POLISH_INVARIANT_VIOLATION');
+          assert.ok(err.details.violatedInvariants.includes('timeline_causality_order'));
+          return true;
+        }
+      );
+    });
+
+    it('5.3 [CHALLENGE] should expose gap: reversing strike vs death causality bypasses Invariant 3', () => {
+      // Reversing cause (strike) vs effect (death)
+      const testSnippet = '原句：他一剑刺中敌人要害，敌人随后倒地身亡。修改：敌人在倒地身亡很久之后，才被一剑刺中。';
+      
+      const check = polisher.verifyInvariants({
+        snippet: testSnippet,
+        polishType: 'combat_tension'
+      });
+
+      // Documenting the gap: current regex only tests explosion/bunker/gate collapse!
+      // Therefore reversing strike vs death passes without violation!
+      assert.strictEqual(check.passed, true, 'Reversing strike vs death is not detected by explosion-only regex');
+    });
+  });
+
+  // =========================================================================
+  // Section 6: Hard Polishing Invariant 4 - Key Narrative Outcomes
+  // =========================================================================
+  describe('Section 6: Invariant 4 - Key Narrative Outcomes Invariance', () => {
+    const polisher = new SnippetPolisher();
+
+    it('6.1 should reject turning defeat into victory (被迫撤退 -> 大获全胜)', async () => {
+      await assert.rejects(
+        () => polisher.polishSnippet({
+          snippet: '原句：伏击战最终失败，主角被迫撤退。修改：主角反手消灭全军，大获全胜。',
+          polishType: 'dialogue_subtext',
+          expectedOutcome: 'forced_retreat'
+        }),
+        (err) => {
+          assert.ok(err instanceof NovelError);
+          assert.strictEqual(err.code, 'POLISH_INVARIANT_VIOLATION');
+          assert.ok(err.details.violatedInvariants.includes('key_narrative_outcomes'));
+          return true;
+        }
+      );
+    });
+
+    it('6.2 should reject turning negotiation failure into success (协议告吹 -> 签订主权协议)', async () => {
+      await assert.rejects(
+        () => polisher.polishSnippet({
+          snippet: '原句：谈判协议告吹，刺客败退。修改：刺客威逼得手，签订了主权归属协议。',
+          polishType: 'dialogue_subtext',
+          expectedOutcome: 'deal_failed'
+        }),
+        (err) => {
+          assert.ok(err instanceof NovelError);
+          assert.strictEqual(err.code, 'POLISH_INVARIANT_VIOLATION');
+          assert.ok(err.details.violatedInvariants.includes('key_narrative_outcomes'));
+          return true;
+        }
+      );
+    });
+
+    it('6.3 should reject turning defeat into victory when detected via defeat keywords without explicit expectedOutcome', async () => {
+      await assert.rejects(
+        () => polisher.polishSnippet({
+          snippet: '原句：沈澈战死，守军全面败退。修改：守军全面胜利，反败为胜。',
+          polishType: 'combat_tension'
+        }),
+        (err) => {
+          assert.ok(err instanceof NovelError);
+          assert.strictEqual(err.code, 'POLISH_INVARIANT_VIOLATION');
+          assert.ok(err.details.violatedInvariants.includes('key_narrative_outcomes'));
+          return true;
+        }
+      );
+    });
+
+    it('6.4 should allow polish when narrative outcome remains consistent', async () => {
+      const res = await polisher.polishSnippet({
+        snippet: '沈澈被迫退入雨林深处，身后追兵的枪声渐行渐远。',
+        polishType: 'sensory',
+        expectedOutcome: 'retreat'
+      });
+
+      assert.strictEqual(res.status, 'success');
+      assert.strictEqual(res.invariantCheck.passed, true);
+    });
+  });
+
+  // =========================================================================
+  // Section 7: Dispatcher End-to-End Stress
+  // =========================================================================
+  describe('Section 7: Dispatcher End-to-End Stress & Edge Cases', () => {
+    it('7.1 should reject ComposeChapterDraft with missing chapterId via dispatcher', async () => {
+      await assert.rejects(
+        () => dispatcher.dispatch('ComposeChapterDraft', {}),
+        (err) => {
+          assert.ok(err instanceof NovelError);
+          assert.strictEqual(err.code, 'MISSING_CHAPTER_ID');
+          return true;
+        }
+      );
+    });
+
+    it('7.2 should reject ExpandSceneBeat with missing beatId via dispatcher', async () => {
+      await assert.rejects(
+        () => dispatcher.dispatch('ExpandSceneBeat', {}),
+        (err) => {
+          assert.ok(err instanceof NovelError);
+          assert.strictEqual(err.code, 'MISSING_BEAT_ID');
+          return true;
+        }
+      );
+    });
+
+    it('7.3 should reject PolishSceneSnippet with missing snippet via dispatcher', async () => {
+      await assert.rejects(
+        () => dispatcher.dispatch('PolishSceneSnippet', { snippet: '' }),
+        (err) => {
+          assert.ok(err instanceof NovelError);
+          assert.strictEqual(err.code, 'INVALID_PARAMETER');
+          return true;
+        }
+      );
     });
   });
 });

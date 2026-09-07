@@ -72,12 +72,41 @@ class CollaborationCommands {
    * @returns {Promise<object>}
    */
   static async handleBuildVCPContext(params = {}, context = {}) {
-    const { dbManager, pathGuard } = context;
+    const { dbManager, pathGuard, config } = context;
     const requestId = CollaborationCommands._ensureRequestId(params);
     const databaseRevision = CollaborationCommands._getDatabaseRevision(dbManager);
 
+    let augmentedCandidates = Array.isArray(params.semanticCandidates) ? [...params.semanticCandidates] : [];
+    if (params.enableRagAugment) {
+      try {
+        const NovelLoreRetriever = require('../rag/NovelLoreRetriever');
+        const vaultPath = params.vaultPath || (config && (config.VAULT_ROOT || config.DEFAULT_WORLDTREE_PATH));
+        if (vaultPath) {
+          const retriever = new NovelLoreRetriever({ vaultPath, config });
+          const query = params.ragQuery || (Array.isArray(params.focusEntities) ? params.focusEntities.join(' ') : String(params.focusEntities || ''));
+          if (query && query.trim()) {
+            const ragRes = await retriever.searchWorldTree({ query: query.trim(), topK: params.ragTopK || 3, fetchDetail: true });
+            if (ragRes && Array.isArray(ragRes.hits)) {
+              for (const hit of ragRes.hits) {
+                augmentedCandidates.push({
+                  candidateId: hit.id,
+                  title: hit.title,
+                  content: `${hit.summary}\n\n${hit.details || ''}`.trim(),
+                  sourceSystem: 'NovelEngineering-RAG',
+                  canonLevel: hit.canonLevel,
+                  status: hit.canonLevel >= 2 ? 'active' : 'draft'
+                });
+              }
+            }
+          }
+        }
+      } catch (_) {
+        // RAG augment error fails gracefully, does not break context compilation
+      }
+    }
+
     const builder = new VCPContextBuilder(dbManager, { pathGuard });
-    const result = builder.buildContext({ ...params, requestId });
+    const result = builder.buildContext({ ...params, semanticCandidates: augmentedCandidates, requestId });
 
     const markdown = [
       '### [NovelEngineering] VCP Context Snapshot (v4.0)',

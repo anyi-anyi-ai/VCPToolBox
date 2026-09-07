@@ -6,13 +6,29 @@
 不包含生图与联网搜索干扰，为码字工位提供纯净、低延迟、防幻觉的创作环境。
 
 ======================================================================
-【小说创作 6 步防幻觉闭环流程】
-1. 编译章节上下文 (BuildVCPContext) -> 2. 查阅叙事债务压力 (GetDebtPressure) ->
-3. 撰写章节草稿 (SaveChapterDraft)   -> 4. 7维正史防泄露巡检 (EvaluateCanonLeakage) ->
-5. 提炼本章剧情记忆 (SuggestMemoryUpdate) -> 6. 知识库与长期记忆沉淀 (PublishToVCPMemory / ObsidianBridge)
+【小说创作闭环流程与设定检索红线】
+★ 设定查询规范：
+  - 【强制首选】查阅世界树设定、人物背景、公理规则、场景数据等：必须优先调用「NovelEngineering: SearchWorldTree」。
+  - 【严禁滥用】严禁对世界树设定目录盲目使用 FileOperator 或 ObsidianBridge 进行全文件读取（防止 Token 撑爆与幻觉）！
+  - 【职责划分】查世界树设定用 NovelEngineering；查系统临时文件用 FileOperator。
+★ 7 步防幻觉创作闭环：
+0. 设定语义精准召回 (SearchWorldTree) -> 1. 编译章节上下文 (BuildVCPContext) ->
+2. 查阅叙事债务压力 (GetDebtPressure) -> 3. 撰写章节草稿 (SaveChapterDraft) ->
+4. 7维正史防泄露巡检 (EvaluateCanonLeakage) -> 5. 提炼本章剧情记忆 (SuggestMemoryUpdate) ->
+6. 知识库与长期记忆沉淀 (PublishToVCPMemory / ObsidianBridge)
 ======================================================================
 
-[===vcp_fold:0.25::desc:小说正文码字、草稿存盘与即时质检===]
+[===vcp_fold:0.25::desc:小说设定检索、正文码字与草稿存盘===]
+
+## 0. 世界树两阶段精准语义检索 (NovelEngineering: SearchWorldTree)
+【动笔前与写作中查设定必调！】首选专用命令，自动完成向量/BM25语义匹配并切出精准原件段落。
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」NovelEngineering「末」,
+command:「始」SearchWorldTree「末」,
+query:「始」星云基地的能源核心与防御架构「末」,
+topK:「始」3「末」,
+fetchDetail:「始」true「末」
+<<<[END_TOOL_REQUEST]>>>
 
 ## 1. 篇章上下文标准编译 (NovelEngineering: BuildVCPContext)
 动笔前必调！自动聚合世界公理、出场实体正史、时间线与开放伏笔，杜绝自相矛盾。

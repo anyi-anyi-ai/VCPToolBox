@@ -26,6 +26,10 @@ const ContextTraceRepo = require('./repositories/ContextTraceRepo');
 const NarrativeDebtRepo = require('./repositories/NarrativeDebtRepo');
 const DebtEventRepo = require('./repositories/DebtEventRepo');
 const MicroPayoffRepo = require('./repositories/MicroPayoffRepo');
+const BeatRepo = require('./repositories/BeatRepo');
+const DraftVersionRepo = require('./repositories/DraftVersionRepo');
+const StateMutationRepo = require('./repositories/StateMutationRepo');
+const LoreSourceRepo = require('./repositories/LoreSourceRepo');
 
 // Migration Runner
 const MigrationRunner = require('../migrations/MigrationRunner');
@@ -63,6 +67,10 @@ class DatabaseManager {
     this.narrativeDebts = null;
     this.debtEvents = null;
     this.microPayoffs = null;
+    this.beats = null;
+    this.draftVersions = null;
+    this.stateMutations = null;
+    this.loreSources = null;
 
     if (options.autoInit !== false) {
       this.init();
@@ -132,6 +140,10 @@ class DatabaseManager {
     this.narrativeDebts = new NarrativeDebtRepo(this.db);
     this.debtEvents = new DebtEventRepo(this.db);
     this.microPayoffs = new MicroPayoffRepo(this.db);
+    this.beats = new BeatRepo(this.db);
+    this.draftVersions = new DraftVersionRepo(this.db);
+    this.stateMutations = new StateMutationRepo(this.db);
+    this.loreSources = new LoreSourceRepo(this.db);
 
     return this;
   }
@@ -218,6 +230,8 @@ class DatabaseManager {
       throw new SchemaMismatchError('Database is closed. Cannot verify schema integrity.');
     }
 
+    const actualTables = new Set(this.getTableNames());
+
     const expectedTables = [
       'schema_version',
       'migration_history',
@@ -239,7 +253,9 @@ class DatabaseManager {
       'micro_payoffs'
     ];
 
-    const actualTables = new Set(this.getTableNames());
+    if (actualTables.has('chapter_beats')) {
+      expectedTables.push('chapter_beats', 'draft_versions', 'state_mutations', 'lore_sources');
+    }
     const missingTables = expectedTables.filter((t) => !actualTables.has(t));
     const errors = [];
 
@@ -261,6 +277,10 @@ class DatabaseManager {
       debt_events: ['debt_id', 'event_type', 'chapter_number', 'new_balance'],
       micro_payoffs: ['debt_id', 'payoff_id', 'chapter_number', 'payoff_type']
     };
+
+    if (actualTables.has('chapter_beats')) {
+      criticalColumns.chapter_beats = ['beat_id', 'chapter_id', 'beat_order', 'scene_goal', 'status', 'version'];
+    }
 
     for (const [table, cols] of Object.entries(criticalColumns)) {
       if (actualTables.has(table)) {
@@ -456,7 +476,11 @@ class DatabaseManager {
       totalContextTraces: tableCounts.context_traces || 0,
       totalNarrativeDebts: tableCounts.narrative_debts || 0,
       totalDebtEvents: tableCounts.debt_events || 0,
-      totalMicroPayoffs: tableCounts.micro_payoffs || 0
+      totalMicroPayoffs: tableCounts.micro_payoffs || 0,
+      totalChapterBeats: tableCounts.chapter_beats || 0,
+      totalDraftVersions: tableCounts.draft_versions || 0,
+      totalStateMutations: tableCounts.state_mutations || 0,
+      totalLoreSources: tableCounts.lore_sources || 0
     };
   }
 
@@ -467,6 +491,10 @@ class DatabaseManager {
     if (!this.isOpen()) return;
 
     const tables = [
+      'state_mutations',
+      'lore_sources',
+      'draft_versions',
+      'chapter_beats',
       'micro_payoffs',
       'debt_events',
       'narrative_debts',

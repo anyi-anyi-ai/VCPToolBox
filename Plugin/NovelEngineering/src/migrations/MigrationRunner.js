@@ -153,11 +153,16 @@ class MigrationRunner {
     let baselineVersion = 1;
     let baselineDescription = 'Baseline legacy Phase 1 database';
 
-    // Check if Phase 5 is already in place
+    // Check if Phase 6 is already in place
+    const hasChapterBeats = domainTables.includes('chapter_beats');
+    const hasDraftVersions = domainTables.includes('draft_versions');
     const hasNarrativeDebts = domainTables.includes('narrative_debts');
     const hasDebtEvents = domainTables.includes('debt_events');
     const hasMicroPayoffs = domainTables.includes('micro_payoffs');
-    if (hasNarrativeDebts || hasDebtEvents || hasMicroPayoffs) {
+    if (hasChapterBeats || hasDraftVersions) {
+      baselineVersion = 6;
+      baselineDescription = 'Baseline legacy Phase 6 database';
+    } else if (hasNarrativeDebts || hasDebtEvents || hasMicroPayoffs) {
       baselineVersion = 5;
       baselineDescription = 'Baseline legacy Phase 5 database';
     } else {
@@ -442,6 +447,10 @@ class MigrationRunner {
     const existingTables = new Set(
       db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'").all().map((r) => r.name)
     );
+
+    if (existingTables.has('chapter_beats')) {
+      requiredTables.push('chapter_beats', 'draft_versions', 'state_mutations', 'lore_sources');
+    }
 
     const missingTables = requiredTables.filter((t) => !existingTables.has(t));
     if (missingTables.length > 0) {

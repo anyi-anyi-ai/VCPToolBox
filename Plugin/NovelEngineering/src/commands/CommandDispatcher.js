@@ -19,8 +19,14 @@ const GovernanceCommands = require('./GovernanceCommands');
 const ConsistencyCommands = require('./ConsistencyCommands');
 const SnapshotCommands = require('./SnapshotCommands');
 const RagExportCommands = require('./RagExportCommands');
+const LoreRAGCommands = require('./LoreRAGCommands');
 const CollaborationCommands = require('./CollaborationCommands');
 const DebtCommands = require('./DebtCommands');
+const BeatCommands = require('./BeatCommands');
+const DraftingCommands = require('./DraftingCommands');
+const IntegrityCommands = require('./IntegrityCommands');
+const SettlementCommands = require('./SettlementCommands');
+const { BuildBeatContext } = require('../context/BuildBeatContext');
 
 class CommandDispatcher {
   /**
@@ -37,6 +43,7 @@ class CommandDispatcher {
     this.pathGuard = options.pathGuard || new PathGuard({ pluginRoot: this.basePath });
     this.dbPath = options.dbPath || this.config.DATABASE_PATH || 'data/novel_index.db';
     this.dbManager = options.dbManager || null;
+    this.chatClient = options.chatClient || null;
     this.version = '1.0.0';
     this.name = 'NovelEngineering';
   }
@@ -76,7 +83,8 @@ class CommandDispatcher {
       },
       pathGuard: this.pathGuard,
       config: this.config,
-      basePath: this.basePath
+      basePath: this.basePath,
+      chatClient: this.chatClient
     };
   }
 
@@ -150,7 +158,34 @@ class CommandDispatcher {
       'ManageNarrativeDebt',
       'RecordMicroPayoff',
       'GetDebtPressure',
-      'EvaluateDebtHealth'
+      'EvaluateDebtHealth',
+      // Two-Stage Hybrid RAG Commands
+      'SearchWorldTree',
+      'BuildSummaryIndex',
+      'GenerateSummarySkeleton',
+      // Phase 6 Milestone 1 Scene Beats Commands
+      'PlanSceneBeats',
+      'GetSceneBeats',
+      'UpdateSceneBeat',
+      'ReorderSceneBeats',
+      'ConfirmSceneBeats',
+      // Phase 6 Milestone 2 Drafting & Polishing Commands
+      'ExpandSceneBeat',
+      'ReviseSceneBeat',
+      'ComposeChapterDraft',
+      'PolishSceneSnippet',
+      // Phase 6 Milestone 3 Quality Gate Commands
+      'EvaluateDraftIntegrity',
+      'CreateRevisionTasks',
+      // Phase 6 Milestone 4 State Settlement & Rollback Commands
+      'ExtractStateMutations',
+      'ReviewStateMutations',
+      'ApplyStateMutations',
+      'RollbackStateMutations',
+      'GenerateLorePatch',
+      'SyncLorePatch',
+      // Phase 6 Milestone 5 Context Compilation Commands
+      'BuildBeatContext'
     ]);
 
     if (!supportedDomainCommands.has(trimmedAction)) {
@@ -285,6 +320,75 @@ class CommandDispatcher {
       case 'EvaluateDebtHealth':
         return ConsistencyCommands.handleEvaluateDebtHealth(parameters, context);
 
+      // Two-Stage Hybrid RAG Commands
+      case 'SearchWorldTree':
+        return LoreRAGCommands.handleSearchWorldTree(parameters, context);
+
+      case 'BuildSummaryIndex':
+        return LoreRAGCommands.handleBuildSummaryIndex(parameters, context);
+
+      case 'GenerateSummarySkeleton':
+        return LoreRAGCommands.handleGenerateSummarySkeleton(parameters, context);
+
+      // Phase 6 Milestone 1 Scene Beats Commands
+      case 'PlanSceneBeats':
+        return BeatCommands.handlePlanSceneBeats(parameters, context);
+
+      case 'GetSceneBeats':
+        return BeatCommands.handleGetSceneBeats(parameters, context);
+
+      case 'UpdateSceneBeat':
+        return BeatCommands.handleUpdateSceneBeat(parameters, context);
+
+      case 'ReorderSceneBeats':
+        return BeatCommands.handleReorderSceneBeats(parameters, context);
+
+      case 'ConfirmSceneBeats':
+        return BeatCommands.handleConfirmSceneBeats(parameters, context);
+
+      // Phase 6 Milestone 2 Drafting & Polishing Commands
+      case 'ExpandSceneBeat':
+        return DraftingCommands.handleExpandSceneBeat(parameters, context);
+
+      case 'ReviseSceneBeat':
+        return DraftingCommands.handleReviseSceneBeat(parameters, context);
+
+      case 'ComposeChapterDraft':
+        return DraftingCommands.handleComposeChapterDraft(parameters, context);
+
+      case 'PolishSceneSnippet':
+        return DraftingCommands.handlePolishSceneSnippet(parameters, context);
+
+      // Phase 6 Milestone 3 Quality Gate Commands
+      case 'EvaluateDraftIntegrity':
+        return IntegrityCommands.handleEvaluateDraftIntegrity(parameters, context);
+
+      case 'CreateRevisionTasks':
+        return IntegrityCommands.handleCreateRevisionTasks(parameters, context);
+
+      // Phase 6 Milestone 4 State Settlement & Rollback Commands
+      case 'ExtractStateMutations':
+        return SettlementCommands.handleExtractStateMutations(parameters, context);
+
+      case 'ReviewStateMutations':
+        return SettlementCommands.handleReviewStateMutations(parameters, context);
+
+      case 'ApplyStateMutations':
+        return SettlementCommands.handleApplyStateMutations(parameters, context);
+
+      case 'RollbackStateMutations':
+        return SettlementCommands.handleRollbackStateMutations(parameters, context);
+
+      case 'GenerateLorePatch':
+        return SettlementCommands.handleGenerateLorePatch(parameters, context);
+
+      case 'SyncLorePatch':
+        return SettlementCommands.handleSyncLorePatch(parameters, context);
+
+      // Phase 6 Milestone 5 Context Compilation Commands
+      case 'BuildBeatContext':
+        return BuildBeatContext(parameters, context);
+
       default:
         throw new Error(
           `Unsupported or unknown command: "${trimmedAction}". Supported commands: ${Array.from(supportedDomainCommands).join(', ')}, ping, help, info.`
@@ -352,6 +456,21 @@ class CommandDispatcher {
       'RecordMicroPayoff',
       'GetDebtPressure',
       'EvaluateDebtHealth',
+      // Two-Stage Hybrid RAG
+      'SearchWorldTree',
+      'BuildSummaryIndex',
+      'GenerateSummarySkeleton',
+      // Phase 6 Milestone 1 Scene Beats Commands
+      'PlanSceneBeats',
+      'GetSceneBeats',
+      'UpdateSceneBeat',
+      'ReorderSceneBeats',
+      'ConfirmSceneBeats',
+      // Phase 6 Milestone 2 Drafting & Polishing Commands
+      'ExpandSceneBeat',
+      'ReviseSceneBeat',
+      'ComposeChapterDraft',
+      'PolishSceneSnippet',
       'ping',
       'help',
       'info'

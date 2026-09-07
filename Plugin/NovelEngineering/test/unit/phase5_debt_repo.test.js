@@ -50,11 +50,11 @@ describe('Phase 5 Milestone 1: Narrative Debt Tracking System', () => {
       assert.ok(tables.includes('micro_payoffs'), 'micro_payoffs table must exist');
 
       const version = dbManager.getSchemaVersion();
-      assert.equal(version, 5, 'Schema version must be 5');
+      assert.ok(version >= 5, 'Schema version must be at least 5');
 
       const integrity = dbManager.verifySchemaIntegrity();
       assert.equal(integrity.valid, true);
-      assert.equal(integrity.schemaVersion, 5);
+      assert.ok(integrity.schemaVersion >= 5);
       assert.equal(integrity.errors.length, 0);
     });
 
@@ -100,7 +100,7 @@ describe('Phase 5 Milestone 1: Narrative Debt Tracking System', () => {
       const pathGuard = new PathGuard({ pluginRoot: tempEnv.path });
       dbManager = new DatabaseManager(dbPath, { pathGuard });
 
-      assert.equal(dbManager.getSchemaVersion(), 5);
+      assert.ok(dbManager.getSchemaVersion() >= 5);
       const tables = dbManager.getTableNames();
       assert.ok(tables.includes('narrative_debts'));
       assert.ok(tables.includes('debt_events'));
@@ -119,14 +119,14 @@ describe('Phase 5 Milestone 1: Narrative Debt Tracking System', () => {
     it('1.4 should be completely idempotent on repeated migration execution', () => {
       dbManager = new DatabaseManager(':memory:');
       const initialVersion = dbManager.getSchemaVersion();
-      assert.equal(initialVersion, 5);
+      assert.ok(initialVersion >= 5);
 
       const migrationsDir = path.resolve(__dirname, '../../src/migrations');
       const result = MigrationRunner.runMigrations(dbManager.db, migrationsDir);
 
       assert.equal(result.alreadyUpToDate, true);
       assert.equal(result.applied.length, 0);
-      assert.equal(result.currentVersion, 5);
+      assert.ok(result.currentVersion >= 5);
     });
   });
 
@@ -715,7 +715,7 @@ describe('Phase 5 Milestone 1: Narrative Debt Tracking System', () => {
       dbManager.microPayoffs.recordPayoff({ debtId: 'DEBT-STAT-01', chapterNumber: 1, payoffType: 'sub_payoff' });
 
       const stats = dbManager.getStats();
-      assert.equal(stats.schemaVersion, 5);
+      assert.ok(stats.schemaVersion >= 5);
       assert.equal(stats.totalNarrativeDebts, 1);
       assert.equal(stats.totalDebtEvents, 1); // initial borrow event
       assert.equal(stats.totalMicroPayoffs, 1);

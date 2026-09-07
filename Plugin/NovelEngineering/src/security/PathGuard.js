@@ -173,6 +173,29 @@ class PathGuard {
   }
 
   /**
+   * Asserts that a path is strictly located inside the target vault.
+   * @param {string} targetPath
+   * @param {string} [operation='read']
+   * @returns {string} Fully resolved path
+   */
+  assertInsideVault(targetPath, operation = 'read') {
+    if (!this.vaultRoot) {
+      throw new SecurityError('Vault root is not configured.', 'ERR_VAULT_NOT_CONFIGURED', targetPath, this.baseDir);
+    }
+    const resolved = path.isAbsolute(targetPath) ? path.resolve(targetPath) : path.resolve(this.vaultRoot, targetPath);
+    const canonical = this._getCanonicalPath(resolved);
+    if (!this._isPathInside(canonical, this.vaultRoot)) {
+      throw new SecurityError(
+        `Path outside authorized vault root: ${targetPath}`,
+        'ERR_PATH_OUTSIDE_VAULT',
+        targetPath,
+        this.vaultRoot
+      );
+    }
+    return canonical;
+  }
+
+  /**
    * Validates path syntax, character safety, DOS devices, and NTFS ADS.
    * @param {string} inputPath
    * @throws {SecurityError|TypeError}

@@ -329,7 +329,7 @@ describe('Phase 5 Milestone 1: Challenger 2 Empirical Adversarial Stress Suite',
       const dbPath = path.join(tempEnv.path, 'tamper_test.db');
       const pathGuard = new PathGuard({ pluginRoot: tempEnv.path });
       dbManager = new DatabaseManager(dbPath, { pathGuard });
-      assert.equal(dbManager.getSchemaVersion(), 5);
+      assert.ok(dbManager.getSchemaVersion() >= 5);
       dbManager.close();
 
       // Open raw DB and tamper with checksum in migration_history
@@ -377,7 +377,7 @@ describe('Phase 5 Milestone 1: Challenger 2 Empirical Adversarial Stress Suite',
       const pathGuard = new PathGuard({ pluginRoot: tempEnv.path });
       dbManager = new DatabaseManager(dbPath, { pathGuard });
 
-      assert.equal(dbManager.getSchemaVersion(), 5);
+      assert.ok(dbManager.getSchemaVersion() >= 5);
       const tables = dbManager.getTableNames();
       assert.ok(tables.includes('narrative_debts'));
       assert.ok(tables.includes('debt_events'));

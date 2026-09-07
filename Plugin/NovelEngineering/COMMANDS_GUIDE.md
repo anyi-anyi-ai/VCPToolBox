@@ -18,7 +18,7 @@ command:「始」<命令名>「末」,
 > 2. 命令名全部为 **PascalCase 大驼峰命名**（例如 GetChapterContext、SaveChapterDraft、CheckConsistency），区分大小写。
 > 3. 对于写操作（如正史晋升、废弃、快照恢复），系统设有安全门禁，需附带特定的安全确认口令（如 confirmationToken:「始」CONFIRM_CANON_CHANGE「末」）。\n
 ---\n
-## 二、命令按功能模块索引 (39 项)\n
+## 二、命令按功能模块索引 (60 项)\n
 ### 1. 世界树扫描与资产识别\n
 | # | 命令名 (command) | 功能概要 |
 |---|---|---|
@@ -1573,33 +1573,356 @@ chapterNumber:「始」5「末」
 tool_name:「始」NovelEngineering「末」,
 command:「始」EvaluateDebtHealth「末」,
 currentChapter:「始」10「末」
-<<<[END_TOOL_REQUEST]>>>\n
-**调用示例**：\n
-`	ext
+<<<[END_TOOL_REQUEST]>>>
+
+**调用示例**：
+```text
 <<<[TOOL_REQUEST]>>>
 tool_name:「始」NovelEngineering「末」,
 command:「始」EvaluateDebtHealth「末」,
 currentChapter:「始」10「末」
 <<<[END_TOOL_REQUEST]>>>
-`\n
----\n
-## 四、Agent 最佳写作协作流水线 (Pipeline)\n
+```
 
-当 CP Agent 承担小说创作或辅助任务时，推荐遵循以下严格防幻觉、防正史污染的 6 步闭环：
+---
+### 40. SearchWorldTree
+功能: [设定检索首选] 对世界树执行两阶段层级混合检索（Summary-to-Detail）。第一阶段通过 00_总览与索引/ 向量召回，第二阶段按 heading 和 line range 精准切片原件正文（受 charLimit 截断保护），杜绝盲目通读全文件。当 Embedding API 不可用时自动切换至 BM25 关键词兜底，并支持源文件变更失效 (STALE) 实时检测。
+参数:
+- `query` (字符串, 必填): 自然语言检索词或剧情设定疑问。
+- `topK` (整数, 可选, 默认 3): 召回条目数。
+- `fetchDetail` (布尔值, 可选, 默认 true): 是否一步到位提取原件精准切片段落。
+- `category` (字符串, 可选): 分类过滤（'character', 'planet', 'technology', 'organization', 'lore'）。
+- `canonOnly` (布尔值, 可选, 默认 false): 是否只返回核心正史 (canon_level>=2)。
+- `charLimit` (整数, 可选, 默认 3000): 单条原件切片字符截断上限。
+调用格式:
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」NovelEngineering「末」,
+command:「始」SearchWorldTree「末」,
+query:「始」反重力引擎的运作公理「末」,
+topK:「始」3「末」,
+fetchDetail:「始」true「末」
+<<<[END_TOOL_REQUEST]>>>
 
-`mermaid
+---
+### 41. BuildSummaryIndex
+功能: 扫描世界树 00_总览与索引/ 目录，通过 mtime + SHA-256 增量检测为概览文件生成或更新纯 JS 本地向量索引，并记录对应源文件哈希，若源文件已变更自动标记对应概览为 STALE。
+参数:
+- `vaultPath` (字符串, 可选): 世界树根目录。
+- `summaryRelDir` (字符串, 可选, 默认 '00_总览与索引'): 概览目录相对路径。
+- `forceReindex` (布尔值, 可选, 默认 false): 是否强制全量重新调用 Embedding 接口更新。
+调用格式:
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」NovelEngineering「末」,
+command:「始」BuildSummaryIndex「末」
+<<<[END_TOOL_REQUEST]>>>
+
+---
+### 42. GenerateSummarySkeleton
+功能: 自动扫描世界树设定文件，提取 Frontmatter、标题结构与首段摘要，在 00_总览与索引/ 下生成初始定位型概览文件骨架。为写操作，强制要求安全令牌。
+参数:
+- `confirmationToken` (字符串, 必填): 必须输入 'CONFIRM_GENERATE_SKELETON'。
+- `targetCategory` (字符串, 可选): 指定提取分类。
+- `forceOverwrite` (布尔值, 可选, 默认 false): 是否强制覆盖已存在概览（默认保留用户润色内容）。
+调用格式:
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」NovelEngineering「末」,
+command:「始」GenerateSummarySkeleton「末」,
+---
+### 43. PlanSceneBeats
+功能: (Phase 6 M1) 为指定章节编排规划场景节拍 (Scene Beats)，绑定核心戏剧目标、冲突、登场角色、地点、世界公理与叙事债务动作。初始状态为 draft。
+参数:
+- `chapterId` (字符串/整数, 必填): 目标章节标识 (如 'CH001' 或 '1')。
+- `beats` (对象数组, 必填): 节拍清单，每项必须包含 `sceneGoal`，可选 `beatId`, `title`, `conflict`, `characters`, `location`, `worldRules`, `debtAction`, `emotionalTone`, `inputState`, `expectedOutput`。
+- `overwrite` (布尔值, 可选, 默认 false): 是否清空覆盖当前章节已有节拍。
+调用格式:
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」NovelEngineering「末」,
+command:「始」PlanSceneBeats「末」,
+chapterId:「始」CH001「末」,
+beats:「始」[{"title":"遭遇战","sceneGoal":"主角探明敌方先遣队意图"}]「末」
+<<<[END_TOOL_REQUEST]>>>
+
+---
+### 44. GetSceneBeats
+功能: (Phase 6 M1) 获取指定章节按 beat_order 升序排列的全部场景节拍，返回各状态节拍统计与是否已就绪章节正文批处理起草 (allConfirmed)。
+参数:
+- `chapterId` (字符串/整数, 必填): 目标章节标识。
+- `status` (字符串, 可选, 默认 'all'): 状态过滤 ('all', 'draft', 'confirmed', 'expanded', 'revised')。
+调用格式:
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」NovelEngineering「末」,
+command:「始」GetSceneBeats「末」,
+chapterId:「始」CH001「末」
+<<<[END_TOOL_REQUEST]>>>
+
+---
+### 45. UpdateSceneBeat
+功能: (Phase 6 M1) 增量修改单个场景节拍属性（标题、目标、公理、角色、债务动作等），自动递增版本号 (version)。若结构性大改可标记 resetStatus 为 true 退回 draft。
+参数:
+- `beatId` (字符串, 必填): 目标节拍唯一标识 (如 'BEAT_CH001_01')。
+- `updates` (对象, 必填): 更新字段映射对象。
+- `resetStatus` (布尔值, 可选, 默认 false): 是否将节拍状态重置回 draft 重新进入待确认状态。
+调用格式:
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」NovelEngineering「末」,
+command:「始」UpdateSceneBeat「末」,
+beatId:「始」BEAT_CH001_01「末」,
+updates:「始」{"sceneGoal":"修改后的核心目标"}「末」
+<<<[END_TOOL_REQUEST]>>>
+
+---
+### 46. ReorderSceneBeats
+功能: (Phase 6 M1) 原子化重排章节内全部节拍的顺序，内部使用两阶段负序事务 (Two-Phase Transaction) 杜绝 SQLite UNIQUE 约束冲突，并递增各节拍版本号。
+参数:
+- `chapterId` (字符串/整数, 必填): 目标章节标识。
+- `orderedBeatIds` (字符串数组, 必填): 包含本章节全部节拍 ID 的期望顺序清单。
+调用格式:
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」NovelEngineering「末」,
+command:「始」ReorderSceneBeats「末」,
+chapterId:「始」CH001「末」,
+orderedBeatIds:「始」["BEAT_CH001_02","BEAT_CH001_01"]「末」
+<<<[END_TOOL_REQUEST]>>>
+
+---
+### 47. ConfirmSceneBeats
+功能: (Phase 6 M1) 校验并锁定场景节拍，将其状态从 draft 跃迁为 confirmed。若章节内存在任何 draft 节拍，后续章节起草 (ComposeChapterDraft) 将触发硬性质量闸门拦截。
+参数:
+- `chapterId` (字符串/整数, 必填): 目标章节标识。
+- `beatIds` (字符串数组, 可选): 指定确认的节拍 ID 清单（缺省时确认当前章节内所有 draft 节拍）。
+调用格式:
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」NovelEngineering「末」,
+command:「始」ConfirmSceneBeats「末」,
+chapterId:「始」CH001「末」
+<<<[END_TOOL_REQUEST]>>>
+
+---
+### 48. ExpandSceneBeat
+功能: (Phase 6 M2) 单节拍交互式起草扩写，针对已确认 (confirmed) 节拍生成 600-800 字正文，注入前序节拍上下文与连续性约束，并严格包裹 Markdown 隐形边界信封 (<!-- BEAT_START ... --> ... <!-- BEAT_END ... -->)。节拍状态跃迁为 expanded。
+参数:
+- `beatId` (字符串, 必填): 目标节拍标识 (如 'BEAT_CH001_01')。
+- `chapterId` (字符串/整数, 可选): 所属章节标识。
+- `styleProfile` (字符串, 可选, 默认 'standard'): 文风设定 ('standard', 'hard_sci_fi_gritty' 等)。
+- `customDirectives` (字符串, 可选): 定向扩写指令。
+- `targetWordCount` (整数, 可选, 默认 700): 目标字数 (600-800)。
+调用格式:
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」NovelEngineering「末」,
+command:「始」ExpandSceneBeat「末」,
+beatId:「始」BEAT_CH001_01「末」
+<<<[END_TOOL_REQUEST]>>>
+
+---
+### 49. ReviseSceneBeat
+功能: (Phase 6 M2) 节拍级精准作者反馈修订，在保留 Markdown 边界信封的前提下针对节奏、动作或感官进行定向改写，或直接接收作者修订文本。更新节拍状态为 revised 并自增修订版本号。
+参数:
+- `beatId` (字符串, 必填): 目标节拍标识。
+- `authorFeedback` (字符串, 可选): 作者自然语言修改意见。
+- `newContent` (字符串, 可选): 直接替换的修订正文。
+- `focusAreas` (字符串数组, 可选): 重点优化领域 (如 ['pacing', 'combat_tension'])。
+调用格式:
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」NovelEngineering「末」,
+command:「始」ReviseSceneBeat「末」,
+beatId:「始」BEAT_CH001_01「末」,
+authorFeedback:「始」强化环境冷雨的感官描写与紧张感「末」
+<<<[END_TOOL_REQUEST]>>>
+
+---
+### 50. ComposeChapterDraft
+功能: (Phase 6 M2) 章节级批处理起草拼装，串联章节内全部已确认/已扩写节拍，生成约 3000 字完整章节草稿。硬性质量闸门拦截：若章节内有任何 draft 节拍立即拒绝 (COMPOSITION_BLOCKED_UNCONFIRMED_BEATS)。在 draft_versions 表持久化草稿版本快照。
+参数:
+- `chapterId` (字符串/整数, 必填): 目标章节标识 (如 'CH001')。
+- `title` (字符串, 可选): 章节标题。
+- `styleProfile` (字符串, 可选, 默认 'standard'): 整体文风设定。
+- `saveToDisk` (布尔值, 可选, 默认 false): 是否将草稿同步写入磁盘。
+调用格式:
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」NovelEngineering「末」,
+command:「始」ComposeChapterDraft「末」,
+chapterId:「始」CH001「末」
+<<<[END_TOOL_REQUEST]>>>
+
+---
+### 51. PolishSceneSnippet
+功能: (Phase 6 M2) 局部微观外科手术级润色，支持感官沉浸 (sensory)、战斗张力 (combat_tension) 与对话潜台词 (dialogue_subtext) 强化。严格受控于 4 大刚性不变量 (正史事实实体、角色物理伤情、时间因果时序、核心叙事胜败结果)，违背不变量即刻硬性拦截 (POLISH_INVARIANT_VIOLATION)。
+参数:
+- `snippet` (字符串, 必填): 待润色片段或带修改对照的文本。
+- `polishType` (字符串, 必填): 润色类型 ('sensory', 'combat_tension', 'dialogue_subtext')。
+- `intensity` (字符串, 可选, 默认 'moderate'): 强化强度 ('subtle', 'moderate', 'high')。
+- `contextEntities` (对象数组, 可选): 登场实体及伤情上下文。
+- `expectedOutcome` (字符串, 可选): 预期胜败结局锚点。
+调用格式:
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」NovelEngineering「末」,
+command:「始」PolishSceneSnippet「末」,
+snippet:「始」沈澈握紧枪托，在雨中注视着前方的巡逻机。「末」,
+polishType:「始」sensory「末」
+<<<[END_TOOL_REQUEST]>>>
+
+---
+### 52. EvaluateDraftIntegrity
+功能: (Phase 6 M3) 四维多维质检门禁评估，并发或顺序执行 4 大 Guard（正史泄露/废弃设定引用、角色 OOC/性格漂移、世界公理与资源冲突、叙事结构断裂），返回结构化诊断、行号定位、严重度分类与阻断标识 (canSettle)。
+参数:
+- `content` (字符串, 可选): 草稿正文。
+- `draftVersionId` (字符串, 可选): 关联草稿版本快照 ID。
+- `chapterId` (字符串/整数, 可选): 所属章节标识。
+调用格式:
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」NovelEngineering「末」,
+command:「始」EvaluateDraftIntegrity「末」,
+chapterId:「始」CH001「末」,
+content:「始」草稿正文内容...「末」
+<<<[END_TOOL_REQUEST]>>>
+
+---
+### 53. CreateRevisionTasks
+功能: (Phase 6 M3) 将质量门禁检测出的问题转化为结构化、可追踪的作者修订任务清单，包含行号范围、优先级、错误代码与修改建议。
+参数:
+- `draftVersionId` (字符串, 必填): 目标草稿版本 ID。
+- `issues` (对象数组, 必填): 质检问题清单。
+调用格式:
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」NovelEngineering「末」,
+command:「始」CreateRevisionTasks「末」,
+draftVersionId:「始」DV001「末」,
+issues:「始」[...]「末」
+<<<[END_TOOL_REQUEST]>>>
+
+---
+### 54. ExtractStateMutations
+功能: (Phase 6 M4) 从章节正文提取实体状态漂移（角色物理伤残/健康、好感度与阵营声望、道具与装备流转、世界规则），生成包含完整 pre-mutation 镜像 (old_value_json) 的候选增量暂存记录。
+参数:
+- `chapterId` (字符串/整数, 必填): 目标章节标识。
+- `draftVersionId` (字符串, 必填): 目标草稿版本 ID。
+- `content` (字符串, 可选): 正文文本（缺省从 draftVersion 读取）。
+调用格式:
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」NovelEngineering「末」,
+command:「始」ExtractStateMutations「末」,
+chapterId:「始」CH001「末」,
+draftVersionId:「始」DV001「末」
+<<<[END_TOOL_REQUEST]>>>
+
+---
+### 55. ReviewStateMutations
+功能: (Phase 6 M4) 状态演变提议审查与差异预览，支持查看正文引用行号、候选变更比对，并由作者或系统进行单项或批量批准/驳回。
+参数:
+- `draftVersionId` (字符串, 必填): 目标草稿版本 ID。
+- `action` (字符串, 可选, 默认 'query'): 操作类型 ('query', 'approve', 'reject')。
+- `mutationIds` (字符串数组, 可选): 指定批准/驳回的提议 ID 清单。
+调用格式:
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」NovelEngineering「末」,
+command:「始」ReviewStateMutations「末」,
+draftVersionId:「始」DV001「末」,
+action:「始」query「末」
+<<<[END_TOOL_REQUEST]>>>
+
+---
+### 56. ApplyStateMutations
+功能: (Phase 6 M4) 在 SQLite 单一原子事务中固化状态演变。强制校验安全确认令牌 (CONFIRM_APPLY_MUTATIONS)，硬性阻断存在 blocker 质检未决项的草稿，自动记录审计日志与正史溯源，且严格支持幂等重试。
+参数:
+- `draftVersionId` (字符串, 必填): 目标草稿版本 ID。
+- `confirmationToken` (字符串, 必填): 必须精确为 'CONFIRM_APPLY_MUTATIONS'。
+- `chapterId` (字符串/整数, 可选): 所属章节标识。
+调用格式:
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」NovelEngineering「末」,
+command:「始」ApplyStateMutations「末」,
+draftVersionId:「始」DV001「末」,
+confirmationToken:「始」CONFIRM_APPLY_MUTATIONS「末」
+<<<[END_TOOL_REQUEST]>>>
+
+---
+### 57. RollbackStateMutations
+功能: (Phase 6 M4) 状态演变无损版本回滚，通过 old_value_json 镜像在单一原子事务中按 LIFO 倒序严格恢复实体属性、关系数值并冻结关联溯源记录。强制校验安全令牌 (CONFIRM_ROLLBACK_MUTATIONS)。
+参数:
+- `draftVersionId` (字符串, 必填): 目标草稿版本 ID。
+- `confirmationToken` (字符串, 必填): 必须精确为 'CONFIRM_ROLLBACK_MUTATIONS'。
+- `chapterId` (字符串/整数, 可选): 章节标识。
+调用格式:
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」NovelEngineering「末」,
+command:「始」RollbackStateMutations「末」,
+draftVersionId:「始」DV001「末」,
+confirmationToken:「始」CONFIRM_ROLLBACK_MUTATIONS「末」
+<<<[END_TOOL_REQUEST]>>>
+
+---
+### 58. GenerateLorePatch
+功能: (Phase 6 M4) 针对已固化的状态演变生成非破坏性 Obsidian Vault Markdown 差异补丁 (Diff Patch)，标注章节来源与引用行号，绝对不覆写作者未经确认的手写笔记。
+参数:
+- `draftVersionId` (字符串, 必填): 目标草稿版本 ID。
+调用格式:
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」NovelEngineering「末」,
+command:「始」GenerateLorePatch「末」,
+draftVersionId:「始」DV001「末」
+<<<[END_TOOL_REQUEST]>>>
+
+---
+### 59. SyncLorePatch
+功能: (Phase 6 M4) 将生成的设定补丁安全回写至 Obsidian Vault，受 PathGuard 沙箱保护，且在语法错误时具备自动快照恢复与故障关闭 (Fail-Closed) 保护。强制校验安全令牌 (CONFIRM_SYNC_LORE_PATCH)。
+参数:
+- `draftVersionId` (字符串, 必填): 目标草稿版本 ID。
+- `confirmationToken` (字符串, 必填): 必须精确为 'CONFIRM_SYNC_LORE_PATCH'。
+调用格式:
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」NovelEngineering「末」,
+command:「始」SyncLorePatch「末」,
+draftVersionId:「始」DV001「末」,
+confirmationToken:「始」CONFIRM_SYNC_LORE_PATCH「末」
+<<<[END_TOOL_REQUEST]>>>
+
+---
+### 60. BuildBeatContext
+功能: (Phase 6 M5) 节拍级微观上下文毫秒级编译，严格组装 6 级优先级上下文：P1(节拍目标, 绝对豁免裁剪) → P2(活动角色状态) → P3(局部公理) → P4(关联叙事债务) → P5(前情摘要) → P6(权威正史事实)。在超出 Token 预算时自动按 P6->P2 级联裁剪。
+参数:
+- `beatId` (字符串, 必填): 目标节拍唯一标识。
+- `maxTokens` (整数, 可选, 默认 6000): Token 预算上限。
+调用格式:
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」NovelEngineering「末」,
+command:「始」BuildBeatContext「末」,
+beatId:「始」BEAT_CH001_01「末」,
+maxTokens:「始」6000「末」
+<<<[END_TOOL_REQUEST]>>>
+
+---
+## 四、Agent 最佳写作协作流水线 (Full Creative Lifecycle Pipeline)
+
+当 Agent 承担小说长篇创作任务时，推荐遵循覆盖全生命周期的 10 步闭环工业流水线：
+
+```mermaid
 graph TD
-    A[1. 编译上下文 BuildVCPContext / GetChapterContext] --> B[2. 查阅叙事债务 GetDebtPressure]
-    B --> C[3. 撰写草稿 SaveChapterDraft]
-    C --> D[4. 7维正史泄露巡检 EvaluateCanonLeakage]
-    D -->|发现违规| C
-    D -->|通过巡检| E[5. 提炼记忆建议 SuggestMemoryUpdate]
-    E --> F[6. 用户确认后沉淀 PublishToVCPMemory]
-`
+    A0[0. 设定语义两阶段召回 SearchWorldTree] --> A1[1. 场景节拍编排 PlanSceneBeats]
+    A1 --> A2[2. 节拍审查与确认 ConfirmSceneBeats]
+    A2 --> A3[3. 分层微观上下文编译 BuildBeatContext]
+    A3 --> B1[4a. 交互式单拍扩写 ExpandSceneBeat / ReviseSceneBeat]
+    A3 --> B2[4b. 章节级整章组装 ComposeChapterDraft]
+    B1 --> C1[5. 手术级局部润色 PolishSceneSnippet]
+    B2 --> C1
+    C1 --> D1[6. 四维质检门禁 EvaluateDraftIntegrity]
+    D1 -->|发现 Blocker| D2[6b. 生成修复任务 CreateRevisionTasks ➜ 局部重修]
+    D2 --> C1
+    D1 -->|门禁通过 canSettle:true| E1[7. 状态演变差分提取 ExtractStateMutations]
+    E1 --> E2[8. 人工审查与审批 ReviewStateMutations]
+    E2 --> F1[9. 单事务固化正史 ApplyStateMutations]
+    F1 --> F2[10. 生成并同步 Obsidian 补丁 GenerateLorePatch / SyncLorePatch]
+    F1 -.->|剧情重写紧急还原| G1[应急无损回滚 RollbackStateMutations]
+```
 
-1. **获取上下文**：调用 BuildVCPContext 或 GetChapterContext，获取包含世界公理、出场实体事实、未完结伏笔的确定性上下文；
-2. **查询债务压力**：调用 GetDebtPressure 检查当前章节是否有高危即将逾期的伏笔需推进，或需要阶段性微兑现；
-3. **安全保存草稿**：草稿正文必须使用 SaveChapterDraft 存入受控沙箱目录，严禁直写或覆盖核心设定源文件；
-4. **正史泄露巡检**：撰写完毕后，必须调用 EvaluateCanonLeakage 进行 7 维度质检，拦截废弃实体、越权全知信息与未确认设定；
-5. **提取记忆更新**：质检合格后，调用 SuggestMemoryUpdate 提取本章关键剧情增量；
-6. **发布沉淀**：获得作者确认后，调用 PublishToVCPMemory 打包并同步至 VCP 长期记忆库。
+0. **设定检索 (SearchWorldTree)**：通过 Summary-to-Detail 两阶段检索精准召回设定与原件切片；
+1. **节拍编排 (PlanSceneBeats)**：规划 3~6 个节拍，绑定戏剧目标、冲突、登场角色与世界公理；
+2. **节拍确认 (ConfirmSceneBeats)**：锁定节拍并解除后续起草硬性阻断门禁；
+3. **微观上下文编译 (BuildBeatContext)**：组装 P1~P6 分层上下文并执行 Token 预算裁剪；
+4. **双模起草 (ExpandSceneBeat / ComposeChapterDraft)**：支持单拍 600~800 字步进扩写或 3000 字整章串联；
+5. **手术级润色 (PolishSceneSnippet)**：强化感官、动作张力或潜台词，4 大刚性不变量受保；
+6. **四维质检 (EvaluateDraftIntegrity)**：扫描正史泄露、OOC、公理违背与结构缺陷，Blocker 阻断结算；
+7. **差分提取 (ExtractStateMutations)**：从正文提取生理伤情、阵营、道具与规则变动；
+8. **审查审批 (ReviewStateMutations)**：查看行号引用与变更差分；
+9. **原子结算 (ApplyStateMutations)**：带口令 `CONFIRM_APPLY_MUTATIONS`，单事务原子提交且严格幂等；
+10. **知识库同步 (GenerateLorePatch / SyncLorePatch)**：受 PathGuard 保护安全同步至 Obsidian 笔记；
+* **无损回滚 (RollbackStateMutations)**：若推翻重写，带口令 `CONFIRM_ROLLBACK_MUTATIONS` 按 LIFO 倒序一键还原。
