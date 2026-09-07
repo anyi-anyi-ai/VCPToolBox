@@ -1592,7 +1592,10 @@ async function startServer() {
 
         // Initialize the new WebSocketServer
         if (DEBUG_MODE) console.log('[Server] Initializing WebSocketServer...');
-        const vcpKeyValue = pluginManager.getResolvedPluginConfigValue('VCPLog', 'VCP_Key') || process.env.VCP_Key;
+        const configuredVcpLogKey = pluginManager.getResolvedPluginConfigValue('VCPLog', 'VCP_Key');
+        const vcpKeyValue = (configuredVcpLogKey && configuredVcpLogKey !== 'Your_Secret_VCP_Key_Here') 
+            ? configuredVcpLogKey 
+            : process.env.VCP_Key;
         const distributedMusicPlaylistSyncEnabled = (process.env.DISTRIBUTED_MUSIC_PLAYLIST_SYNC_ENABLED || 'false').toLowerCase() === 'true';
         const webSocketHeartbeatEnabled = (process.env.WEBSOCKET_HEARTBEAT_ENABLED || 'false').toLowerCase() === 'true';
         webSocketServer.initialize(server, {

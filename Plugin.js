@@ -1125,7 +1125,16 @@ class PluginManager extends EventEmitter {
     // }
 
     getPlugin(name) {
-        return this.plugins.get(name);
+        let plugin = this.plugins.get(name);
+        if (!plugin) {
+            if (name === 'FileOperator' && this.plugins.has('ServerFileOperator')) {
+                return this.plugins.get('ServerFileOperator');
+            }
+            if (name === 'PowerShellExecutor' && this.plugins.has('ServerPowerShellExecutor')) {
+                return this.plugins.get('ServerPowerShellExecutor');
+            }
+        }
+        return plugin;
     }
 
     getServiceModule(name) {
@@ -1204,7 +1213,19 @@ class PluginManager extends EventEmitter {
             ? toolCallRecordStore.beginRecord({ toolName, args: toolArgs || {}, requestIp, sourceNode })
             : null;
 
-        const plugin = this.plugins.get(toolName);
+        let plugin = this.plugins.get(toolName);
+        let actualToolName = toolName;
+        if (!plugin) {
+            if (toolName === 'FileOperator' && this.plugins.has('ServerFileOperator')) {
+                console.log(`[PluginManager] Fallback alias: routing tool call "${toolName}" to "ServerFileOperator"`);
+                actualToolName = 'ServerFileOperator';
+                plugin = this.plugins.get('ServerFileOperator');
+            } else if (toolName === 'PowerShellExecutor' && this.plugins.has('ServerPowerShellExecutor')) {
+                console.log(`[PluginManager] Fallback alias: routing tool call "${toolName}" to "ServerPowerShellExecutor"`);
+                actualToolName = 'ServerPowerShellExecutor';
+                plugin = this.plugins.get('ServerPowerShellExecutor');
+            }
+        }
         if (!plugin) {
             const notFoundError = new Error(`[PluginManager] Plugin "${toolName}" not found for tool call.`);
             toolCallRecordStore.finishRecord(managedToolCallRecord, {
@@ -1384,9 +1405,9 @@ class PluginManager extends EventEmitter {
                 }
 
                 const logParam = executionParam ? (executionParam.length > 100 ? executionParam.substring(0, 100) + '...' : executionParam) : null;
-                if (this.debugMode) console.log(`[PluginManager] Calling local executePlugin for: ${toolName} with prepared param:`, logParam);
+                if (this.debugMode) console.log(`[PluginManager] Calling local executePlugin for: ${actualToolName} with prepared param:`, logParam);
 
-                const pluginOutput = await this.executePlugin(toolName, executionParam, requestIp, executionOptions); // Returns {status, result/error}
+                const pluginOutput = await this.executePlugin(actualToolName, executionParam, requestIp, executionOptions); // Returns {status, result/error}
 
                 if (pluginOutput.__vcpArcheryNoReplySilent) {
                     toolCallRecordStore.finishRecord(managedToolCallRecord, {
@@ -1510,7 +1531,16 @@ class PluginManager extends EventEmitter {
     }
 
     async executePlugin(pluginName, inputData, requestIp = null, executionOptions = {}) {
-        const plugin = this.plugins.get(pluginName);
+        let plugin = this.plugins.get(pluginName);
+        if (!plugin) {
+            if (pluginName === 'FileOperator' && this.plugins.has('ServerFileOperator')) {
+                pluginName = 'ServerFileOperator';
+                plugin = this.plugins.get('ServerFileOperator');
+            } else if (pluginName === 'PowerShellExecutor' && this.plugins.has('ServerPowerShellExecutor')) {
+                pluginName = 'ServerPowerShellExecutor';
+                plugin = this.plugins.get('ServerPowerShellExecutor');
+            }
+        }
         if (!plugin) {
             // This case should ideally be caught by processToolCall before calling executePlugin
             throw new Error(`[PluginManager executePlugin] Plugin "${pluginName}" not found.`);
