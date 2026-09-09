@@ -166,6 +166,27 @@ async function main() {
 
       const { action, parameters } = normalizeRequest(rawJson);
       const result = await dispatchCommand(action, parameters);
+      
+      // 记录变更型操作到 data/events.jsonl，供 Obsidian 看板感知同步
+      try {
+        const MUTATION_ACTIONS = new Set([
+          'PromoteSourceToCanon', 'DeprecateSource', 'SaveChapterDraft',
+          'SetSourceReviewStatus', 'ApplyStateMutations', 'RollbackStateMutations',
+          'RecordMicroPayoff', 'RegisterCreativeDecision', 'PublishToVCPMemory', 'ScanWorldTree'
+        ]);
+        if (MUTATION_ACTIONS.has(action)) {
+          const dataDir = path.join(__dirname, 'data');
+          if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
+          const logFile = path.join(dataDir, 'events.jsonl');
+          const entry = {
+            timestamp: new Date().toISOString(),
+            action,
+            summary: result && result.content && result.content[0] ? String(result.content[0].text || '').substring(0, 200) : ''
+          };
+          fs.appendFileSync(logFile, JSON.stringify(entry) + '\n', 'utf8');
+        }
+      } catch (_) {}
+
       outputSuccess(result);
       process.exit(0);
     } catch (error) {
