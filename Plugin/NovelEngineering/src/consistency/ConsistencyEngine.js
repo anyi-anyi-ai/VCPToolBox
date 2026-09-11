@@ -103,8 +103,16 @@ class ConsistencyEngine {
     // 2. Perform deep multi-dimensional domain checks
     const customIssues = this._runAdvancedConsistencyChecks(scope, scanSessionId);
 
-    // 3. Combine all issues
-    let allIssues = [...coreAnomalies, ...customIssues];
+    // 3. Combine all issues with deduplication
+    const seenIssueKeys = new Set();
+    let allIssues = [];
+    for (const issue of [...coreAnomalies, ...customIssues]) {
+      const key = `${issue.anomaly_rule_id || issue.ruleId || ''}::${issue.title || ''}::${issue.message || ''}::${JSON.stringify(issue.details_json || issue.details || {})}`;
+      if (!seenIssueKeys.has(key)) {
+        seenIssueKeys.add(key);
+        allIssues.push(issue);
+      }
+    }
 
     // 4. Optional entity ID filtering
     if (params.entityIds) {

@@ -210,27 +210,31 @@ class IncrementalIndexer {
         });
       }
 
-      if (classification.entity) {
-        const entId = classification.entity.entity_id;
-        if (classification.entity.isDirectoryAnchor) {
-          if (!seenEntitiesInSync.has(entId)) {
-            seenEntitiesInSync.add(entId);
+      if (classification.status !== 'archived' && classification.sourceCategory !== 'archive') {
+        if (classification.entity) {
+          const entId = classification.entity.entity_id;
+          if (classification.entity.isDirectoryAnchor) {
+            if (!seenEntitiesInSync.has(entId)) {
+              seenEntitiesInSync.add(entId);
+              totalEntitiesExtracted++;
+            }
+          } else {
             totalEntitiesExtracted++;
           }
-        } else {
-          totalEntitiesExtracted++;
         }
+        if (classification.timelineEvent) totalTimelineEvents++;
+        if (classification.chapter) totalChapters++;
+        if (classification.foreshadowing) totalForeshadowing++;
       }
-      if (classification.timelineEvent) totalTimelineEvents++;
-      if (classification.chapter) totalChapters++;
-      if (classification.foreshadowing) totalForeshadowing++;
     }
 
     // 4. Deletion Reconciliation (Find removed files)
     const deletedRelPaths = [];
     for (const [existingRelPath, cachedRecord] of existingMap.entries()) {
       if (!seenPaths.has(existingRelPath)) {
-        deletedRelPaths.push(existingRelPath);
+        if (cachedRecord.status !== 'archived') {
+          deletedRelPaths.push(existingRelPath);
+        }
       }
     }
     filesDeleted = deletedRelPaths.length;
@@ -262,6 +266,11 @@ class IncrementalIndexer {
           this.dbManager.foreshadowing.deleteBySetupFileId(sourceFileId);
           this.dbManager.entities.deleteMentionsBySourceFile(sourceFileId);
           this.dbManager.entities.deleteAliasesBySourceFile(sourceFileId);
+
+          // If file is archived, do not extract domain entities, chapters, timeline events, or foreshadowing
+          if (classification.status === 'archived' || classification.sourceCategory === 'archive') {
+            continue;
+          }
 
           // Save extracted Entity
           if (classification.entity) {
@@ -317,18 +326,101 @@ class IncrementalIndexer {
                 }
               }
             } else {
-              // Standalone entity file: match existing entity for this source file
-              let existingEntity = this.dbManager.entities.getBySourceFileIdAndEntityId(sourceFileId, ent.entity_id) ||
+              // Standalone entity file: match existing entity for this source file or globally
+              const isIndexOrRef = ent.isReference || ent.isIndexReference ||
+                classification.sourceCategory === 'meta_placeholder' ||
+                classification.sourceCategory === 'archive' ||
+                facetRole === 'supplement' ||
+                facetRole === 'referenced';
+
+              let existingForFile = this.dbManager.entities.getBySourceFileIdAndEntityId(sourceFileId, ent.entity_id) ||
                 this.dbManager.db.prepare('SELECT * FROM entities WHERE source_file_id = ? LIMIT 1').get(sourceFileId);
-              if (!existingEntity) {
-                canonicalEntity = this.dbManager.entities.insert({
+
+              const globalEntity = ent.entity_id ? this.dbManager.entities.getSingleByEntityId(ent.entity_id) : null;
+
+              if (isIndexOrRef) {
+                // Index or reference files should NEVER own an entity row in entities
+                if (existingForFile) {
+                  this.dbManager.entities.deleteById(existingForFile.id);
+                  existingForFile = null;
+                }
+                if (globalEntity) {
+                  canonicalEntity = globalEntity;
+                  if (classification.aliases && classification.aliases.length > 0) {
+                    this.dbManager.entities.batchAddAliases(
+                      classification.aliases.map((a) => ({
+                        entity_id: canonicalEntity.id,
+                        alias_name: typeof a === 'string' ? a : (a.alias_name || a.name),
+                        alias_type: typeof a === 'object' ? (a.alias_type || 'nickname') : 'nickname',
+                        is_primary: typeof a === 'object' && a.is_primary ? 1 : 0,
+                        source_file_id: sourceFileId
+                      }))
+                    );
+                  }
+                }
+              } else if (globalEntity && globalEntity.source_file_id !== sourceFileId) {
+                // Global entity exists from a different file
+                const isSameEntity = (
+                  !ent.canonical_name ||
+                  !globalEntity.canonical_name ||
+                  globalEntity.canonical_name.trim().toLowerCase() === ent.canonical_name.trim().toLowerCase() ||
+                  globalEntity.canonical_name.includes(ent.canonical_name) ||
+                  ent.canonical_name.includes(globalEntity.canonical_name) ||
+                  facetRole !== 'definition'
+                );
+
+                if (isSameEntity) {
+                  // Same entity referenced across files: link to existing canonical entity and avoid duplicate row
+                  canonicalEntity = globalEntity;
+                  if (existingForFile && existingForFile.id !== globalEntity.id) {
+                    this.dbManager.entities.deleteById(existingForFile.id);
+                    existingForFile = null;
+                  }
+                  if (facetRole === 'definition' && !globalEntity.description && ent.description) {
+                    this.dbManager.entities.update(globalEntity.id, {
+                      canonical_name: ent.canonical_name || globalEntity.canonical_name,
+                      summary: ent.summary || globalEntity.summary,
+                      description: ent.description || globalEntity.description,
+                      attributes_json: ent.attributes_json || globalEntity.attributes_json
+                    });
+                  }
+                  if (classification.aliases && classification.aliases.length > 0) {
+                    this.dbManager.entities.batchAddAliases(
+                      classification.aliases.map((a) => ({
+                        entity_id: canonicalEntity.id,
+                        alias_name: typeof a === 'string' ? a : (a.alias_name || a.name),
+                        alias_type: typeof a === 'object' ? (a.alias_type || 'nickname') : 'nickname',
+                        is_primary: typeof a === 'object' && a.is_primary ? 1 : 0,
+                        source_file_id: sourceFileId
+                      }))
+                    );
+                  }
+                } else {
+                  // Conflicting entity definition with divergent name claiming same ID: preserve row for ANOM_002 detection
+                  if (!existingForFile) {
+                    canonicalEntity = this.dbManager.entities.insert({
+                      ...ent,
+                      source_file_id: sourceFileId
+                    }, classification.aliases);
+                  } else {
+                    canonicalEntity = this.dbManager.entities.upsert({
+                      ...ent,
+                      id: existingForFile.id,
+                      source_file_id: sourceFileId
+                    }, classification.aliases);
+                  }
+                }
+              } else if (existingForFile) {
+                // Existing entity owned by this source file: update it
+                canonicalEntity = this.dbManager.entities.upsert({
                   ...ent,
+                  id: existingForFile.id,
                   source_file_id: sourceFileId
                 }, classification.aliases);
               } else {
-                canonicalEntity = this.dbManager.entities.upsert({
+                // Brand new standalone entity definition: insert it
+                canonicalEntity = this.dbManager.entities.insert({
                   ...ent,
-                  id: existingEntity.id,
                   source_file_id: sourceFileId
                 }, classification.aliases);
               }

@@ -29,7 +29,7 @@ function detect(dbManager, scanSessionId = 'default', options = {}) {
       GROUP_CONCAT(DISTINCT canonical_name) AS conflicting_names,
       GROUP_CONCAT(DISTINCT entity_type) AS entity_types
     FROM entities
-    WHERE status != 'deprecated' AND status != 'deleted'
+    WHERE status NOT IN ('deprecated', 'deleted', 'archived')
     GROUP BY entity_id
     HAVING COUNT(DISTINCT LOWER(TRIM(canonical_name))) > 1 OR COUNT(id) > 1
   `;
@@ -51,8 +51,7 @@ function detect(dbManager, scanSessionId = 'default', options = {}) {
     FROM entities e
     LEFT JOIN source_files sf ON e.source_file_id = sf.id
     WHERE e.entity_id = ?
-      AND e.status != 'deprecated'
-      AND e.status != 'deleted'
+      AND e.status NOT IN ('deprecated', 'deleted', 'archived')
     ORDER BY e.id ASC
   `;
   const detailStmt = db.prepare(detailSql);

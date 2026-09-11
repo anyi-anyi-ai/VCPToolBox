@@ -74,9 +74,19 @@ class FileClassifier {
         tier1Category = 'planet_system';
       } else if (directoryAnchor.defaultEntityType === 'character') {
         tier1Category = 'character_bio';
+      } else if (directoryAnchor.defaultEntityType === 'reference' || directoryAnchor.isReference) {
+        tier1Category = 'meta_placeholder';
+      } else if (directoryAnchor.defaultEntityType === 'archived' || directoryAnchor.isArchived) {
+        tier1Category = 'archive';
+        tier1Status = 'archived';
       } else {
         tier1Category = 'character_bio';
       }
+    } else if (pathLower.includes('09_归档与历史版本') || pathLower.includes('归档与历史版本') || pathLower.includes('09_archive')) {
+      tier1Category = 'archive';
+      tier1Status = 'archived';
+    } else if (pathLower.includes('00_总览与索引') || pathLower.includes('08_知识图谱节点') || pathLower.includes('原子定位卡')) {
+      tier1Category = 'meta_placeholder';
     } else if (pathLower.includes('01_worldview') || pathLower.includes('00_worldview') || pathLower.includes('01_世界观') || pathLower.includes('设定/') || pathLower.includes('geography') || pathLower.includes('cosmology')) {
       tier1Category = 'worldview_setting';
     } else if (pathLower.includes('02_entities/planets') || pathLower.includes('星球/')) {
@@ -97,7 +107,7 @@ class FileClassifier {
       tier1Category = 'meta_placeholder';
     }
 
-    if (pathLower.includes('99_archive') || pathLower.includes('archive/') || pathLower.includes('history/') || pathLower.includes('v1_backup')) {
+    if (!tier1Status && (pathLower.includes('99_archive') || pathLower.includes('archive/') || pathLower.includes('history/') || pathLower.includes('v1_backup'))) {
       tier1Status = 'deprecated';
     }
 
@@ -164,25 +174,48 @@ class FileClassifier {
     const fmStatus = String(frontmatter.status || '').toLowerCase();
     const fmReview = String(frontmatter.review_status || '').toLowerCase();
 
-    if (fmCategory === 'world_setting' || fmCategory === 'worldview' || fmCategory === 'worldview_setting' || fmCategory === 'lore' || fmType === 'lore' || fmType === 'cosmology' || fmType === 'geography') {
-      tier4Category = 'worldview_setting';
-    } else if (fmCategory === 'planet' || fmType === 'planet' || fmCategory === 'planet_system') {
-      tier4Category = 'planet_system';
-    } else if (fmCategory === 'character' || fmType === 'character' || fmCategory === 'character_bio') {
-      tier4Category = 'character_bio';
-    } else if (fmCategory === 'entity' || fmCategory === 'entity_card' || ['faction', 'organization', 'relic', 'ship', 'item', 'location'].includes(fmType)) {
-      tier4Category = fmType === 'planet' ? 'planet_system' : 'character_bio';
-    } else if (fmCategory === 'chapter' || fmCategory === 'chapter_text' || fmType === 'chapter' || fmType === 'outline' || frontmatter.chapter_number !== undefined) {
-      tier4Category = 'chapter_text';
-    } else if (fmCategory === 'timeline' || fmCategory === 'timeline_record' || fmType === 'event' || frontmatter.timestamp !== undefined || frontmatter.timestamp_order !== undefined) {
-      tier4Category = 'timeline_record';
-    } else if (fmCategory === 'foreshadowing' || fmCategory === 'foreshadowing_entry' || fmType === 'clue' || fmType === 'hook' || frontmatter.target_chapter !== undefined) {
-      tier4Category = 'foreshadowing_entry';
-    } else if (fmCategory === 'meta' || fmCategory === 'meta_placeholder' || fmType === 'canvas' || fmType === 'index') {
+    const isReferencePath = (directoryAnchor && directoryAnchor.isReference) ||
+      pathLower.includes('00_总览与索引') ||
+      pathLower.includes('08_知识图谱节点') ||
+      pathLower.includes('原子定位卡') ||
+      fileName.startsWith('SUMMARY_') ||
+      fileName.startsWith('summary_') ||
+      frontmatter.summary_version !== undefined ||
+      frontmatter.target_relative_path !== undefined;
+
+    const isArchivedPath = (directoryAnchor && directoryAnchor.isArchived) ||
+      pathLower.includes('09_归档与历史版本') ||
+      pathLower.includes('归档与历史版本') ||
+      pathLower.includes('09_archive');
+
+    if (isArchivedPath) {
+      tier4Category = 'archive';
+      tier4Status = 'archived';
+    } else if (isReferencePath) {
       tier4Category = 'meta_placeholder';
+    } else {
+      if (fmCategory === 'world_setting' || fmCategory === 'worldview' || fmCategory === 'worldview_setting' || fmCategory === 'lore' || fmType === 'lore' || fmType === 'cosmology' || fmType === 'geography') {
+        tier4Category = 'worldview_setting';
+      } else if (fmCategory === 'planet' || fmType === 'planet' || fmCategory === 'planet_system') {
+        tier4Category = 'planet_system';
+      } else if (fmCategory === 'character' || fmType === 'character' || fmCategory === 'character_bio') {
+        tier4Category = 'character_bio';
+      } else if (fmCategory === 'entity' || fmCategory === 'entity_card' || ['faction', 'organization', 'relic', 'ship', 'item', 'location'].includes(fmType)) {
+        tier4Category = fmType === 'planet' ? 'planet_system' : 'character_bio';
+      } else if (fmCategory === 'chapter' || fmCategory === 'chapter_text' || fmType === 'chapter' || fmType === 'outline' || frontmatter.chapter_number !== undefined) {
+        tier4Category = 'chapter_text';
+      } else if (fmCategory === 'timeline' || fmCategory === 'timeline_record' || fmType === 'event' || frontmatter.timestamp !== undefined || frontmatter.timestamp_order !== undefined) {
+        tier4Category = 'timeline_record';
+      } else if (fmCategory === 'foreshadowing' || fmCategory === 'foreshadowing_entry' || fmType === 'clue' || fmType === 'hook' || frontmatter.target_chapter !== undefined) {
+        tier4Category = 'foreshadowing_entry';
+      } else if (fmCategory === 'meta' || fmCategory === 'meta_placeholder' || fmType === 'canvas' || fmType === 'index') {
+        tier4Category = 'meta_placeholder';
+      }
     }
 
-    if (fmStatus === 'active') {
+    if (isArchivedPath) {
+      tier4Status = 'archived';
+    } else if (fmStatus === 'active') {
       tier4Status = 'active';
     } else if (['canonical', 'finalized', 'published'].includes(fmStatus)) {
       tier4Status = 'finalized';
@@ -212,10 +245,17 @@ class FileClassifier {
 
     // Resolve Final source_category
     let sourceCategory = tier4Category || tier2Category || tier1Category || 'unclassified';
+    if (isArchivedPath) {
+      sourceCategory = 'archive';
+    } else if (isReferencePath && (sourceCategory === 'planet_system' || sourceCategory === 'character_bio')) {
+      sourceCategory = 'meta_placeholder';
+    }
 
     // Resolve Final status
     let status;
-    if (isPlaceholder) {
+    if (isArchivedPath) {
+      status = 'archived';
+    } else if (isPlaceholder) {
       status = 'placeholder';
     } else if (tier4Status) {
       status = tier4Status;
@@ -246,7 +286,9 @@ class FileClassifier {
       directoryAnchor
     });
 
-    const parsedAnchor = directoryAnchor ? FileClassifier._parseAnchorSegment(directoryAnchor.anchorSegment) : null;
+    const parsedAnchor = (directoryAnchor && !directoryAnchor.isReference && !directoryAnchor.isArchived)
+      ? FileClassifier._parseAnchorSegment(directoryAnchor.anchorSegment)
+      : null;
     const anchorId = parsedAnchor ? (parsedAnchor.entityId || directoryAnchor.anchorSegment) : null;
 
     return {
@@ -282,17 +324,23 @@ class FileClassifier {
    */
   static _detectDirectoryAnchor(relativePath) {
     const norm = (relativePath || '').replace(/\\/g, '/');
-    const segments = norm.split('/').filter(Boolean);
+    let segments = norm.split('/').filter(Boolean);
     if (segments.length < 2) return null;
+
+    let prefix = '';
+    if (segments[0] === '世界树' && segments.length >= 3) {
+      prefix = '世界树/';
+      segments = segments.slice(1);
+    }
 
     // Pattern 1: 04_星球档案/<anchor>/... or 04_planets/<anchor>/... or 04_planet/<anchor>/... or 星球档案/<anchor>/...
     if (/^(04_星球档案|04_planets|04_planet|星球档案|planets|planet|星球)/i.test(segments[0])) {
       if (segments.length >= 3) {
         const anchorSegment = segments[1];
         return {
-          containerPath: segments[0],
+          containerPath: prefix + segments[0],
           anchorSegment,
-          anchorRelativePath: `${segments[0]}/${anchorSegment}`,
+          anchorRelativePath: `${prefix}${segments[0]}/${anchorSegment}`,
           defaultEntityType: 'planet',
           depth: segments.length - 2
         };
@@ -313,9 +361,9 @@ class FileClassifier {
         if (segments.length >= 4) {
           const anchorSegment = segments[2];
           return {
-            containerPath: `${segments[0]}/${segments[1]}`,
+            containerPath: `${prefix}${segments[0]}/${segments[1]}`,
             anchorSegment,
-            anchorRelativePath: `${segments[0]}/${segments[1]}/${anchorSegment}`,
+            anchorRelativePath: `${prefix}${segments[0]}/${segments[1]}/${anchorSegment}`,
             defaultEntityType: defaultType,
             depth: segments.length - 3
           };
@@ -336,13 +384,39 @@ class FileClassifier {
 
         const anchorSegment = segments[1];
         return {
-          containerPath: segments[0],
+          containerPath: prefix + segments[0],
           anchorSegment,
-          anchorRelativePath: `${segments[0]}/${anchorSegment}`,
+          anchorRelativePath: `${prefix}${segments[0]}/${anchorSegment}`,
           defaultEntityType: defaultType,
           depth: segments.length - 2
         };
       }
+    }
+
+    // Pattern 4: 00_总览与索引/... or 08_知识图谱节点/... (Index / Reference Anchors)
+    if (/^(00_总览与索引|总览与索引|00_overview|00_index|08_知识图谱节点|知识图谱节点|08_knowledge_graph)/i.test(segments[0])) {
+      const anchorSegment = segments.length >= 3 ? segments[1] : segments[0];
+      return {
+        containerPath: prefix + segments[0],
+        anchorSegment,
+        anchorRelativePath: `${prefix}${segments.slice(0, Math.min(2, segments.length)).join('/')}`,
+        defaultEntityType: 'reference',
+        isReference: true,
+        depth: segments.length - 1
+      };
+    }
+
+    // Pattern 5: 09_归档与历史版本/... (Archived versions)
+    if (/^(09_归档与历史版本|09_archive|09_history|归档与历史版本|归档)/i.test(segments[0])) {
+      const anchorSegment = segments.length >= 3 ? segments[1] : segments[0];
+      return {
+        containerPath: prefix + segments[0],
+        anchorSegment,
+        anchorRelativePath: `${prefix}${segments.slice(0, Math.min(2, segments.length)).join('/')}`,
+        defaultEntityType: 'archived',
+        isArchived: true,
+        depth: segments.length - 1
+      };
     }
 
     return null;
@@ -391,6 +465,20 @@ class FileClassifier {
    * @returns {'definition' | 'supplement' | 'conflict' | 'primary_subject'}
    */
   static _classifyFacetRole({ fileName, relativePath, frontmatter = {}, isDirectoryAnchor = false, anchorSegment = '', status = '', reviewStatus = '' }) {
+    const pathLower = (relativePath || '').toLowerCase().replace(/\\/g, '/');
+    const isReferenceFile = (
+      pathLower.includes('00_总览与索引') ||
+      pathLower.includes('08_知识图谱节点') ||
+      pathLower.includes('原子定位卡') ||
+      (fileName || '').startsWith('SUMMARY_') ||
+      (fileName || '').startsWith('summary_') ||
+      frontmatter.summary_version !== undefined ||
+      frontmatter.target_relative_path !== undefined
+    );
+    if (isReferenceFile) {
+      return 'supplement';
+    }
+
     // 1. Explicit frontmatter override
     if (frontmatter.facet_role && ['definition', 'supplement', 'conflict', 'primary_subject'].includes(String(frontmatter.facet_role).toLowerCase())) {
       return String(frontmatter.facet_role).toLowerCase();
@@ -449,6 +537,32 @@ class FileClassifier {
   static _extractSemanticEntities(data) {
     const { relativePath, fileName, frontmatter, body, sourceCategory, status, reviewStatus, wikilinks, tags, wordCount, directoryAnchor } = data;
 
+    // Archived files must not produce entities, chapters, timeline events, or foreshadowing
+    const pathLower = (relativePath || '').toLowerCase().replace(/\\/g, '/');
+    const isArchived = status === 'archived' || sourceCategory === 'archive' ||
+      (directoryAnchor && directoryAnchor.isArchived) ||
+      pathLower.includes('09_归档与历史版本') ||
+      pathLower.includes('09_archive');
+
+    if (isArchived) {
+      return {
+        entity: null,
+        aliases: [],
+        timelineEvent: null,
+        chapter: null,
+        foreshadowing: null
+      };
+    }
+
+    const isReferenceFile = (directoryAnchor && directoryAnchor.isReference) ||
+      pathLower.includes('00_总览与索引') ||
+      pathLower.includes('08_知识图谱节点') ||
+      pathLower.includes('原子定位卡') ||
+      (fileName || '').startsWith('SUMMARY_') ||
+      (fileName || '').startsWith('summary_') ||
+      frontmatter.summary_version !== undefined ||
+      frontmatter.target_relative_path !== undefined;
+
     let entity = null;
     const aliases = [];
     let timelineEvent = null;
@@ -478,7 +592,7 @@ class FileClassifier {
       let facetRole = 'definition';
       let directoryAnchorSegment = null;
 
-      if (directoryAnchor) {
+      if (directoryAnchor && !directoryAnchor.isReference) {
         isDirectoryAnchor = true;
         directoryAnchorSegment = directoryAnchor.anchorSegment;
         const parsedAnchor = FileClassifier._parseAnchorSegment(directoryAnchor.anchorSegment);
@@ -539,7 +653,7 @@ class FileClassifier {
           }
         }
 
-        facetRole = FileClassifier._classifyFacetRole({
+        facetRole = isReferenceFile ? 'supplement' : FileClassifier._classifyFacetRole({
           fileName,
           relativePath,
           frontmatter,
@@ -576,8 +690,10 @@ class FileClassifier {
         attributes_json: attributes,
         line_number: 1,
         isDirectoryAnchor,
-        facetRole,
-        directoryAnchor: directoryAnchorSegment
+        facetRole: isReferenceFile ? 'supplement' : facetRole,
+        directoryAnchor: directoryAnchorSegment,
+        isReference: isReferenceFile,
+        isIndexReference: isReferenceFile
       };
 
       // Extract Aliases

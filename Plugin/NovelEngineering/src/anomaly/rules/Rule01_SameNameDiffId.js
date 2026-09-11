@@ -30,7 +30,7 @@ function detect(dbManager, scanSessionId = 'default', options = {}) {
       COUNT(DISTINCT entity_id) AS distinct_id_count,
       COUNT(id) AS total_count
     FROM entities
-    WHERE entity_type = ? AND status != 'deprecated' AND status != 'deleted'
+    WHERE entity_type = ? AND status NOT IN ('deprecated', 'deleted', 'archived')
     GROUP BY LOWER(TRIM(canonical_name))
     HAVING COUNT(DISTINCT entity_id) > 1
   `;
@@ -53,8 +53,7 @@ function detect(dbManager, scanSessionId = 'default', options = {}) {
     LEFT JOIN source_files sf ON e.source_file_id = sf.id
     WHERE LOWER(TRIM(e.canonical_name)) = ?
       AND e.entity_type = ?
-      AND e.status != 'deprecated'
-      AND e.status != 'deleted'
+      AND e.status NOT IN ('deprecated', 'deleted', 'archived')
     ORDER BY e.id ASC
   `;
   const detailStmt = db.prepare(detailSql);

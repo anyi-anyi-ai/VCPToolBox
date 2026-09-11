@@ -44,6 +44,7 @@ function detect(dbManager, scanSessionId = 'default', options = {}) {
         OR sf.placeholder_reason IS NOT NULL
       )
       AND sf.status NOT IN ('deleted', 'archived')
+      AND NOT ((sf.relative_path LIKE '08_知识图谱节点/%' OR sf.relative_path LIKE '%知识图谱节点/%') AND sf.size_bytes <= 50)
     ORDER BY sf.size_bytes ASC, sf.id ASC
   `;
 
@@ -51,6 +52,13 @@ function detect(dbManager, scanSessionId = 'default', options = {}) {
   const anomalies = [];
 
   for (const row of rows) {
+    if (
+      (row.relative_path.startsWith('08_知识图谱节点/') || row.relative_path.includes('知识图谱节点/')) &&
+      row.size_bytes <= 50
+    ) {
+      continue;
+    }
+
     const reason = row.placeholder_reason || (row.size_bytes <= 30 ? 'FILE_SIZE_LE_30B' : (row.size_bytes <= 50 ? 'FILE_SIZE_LE_50B' : 'EMPTY_BODY'));
 
     anomalies.push({

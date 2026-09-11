@@ -27,7 +27,7 @@ function detect(dbManager, scanSessionId = 'default', options = {}) {
       sha256_hash,
       COUNT(id) AS duplicate_count
     FROM source_files
-    WHERE status != 'deleted' AND sha256_hash IS NOT NULL AND sha256_hash != ''
+    WHERE status NOT IN ('deleted', 'archived') AND sha256_hash IS NOT NULL AND sha256_hash != ''
     GROUP BY sha256_hash
     HAVING COUNT(id) > 1
   `;
@@ -49,7 +49,7 @@ function detect(dbManager, scanSessionId = 'default', options = {}) {
       e.canonical_name
     FROM source_files sf
     LEFT JOIN entities e ON e.source_file_id = sf.id
-    WHERE sf.sha256_hash = ? AND sf.status != 'deleted'
+    WHERE sf.sha256_hash = ? AND sf.status NOT IN ('deleted', 'archived')
     ORDER BY sf.id ASC
   `;
   const fileDetailStmt = db.prepare(fileDetailSql);
@@ -105,7 +105,7 @@ function detect(dbManager, scanSessionId = 'default', options = {}) {
       file_name,
       COUNT(id) AS count
     FROM source_files
-    WHERE status != 'deleted'
+    WHERE status NOT IN ('deleted', 'archived')
     GROUP BY LOWER(TRIM(file_name))
     HAVING COUNT(id) > 1
   `;
@@ -122,7 +122,7 @@ function detect(dbManager, scanSessionId = 'default', options = {}) {
       e.entity_id
     FROM source_files sf
     LEFT JOIN entities e ON e.source_file_id = sf.id
-    WHERE LOWER(TRIM(sf.file_name)) = LOWER(TRIM(?)) AND sf.status != 'deleted'
+    WHERE LOWER(TRIM(sf.file_name)) = LOWER(TRIM(?)) AND sf.status NOT IN ('deleted', 'archived')
   `);
 
   for (const nc of nameClones) {
@@ -130,6 +130,12 @@ function detect(dbManager, scanSessionId = 'default', options = {}) {
     // If all these files were already reported under hash match, skip
     const unreported = files.filter(f => !reportedFileIds.has(f.id));
     if (unreported.length <= 1) continue;
+
+    // A true historical version fork requires at least one archive/backup copy and at least one active/canonical copy
+    const isArchive = (p) => /archive|backup|history|v1|_old|\.bak|废弃/i.test(p);
+    const hasArchive = files.some(f => isArchive(f.relative_path));
+    const hasCanonical = files.some(f => !isArchive(f.relative_path));
+    if (!hasArchive || !hasCanonical) continue;
 
     const affectedFilePaths = files.map(f => f.relative_path);
     const affectedEntityIds = [...new Set(files.map(f => f.entity_id).filter(Boolean))];
