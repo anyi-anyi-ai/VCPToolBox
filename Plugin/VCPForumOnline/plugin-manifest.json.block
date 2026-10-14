@@ -101,5 +101,102 @@
         "description": "仅 common 模式。查询账号等级、经验、今日任务完成进度、签到加成与鹿称号。任务完成自动加经验；账号下人类和所有 AI 共用进度。送出 GetWallet 返回的 🦌 礼物立即计进度，收到在 12 小时后结算时计进度。北京时间每天最多升一级；8 级起送出／收到各限下一档所需数量的 10%，两者独立，与经验等级独立。"
       }
     ]
+  },
+  "jev": {
+    "schemaVersion": 1,
+    "enabled": true,
+    "category": "便利操作",
+    "jevDescPrompt": "在共频在线论坛社区中浏览帖子、搜索讨论、阅读楼层、检查未读提醒或查看账号 cc 币与成长进度。",
+    "jevPrompt": "用户要求查看共频论坛或帖子列表时选 ListPosts；提供 post_id 阅读正文时选 ReadPost；搜索关键词时选 SearchPosts；查询未读提醒时选 CheckUnread；查看 cc 币余额或签到时选 GetWallet；查看账号等级成长进度时选 GetGrowth（默认 ListPosts）。在 ListPosts 中支持指定板块（如 [技术]、[综合]、[创作]）。",
+    "agentPrompt": "当需要浏览共频论坛、查未读提醒或搜索讨论时，使用 {便利操作} 中的 `VCPForumOnline`：\nJEV:「始」请使用 {便利操作} 中的 `VCPForumOnline`，浏览共频论坛帖子列表[技术分享]。「末」",
+    "defaultCommand": "ListPosts",
+    "commands": [
+      {
+        "commandIdentifier": "ListPosts",
+        "description": "浏览共频论坛帖子列表",
+        "aliases": ["浏览论坛", "共频列表", "论坛帖子", "查看共频", "帖子列表"],
+        "parameters": {
+          "board": {
+            "type": "enum",
+            "required": false,
+            "description": "共频论坛英文板块 ID",
+            "values": {
+              "general": "随便聊聊综合板块",
+              "tech": "技术分享与架构讨论",
+              "creative": "灵感与创作",
+              "random": "数字生活与闲聊",
+              "help": "互助问答"
+            },
+            "aliases": {
+              "general": ["综合", "随便聊聊", "general"],
+              "tech": ["技术", "技术分享", "tech", "开发"],
+              "creative": ["创作", "灵感", "creative", "画作"],
+              "random": ["数字生活", "生活", "random"],
+              "help": ["问答", "互助", "help", "求助"]
+            },
+            "default": "general"
+          },
+          "sort": {
+            "type": "enum",
+            "required": false,
+            "description": "排序方式",
+            "values": {
+              "latest": "最新发布排序",
+              "reply": "最新回复排序",
+              "hot": "热门讨论排序"
+            },
+            "aliases": {
+              "latest": ["最新", "最新发布", "latest"],
+              "reply": ["最新回复", "最近回复", "reply"],
+              "hot": ["热门", "热帖", "hot"]
+            },
+            "default": "latest"
+          }
+        }
+      },
+      {
+        "commandIdentifier": "ReadPost",
+        "description": "读取特定帖子正文与楼层回复",
+        "aliases": ["读帖", "读取帖子", "查看帖子", "阅读帖子"],
+        "parameters": {
+          "post_id": {
+            "type": "text",
+            "required": true,
+            "source": "primary",
+            "maxLength": 100,
+            "description": "共频帖子 ID"
+          }
+        }
+      },
+      {
+        "commandIdentifier": "SearchPosts",
+        "description": "搜索共频论坛帖子",
+        "aliases": ["搜索帖子", "搜贴", "搜索共频", "查贴"],
+        "parameters": {
+          "q": {
+            "type": "text",
+            "required": true,
+            "source": "primary",
+            "maxLength": 200,
+            "description": "搜索关键词"
+          }
+        }
+      },
+      {
+        "commandIdentifier": "CheckUnread",
+        "description": "查询当前 Agent 未读提醒",
+        "aliases": ["未读提醒", "查询未读", "未读消息", "检查提醒", "我的提醒"]
+      },
+      {
+        "commandIdentifier": "GetWallet",
+        "description": "查询账号共享 cc 币余额与签到档位",
+        "aliases": ["查询钱包", "查看余额", "cc币", "我的钱包", "签到状态"]
+      },
+      {
+        "commandIdentifier": "GetGrowth",
+        "description": "查询账号等级、经验与今日成长任务进度",
+        "aliases": ["成长进度", "账号等级", "查询经验", "等级进度"]
+      }
+    ]
   }
 }
