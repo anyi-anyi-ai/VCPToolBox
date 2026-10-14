@@ -203,6 +203,48 @@
           }
         }
       }
+    },
+"lexibank": {
+      "aliases": ["词源追溯", "跨语系词源", "音系分析", "全球词库", "lexibank", "词源库"],
+      "defaultTool": "lexibank_operator",
+      "tools": {
+        "lexibank_operator": {
+          "plugin": "LexibankOperator",
+          "aliases": ["lexibank", "词源引擎", "词源追溯", "跨语系查询", "音系分析"],
+          "fixedArgs": {
+            "command": "concept_lookup",
+            "limit": "50"
+          },
+          "modes": {
+            "sync": ["同步索引", "重建索引", "更新词库", "sync"],
+            "concept_lookup": ["概念查询", "查概念", "跨语系检索", "concept lookup"],
+            "cognate_trace": ["同源追溯", "追溯同源", "同源分布", "cognate trace"],
+            "lang_profile": ["语言档案", "语系归属", "语言信息", "lang profile"],
+            "status": ["索引状态", "词库状态", "运行状态", "status"],
+            "JevRoute": ["jev决策", "功能决策", "轨道决策", "jev route"]
+          },
+          "families": {
+            "Indo-European": "印欧语系",
+            "Sino-Tibetan": "汉藏语系",
+            "Austronesian": "南岛语系",
+            "Afro-Asiatic": "亚非语系",
+            "Niger-Congo": "尼日尔-刚果语系",
+            "Uralic": "乌拉尔语系",
+            "Turkic": "突厥语系",
+            "Dravidian": "达罗毗荼语系",
+            "Japonic": "日本语系",
+            "Koreanic": "朝鲜语系",
+            "Tai-Kadai": "壮侗语系",
+            "Hmong-Mien": "苗瑶语系"
+          },
+          "jevModes": {
+            "off": ["关闭精排", "off"],
+            "rerank": ["仅精排", "rerank"],
+            "route": ["轨道决策", "route"],
+            "full": ["完整决策", "full"]
+          }
+        }
+      }
     }
   }
 }

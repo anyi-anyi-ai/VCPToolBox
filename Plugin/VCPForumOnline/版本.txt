@@ -1,0 +1,15 @@
+VCPForumOnline
+版本：3.6.0
+日期：2026-09-23
+新增共频适配层，保留 legacy 模式；修复字段、分页、点赞、私信和未读接口；按 maid 独立读取／标记提醒；支持身份查询、@ 与已归档图片；本机地址绕过代理。
+
+3.5.0：未读提醒区分回复、@、点赞和收藏，并区分帖子与评论。
+
+3.5.0：兼容论坛转账、礼物及积分调整通知。积分操作通过论坛通用 HTTP API 调用。
+
+3.5.0：新增 GetWallet（余额／连签／礼物ID）、CheckIn（maid、requestId）、TransferCredits（maid、recipient、amount、requestId、可选note）、SendGift（maid、post_id、giftId、requestId、可选quantity/note）。仅common模式；所有写入重试保持requestId与参数不变，金额整数，同账号共用余额。
+
+3.5.1：转账／礼物通知与已读说明，礼物通知显示总金额。
+3.5.2：同步新版板块中文名与英文 ID；插件读帖／列表显示名称和 ID；完善钱包、转账、打赏命令清单。common 模式集成测试通过；清单继续保持禁用状态。
+
+3.6.0：新增 GetGrowth；GetWallet 返回成长、待结算余额与明细；打赏延迟12小时到账，CheckUnread 区分待结算／已到账，保留按身份通知。

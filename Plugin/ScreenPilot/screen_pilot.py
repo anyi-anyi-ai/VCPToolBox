@@ -1,0 +1,2274 @@
+# -*- coding: utf-8 -*-
+"""
+ScreenPilot - VCP 屏幕视觉与操控插件
+功能：截图(ScreenCapture)、点击模拟(ClickAt)、UI元素探测(InspectUI)
+      支持 DirectX/OpenGL/Vulkan 游戏窗口智能截图（自动学习 DXGI fallback）
+"""
+
+import sys
+import json
+import os
+import io
+import base64
+import time
+import re
+import traceback
+from datetime import datetime
+
+from screenpilot_core.geometry import (
+    Rect,
+    get_virtual_screen_rect,
+    image_point_to_screen,
+    is_point_on_virtual_screen,
+)
+from screenpilot_core.errors import ScreenPilotError, error_payload
+
+# ============================================================
+# Windows DPI 感知声明（必须在任何 Win32 API 调用前执行）
+# 不声明的话，GetWindowRect 等 API 在高 DPI 系统上返回缩放后的
+# 逻辑坐标，导致截图尺寸不对、点击坐标偏移。
+# ============================================================
+import ctypes
+try:
+    # PROCESS_PER_MONITOR_DPI_AWARE = 2
+    ctypes.windll.shcore.SetProcessDpiAwareness(2)
+except Exception:
+    try:
+        # 降级到 SetProcessDPIAware（Vista+）
+        ctypes.windll.user32.SetProcessDPIAware()
+    except Exception:
+        pass
+
+
+# ============================================================
+# 工具函数
+# ============================================================
+
+def debug_log(msg):
+    """调试日志写入 stderr（不会被主服务读取为 stdout 结果）"""
+    sys.stderr.write(f"[ScreenPilot DEBUG] {msg}\n")
+    sys.stderr.flush()
+
+
+def output_result(status, result=None, error=None):
+    """将结果以 JSON 打印到 stdout，遵循 VCP 同步插件规范"""
+    payload = {"status": status}
+    if result is not None:
+        payload["result"] = result
+    if error is not None:
+        payload["error"] = error
+    # 使用 UTF-8 直接写入 stdout 字节流，避免编码问题
+    json_str = json.dumps(payload, ensure_ascii=False)
+    stdout_bytes = json_str.encode("utf-8")
+    sys.stdout.buffer.write(stdout_bytes)
+    sys.stdout.buffer.write(b"\n")
+    sys.stdout.buffer.flush()
+
+
+def get_screenshot_dir():
+    """获取截图存储目录"""
+    env_dir = os.environ.get("SCREENSHOT_DIR", "").strip()
+    if env_dir:
+        d = env_dir
+    else:
+        d = os.path.join(os.path.dirname(os.path.abspath(__file__)), "screenshots")
+    os.makedirs(d, exist_ok=True)
+    return d
+
+
+def normalize_args(args):
+    """处理参数同义词和大小写兼容"""
+    lower = {k.lower(): v for k, v in args.items()}
+    return lower
+
+
+# ============================================================
+# 截图策略学习记忆（capture_strategy.json 持久化）
+# ============================================================
+# 记住哪些进程需要 DXGI 截图（因为 GDI 截到黑屏），
+# 下次直接走 DXGI，省掉一次黑屏检测的开销。
+# 格式: { "进程名.exe": { "method": "dxgi", "learned_at": "...", "reason": "..." } }
+
+_STRATEGY_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "capture_strategy.json")
+_capture_strategy_cache = None  # 内存缓存，避免每次读磁盘
+
+
+def _load_capture_strategy():
+    """加载截图策略缓存"""
+    global _capture_strategy_cache
+    if _capture_strategy_cache is not None:
+        return _capture_strategy_cache
+    try:
+        if os.path.exists(_STRATEGY_FILE):
+            with open(_STRATEGY_FILE, "r", encoding="utf-8") as f:
+                _capture_strategy_cache = json.load(f)
+                debug_log(f"截图策略已加载: {len(_capture_strategy_cache)} 条记录")
+        else:
+            _capture_strategy_cache = {}
+    except Exception as e:
+        debug_log(f"加载截图策略失败: {e}")
+        _capture_strategy_cache = {}
+    return _capture_strategy_cache
+
+
+def _save_capture_strategy():
+    """持久化截图策略到 JSON 文件"""
+    global _capture_strategy_cache
+    if _capture_strategy_cache is None:
+        return
+    try:
+        with open(_STRATEGY_FILE, "w", encoding="utf-8") as f:
+            json.dump(_capture_strategy_cache, f, ensure_ascii=False, indent=2)
+        debug_log(f"截图策略已保存: {_STRATEGY_FILE}")
+    except Exception as e:
+        debug_log(f"保存截图策略失败: {e}")
+
+
+def _get_strategy_for_process(process_name):
+    """查询某个进程的截图策略，返回 'gdi' / 'dxgi' / None"""
+    if not process_name:
+        return None
+    strategies = _load_capture_strategy()
+    entry = strategies.get(process_name.lower())
+    if entry:
+        return entry.get("method", None)
+    return None
+
+
+def _learn_strategy(process_name, method, reason="auto-detected"):
+    """学习并持久化某个进程的截图策略"""
+    if not process_name:
+        return
+    strategies = _load_capture_strategy()
+    key = process_name.lower()
+    strategies[key] = {
+        "method": method,
+        "learned_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "reason": reason,
+    }
+    _capture_strategy_cache.update(strategies)
+    _save_capture_strategy()
+    debug_log(f"已学习截图策略: {process_name} → {method} (原因: {reason})")
+
+
+# ============================================================
+# 黑屏检测 & DXGI Fallback
+# ============================================================
+
+def is_black_image(img, threshold=5):
+    """
+    检测截图是否为纯黑/近黑（DirectX 截图失败的典型特征）。
+    threshold: 平均像素亮度低于此值视为黑屏，默认 5。
+    """
+    import numpy as np
+    arr = np.array(img.convert("RGB"), dtype=np.uint8)
+    mean_val = arr.mean()
+    debug_log(f"黑屏检测: 平均亮度={mean_val:.1f}, 阈值={threshold}")
+    return mean_val < threshold
+
+
+def capture_dxgi_region(hwnd):
+    """
+    历史兼容入口：优先真正 DXGI Desktop Duplication，失败后回退桌面裁剪。
+
+    外部 ``captureMethod`` 继续使用历史值 ``dxgi``；新增
+    ``captureBackend`` 准确报告 dxgi_desktop_duplication 或 desktop_crop。
+    """
+    import win32gui
+    import win32con
+    from screenpilot_core.capture import capture_window_fallback
+
+    try:
+        if win32gui.IsIconic(hwnd):
+            win32gui.ShowWindow(hwnd, win32con.SW_RESTORE)
+            time.sleep(0.3)
+        win32gui.SetForegroundWindow(hwnd)
+        time.sleep(0.3)
+    except Exception as e:
+        debug_log(f"截图 fallback: 置前窗口失败: {e}")
+
+    left, top, right, bottom = win32gui.GetWindowRect(hwnd)
+    window = Rect.from_ltrb(left, top, right, bottom)
+    if window.width <= 0 or window.height <= 0:
+        raise ValueError(f"窗口尺寸无效: {window.width}x{window.height}")
+
+    img, capture, backend = capture_window_fallback(
+        window,
+        prefer_dxgi=True,
+        debug_log=debug_log,
+    )
+
+    global _last_capture_info
+    _last_capture_info["capture_rect"] = capture.to_dict()
+    _last_capture_info["backend"] = backend
+    return img
+
+
+# ============================================================
+# 进程名查找窗口
+# ============================================================
+
+def _get_process_name_by_hwnd(hwnd):
+    """兼容入口：根据 HWND 获取进程名。"""
+    from screenpilot_core.windows import process_name_by_hwnd
+    return process_name_by_hwnd(hwnd)
+
+
+def find_window_by_process(process_name):
+    """
+    兼容入口：按进程名解析得分最高的窗口。
+
+    返回值继续保持 (hwnd, title, process_name)。
+    """
+    from screenpilot_core.windows import enumerate_windows
+
+    candidates = enumerate_windows(
+        process_name=process_name,
+        visible_only=True,
+        min_size=51,
+    )
+    if not candidates:
+        return None, None, None
+    selected = candidates[0]
+    return (
+        selected["hwnd"],
+        selected["title"],
+        selected.get("processName") or process_name,
+    )
+
+
+# ============================================================
+# OCR 引擎（延迟加载单例）
+# ============================================================
+
+def get_ocr_engine():
+    """兼容旧内部入口；实际引擎由独立 OCR 模块常驻管理。"""
+    from screenpilot_core.ocr import get_engine
+    return get_engine(debug_log)
+
+
+def run_ocr(img, window_rect=None, **options):
+    """
+    OCR 兼容适配器。
+
+    ``window_rect`` 参数名为历史遗留；现在语义是图像实际对应的
+    captureRect，避免窗口部分越界时产生点击偏移。
+    """
+    from screenpilot_core.ocr import run_ocr as run_ocr_engine
+    return run_ocr_engine(
+        img,
+        window_rect,
+        debug_log=debug_log,
+        **options,
+    )
+
+
+# ============================================================
+# ScreenCapture — GDI 截图（原始方法，适用于标准窗口）
+# ============================================================
+
+def find_window_by_title(title_keyword):
+    """兼容入口：按标题匹配窗口，返回 (hwnd, full_title)。"""
+    from screenpilot_core.windows import enumerate_windows
+
+    candidates = enumerate_windows(
+        title=title_keyword,
+        visible_only=True,
+        min_size=1,
+    )
+    if not candidates:
+        return None, None
+    selected = candidates[0]
+    return selected["hwnd"], selected["title"]
+
+
+def _capture_window_gdi(hwnd):
+    """通过 Win32 GDI API 截取指定窗口的图像，返回 PIL Image（原始方法）"""
+    import win32gui
+    import win32ui
+    import win32con
+    from PIL import Image
+
+    # 获取窗口尺寸
+    left, top, right, bottom = win32gui.GetWindowRect(hwnd)
+    width = right - left
+    height = bottom - top
+
+    if width <= 0 or height <= 0:
+        raise ValueError(f"窗口尺寸无效: {width}x{height}")
+
+    # 创建设备上下文
+    hwnd_dc = win32gui.GetWindowDC(hwnd)
+    mfc_dc = win32ui.CreateDCFromHandle(hwnd_dc)
+    save_dc = mfc_dc.CreateCompatibleDC()
+
+    # 创建位图
+    bitmap = win32ui.CreateBitmap()
+    bitmap.CreateCompatibleBitmap(mfc_dc, width, height)
+    save_dc.SelectObject(bitmap)
+
+    # 使用 PrintWindow 捕获（支持部分遮挡的窗口）
+    # PW_RENDERFULLCONTENT = 2, 能截取 DWM 合成的内容
+    try:
+        result = win32gui.SendMessage(hwnd, win32con.WM_PRINT, save_dc.GetSafeHdc(),
+                                       win32con.PRF_CHILDREN | win32con.PRF_CLIENT | win32con.PRF_NONCLIENT)
+    except Exception:
+        pass
+
+    # 回退到 PrintWindow
+    import ctypes
+    ctypes.windll.user32.PrintWindow(hwnd, save_dc.GetSafeHdc(), 2)
+
+    # 转换为 PIL Image
+    bmp_info = bitmap.GetInfo()
+    bmp_bits = bitmap.GetBitmapBits(True)
+
+    img = Image.frombuffer("RGB", (bmp_info["bmWidth"], bmp_info["bmHeight"]),
+                           bmp_bits, "raw", "BGRX", 0, 1)
+
+    # 清理资源
+    win32gui.DeleteObject(bitmap.GetHandle())
+    save_dc.DeleteDC()
+    mfc_dc.DeleteDC()
+    win32gui.ReleaseDC(hwnd, hwnd_dc)
+
+    return img
+
+
+# ============================================================
+# 智能截图（自动选择 GDI / DXGI，带学习记忆）
+# ============================================================
+
+# 记录最近一次截图使用的方法（供上层 cmd 读取报告）
+_last_capture_info = {
+    "method": None,       # 兼容值: "gdi" / "dxgi" / "fullscreen"
+    "backend": None,      # 实际后端: gdi_printwindow / desktop_crop / imagegrab
+    "process_name": None,
+    "learned": False,
+    "fallback": False,
+    "capture_rect": None, # 图像像素 (0,0) 对应的物理屏幕矩形
+}
+
+
+def capture_window_smart(hwnd):
+    """
+    智能截图：根据学习记忆选择最优截图方式。
+    流程：
+    1. 查询进程名 → 检查 capture_strategy.json 是否有记录
+    2. 如已知该进程需要 DXGI → 直接走 DXGI（跳过 GDI，节省时间）
+    3. 如未知 → 先尝试 GDI，检测黑屏 → 黑屏则 fallback 到 DXGI 并学习记忆
+    4. 返回 PIL Image
+    """
+    global _last_capture_info
+    _last_capture_info = {
+        "method": None, "backend": None, "process_name": None,
+        "learned": False, "fallback": False, "capture_rect": None,
+    }
+
+    import win32gui
+    left, top, right, bottom = win32gui.GetWindowRect(hwnd)
+    _last_capture_info["capture_rect"] = Rect.from_ltrb(
+        left, top, right, bottom
+    ).to_dict()
+
+    # 获取进程名
+    process_name = _get_process_name_by_hwnd(hwnd)
+    _last_capture_info["process_name"] = process_name
+    debug_log(f"智能截图: HWND={hwnd}, 进程={process_name}")
+
+    # 查询已学习的策略
+    known_strategy = _get_strategy_for_process(process_name)
+
+    if known_strategy == "dxgi":
+        # 已知该进程需要 DXGI，直接跳过 GDI
+        debug_log(f"智能截图: 已学习 {process_name} 需要 DXGI，直接使用")
+        _last_capture_info["method"] = "dxgi"
+        _last_capture_info["backend"] = "desktop_crop"
+        _last_capture_info["learned"] = True
+        try:
+            return capture_dxgi_region(hwnd)
+        except Exception as e:
+            debug_log(f"DXGI 截图失败: {e}，降级到 GDI")
+            _last_capture_info["method"] = "gdi"
+            _last_capture_info["backend"] = "gdi_printwindow"
+            _last_capture_info["fallback"] = True
+            return _capture_window_gdi(hwnd)
+
+    if known_strategy == "gdi":
+        # 已验证该进程可由 GDI 正常捕获，直接截图，不再导入 NumPy、
+        # 创建整帧像素数组或重复执行黑屏检测。
+        debug_log(f"智能截图: 已学习 {process_name} 可直接使用 GDI，跳过黑屏检测")
+        _last_capture_info["method"] = "gdi"
+        _last_capture_info["backend"] = "gdi_printwindow"
+        _last_capture_info["learned"] = True
+        try:
+            return _capture_window_gdi(hwnd)
+        except Exception as e:
+            # 已学习策略也可能因窗口状态变化而临时失效；此时仅对本次请求
+            # fallback，不覆盖持久化策略，避免一次瞬态故障污染后续截图。
+            debug_log(f"已记忆的 GDI 截图异常: {e}，本次尝试 DXGI")
+            _last_capture_info["method"] = "dxgi"
+            _last_capture_info["backend"] = "desktop_crop"
+            _last_capture_info["fallback"] = True
+            return capture_dxgi_region(hwnd)
+
+    # 未知策略：先尝试 GDI
+    debug_log(f"智能截图: 尝试 GDI 截图...")
+    try:
+        img = _capture_window_gdi(hwnd)
+    except Exception as e:
+        debug_log(f"GDI 截图异常: {e}，尝试 DXGI")
+        _last_capture_info["method"] = "dxgi"
+        _last_capture_info["backend"] = "desktop_crop"
+        _last_capture_info["fallback"] = True
+        img = capture_dxgi_region(hwnd)
+        _learn_strategy(process_name, "dxgi", reason="GDI 截图异常，自动切换")
+        return img
+
+    # 黑屏检测
+    if is_black_image(img):
+        debug_log(f"智能截图: GDI 截到黑屏！fallback 到 DXGI...")
+        _last_capture_info["method"] = "dxgi"
+        _last_capture_info["backend"] = "desktop_crop"
+        _last_capture_info["fallback"] = True
+        try:
+            img_dxgi = capture_dxgi_region(hwnd)
+            # 检查 DXGI 结果是否也是黑屏
+            if is_black_image(img_dxgi):
+                debug_log(f"智能截图: DXGI 也是黑屏（窗口可能最小化或完全遮挡）")
+                # 不学习，可能是临时状态
+                return img_dxgi
+            # DXGI 成功，学习记忆
+            _learn_strategy(process_name, "dxgi", reason="GDI 截到黑屏，DXGI 成功")
+            return img_dxgi
+        except Exception as e:
+            debug_log(f"DXGI fallback 也失败: {e}")
+            return img  # 返回黑屏的 GDI 结果，总比崩溃好
+    else:
+        # GDI 成功（非黑屏）
+        _last_capture_info["method"] = "gdi"
+        _last_capture_info["backend"] = "gdi_printwindow"
+        # 如果之前没有记录，学习为 GDI（避免下次还要检测）
+        if process_name and known_strategy is None:
+            _learn_strategy(process_name, "gdi", reason="GDI 截图正常")
+        return img
+
+
+def capture_fullscreen():
+    """截取整个虚拟桌面（含负坐标副屏），返回 PIL Image。"""
+    from screenpilot_core.capture import capture_full_virtual_desktop
+
+    global _last_capture_info
+    image, virtual, backend = capture_full_virtual_desktop(debug_log)
+    _last_capture_info = {
+        "method": "fullscreen", "backend": backend,
+        "process_name": None, "learned": False, "fallback": False,
+        "capture_rect": virtual.to_dict(),
+    }
+    return image
+
+
+def image_to_base64(img, fmt="PNG", quality=85):
+    """将 PIL Image 编码为 base64 Data URI。JPEG 用于降低实时截图传输开销。"""
+    normalized_fmt = str(fmt or "PNG").strip().upper()
+    if normalized_fmt in ("JPG", "JPEG"):
+        normalized_fmt = "JPEG"
+        # JPEG 不支持带 Alpha 的图像；屏幕截图通常已经是 RGB，
+        # 此转换同时兼容未来可能传入的 RGBA/P 模式图像。
+        if img.mode != "RGB":
+            img = img.convert("RGB")
+        save_options = {
+            "format": "JPEG",
+            "quality": max(1, min(100, int(quality))),
+            "optimize": False,
+            "progressive": False,
+        }
+        mime = "image/jpeg"
+    else:
+        normalized_fmt = "PNG"
+        save_options = {"format": "PNG"}
+        mime = "image/png"
+
+    buf = io.BytesIO()
+    img.save(buf, **save_options)
+    b64 = base64.b64encode(buf.getvalue()).decode("utf-8")
+    return f"data:{mime};base64,{b64}"
+
+
+# ============================================================
+# ScreenCapture 指令
+# ============================================================
+
+def cmd_screen_capture(args):
+    """执行 ScreenCapture 指令（支持 processName 按进程名查找游戏窗口）"""
+    a = normalize_args(args)
+
+    hwnd = a.get("hwnd")
+    window_title = a.get("windowtitle") or a.get("window_title") or a.get("title")
+    process_name_arg = a.get("processname") or a.get("process_name") or a.get("process")
+    save = str(a.get("save", "false")).lower() in ("true", "1", "yes")
+    do_ocr = str(a.get("ocr", "false")).lower() in ("true", "1", "yes")
+    filename = a.get("filename")
+    try:
+        min_ocr_confidence = float(
+            a.get("minconfidence") or a.get("min_confidence") or 0.0
+        )
+    except (TypeError, ValueError):
+        min_ocr_confidence = 0.0
+
+    # 实时视觉上下文默认使用 JPEG：游戏画面的 PNG 通常较大，JPEG 能显著
+    # 减少 Python 编码、Base64/JSON 序列化和局域网 WebSocket 传输开销。
+    # 调用方仍可通过 format=png 获取无损图像。
+    output_format = str(
+        a.get("format") or a.get("imageformat") or a.get("image_format") or "jpeg"
+    ).strip().lower()
+    if output_format not in ("png", "jpg", "jpeg"):
+        output_format = "jpeg"
+    try:
+        jpeg_quality = max(1, min(100, int(a.get("quality") or a.get("jpegquality") or 85)))
+    except (TypeError, ValueError):
+        jpeg_quality = 85
+
+    captured_title = None
+    img = None
+    window_rect = None  # 窗口在屏幕上的位置，用于坐标换算
+
+    if hwnd:
+        hwnd = int(hwnd)
+        import win32gui
+        captured_title = win32gui.GetWindowText(hwnd) or f"HWND:{hwnd}"
+        left, top, right, bottom = win32gui.GetWindowRect(hwnd)
+        window_rect = {"x": left, "y": top, "width": right - left, "height": bottom - top}
+        img = capture_window_smart(hwnd)
+    elif window_title:
+        found_hwnd, found_title = find_window_by_title(window_title)
+        if found_hwnd is None:
+            return {"status": "error", "error": f"未找到标题包含 '{window_title}' 的窗口。请检查窗口是否已打开。"}
+        captured_title = found_title
+        import win32gui
+        left, top, right, bottom = win32gui.GetWindowRect(found_hwnd)
+        window_rect = {"x": left, "y": top, "width": right - left, "height": bottom - top, "hwnd": found_hwnd}
+        img = capture_window_smart(found_hwnd)
+    elif process_name_arg:
+        found_hwnd, found_title, found_pname = find_window_by_process(process_name_arg)
+        if found_hwnd is None:
+            return {"status": "error", "error": f"未找到进程名包含 '{process_name_arg}' 的窗口。请检查程序是否正在运行。"}
+        captured_title = found_title
+        import win32gui
+        left, top, right, bottom = win32gui.GetWindowRect(found_hwnd)
+        window_rect = {"x": left, "y": top, "width": right - left, "height": bottom - top, "hwnd": found_hwnd}
+        img = capture_window_smart(found_hwnd)
+    else:
+        img = capture_fullscreen()
+        captured_title = "全屏截图"
+
+    capture_rect = _last_capture_info.get("capture_rect")
+    width, height = img.size
+    encoded_format = "PNG" if output_format == "png" else "JPEG"
+    data_uri = image_to_base64(img, fmt=encoded_format, quality=jpeg_quality)
+
+    text_parts = [
+        f"截图成功: {captured_title}",
+        f"分辨率: {width} × {height} 像素",
+        f"传输格式: {encoded_format}" + (f"（质量 {jpeg_quality}）" if encoded_format == "JPEG" else ""),
+    ]
+
+    # 报告截图方法
+    ci = _last_capture_info
+    if ci["method"] == "dxgi" and ci["learned"]:
+        text_parts.append(f"📌 截图方式: DXGI（已记忆进程 {ci['process_name']} 需要此方式）")
+    elif ci["method"] == "dxgi" and ci["fallback"]:
+        text_parts.append(f"⚡ 截图方式: DXGI fallback（GDI 不可用，本次自动切换）")
+    elif ci["method"] == "gdi" and ci["learned"]:
+        text_parts.append(f"📌 截图方式: GDI（已记忆并跳过黑屏检测）")
+    elif ci["method"] == "gdi":
+        text_parts.append(f"截图方式: GDI (PrintWindow)")
+
+    if window_rect:
+        text_parts.append(
+            f"窗口屏幕位置: 左上角({window_rect['x']}, {window_rect['y']})  "
+            f"尺寸 {window_rect['width']}×{window_rect['height']}"
+        )
+        text_parts.append(
+            "提示: 截图像素坐标应以返回的 captureRect 左上角为原点换算为"
+            "屏幕物理坐标；窗口完全位于屏幕内时 captureRect 与 windowRect 一致。"
+        )
+
+    # 持久化保存
+    saved_path = None
+    if save:
+        screenshot_dir = get_screenshot_dir()
+        if not filename:
+            ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+            safe_title = re.sub(r'[<>:"/\\|?*]', '_', (captured_title or "screenshot")[:30])
+            filename = f"{safe_title}_{ts}.png"
+        save_path = os.path.join(screenshot_dir, filename)
+        img.save(save_path, "PNG")
+        saved_path = save_path
+        text_parts.append(f"已保存到: {save_path}")
+
+    # OCR 文本检测
+    ocr_blocks = None
+    if do_ocr:
+        try:
+            # OCR 点击坐标必须以实际图像原点为准；窗口部分越过屏幕边缘时
+            # captureRect 与 windowRect 不相同。
+            ocr_blocks = run_ocr(
+                img,
+                capture_rect or window_rect,
+                min_confidence=min_ocr_confidence,
+            )
+            text_parts.append(f"\nOCR 检测到 {len(ocr_blocks)} 个文本区域:")
+            for i, blk in enumerate(ocr_blocks, 1):
+                cp = blk["clickablePoint"]
+                text_parts.append(
+                    f"  [{i}] \"{blk['text']}\" → 点击({cp['x']},{cp['y']}) "
+                    f"置信度:{blk['confidence']}"
+                )
+        except Exception as e:
+            debug_log(f"OCR 失败: {e}")
+            text_parts.append(f"\nOCR 检测失败: {e}")
+
+    result = {
+        "content": [
+            {"type": "text", "text": "\n".join(text_parts)},
+            {"type": "image_url", "image_url": {"url": data_uri}}
+        ],
+        "resolution": {"width": width, "height": height},
+    }
+    if window_rect:
+        result["windowRect"] = window_rect
+    if capture_rect:
+        result["captureRect"] = capture_rect
+    if saved_path:
+        result["savedPath"] = saved_path
+    if ocr_blocks is not None:
+        result["ocrResults"] = ocr_blocks
+    # 附加截图方法信息
+    result["captureMethod"] = ci["method"]
+    result["captureBackend"] = ci.get("backend") or ci["method"]
+    if ci["process_name"]:
+        result["processName"] = ci["process_name"]
+
+    return {"status": "success", "result": result}
+
+
+# ============================================================
+# ClickAt 指令（双轨制：前台 pyautogui / 后台 PostMessage）
+# ============================================================
+
+# Win32 鼠标消息常量
+WM_LBUTTONDOWN   = 0x0201
+WM_LBUTTONUP     = 0x0202
+WM_LBUTTONDBLCLK = 0x0203
+WM_RBUTTONDOWN   = 0x0204
+WM_RBUTTONUP     = 0x0205
+WM_RBUTTONDBLCLK = 0x0206
+WM_MBUTTONDOWN   = 0x0207
+WM_MBUTTONUP     = 0x0208
+WM_MBUTTONDBLCLK = 0x0209
+WM_MOUSEWHEEL    = 0x020A
+WM_CHAR          = 0x0102
+WM_MOUSEMOVE     = 0x0200
+MK_LBUTTON       = 0x0001
+MK_RBUTTON       = 0x0002
+MK_MBUTTON       = 0x0010
+WHEEL_DELTA      = 120
+
+# 按钮 → (WM_DOWN, WM_UP, WM_DBLCLK, MK_FLAG) 映射
+_BUTTON_MSG_MAP = {
+    "left":   (WM_LBUTTONDOWN, WM_LBUTTONUP, WM_LBUTTONDBLCLK, MK_LBUTTON),
+    "right":  (WM_RBUTTONDOWN, WM_RBUTTONUP, WM_RBUTTONDBLCLK, MK_RBUTTON),
+    "middle": (WM_MBUTTONDOWN, WM_MBUTTONUP, WM_MBUTTONDBLCLK, MK_MBUTTON),
+}
+
+
+def _resolve_hwnd(a):
+    """
+    统一窗口解析：hwnd → windowTitle/processName/pid/className。
+
+    返回 (hwnd: int, title: str) 或 (None, error_message/None)。
+    """
+    from screenpilot_core.windows import resolve_window
+
+    try:
+        selected, _ = resolve_window(a, required=False)
+    except ScreenPilotError as error:
+        return None, error.message
+    except Exception as error:
+        return None, f"窗口解析失败: {error}"
+
+    if selected is None:
+        return None, None
+    return int(selected["hwnd"]), selected["title"]
+
+
+def _screen_to_client(hwnd, screen_x, screen_y):
+    """
+    将屏幕绝对坐标转换为窗口客户区坐标。
+    PostMessage 的鼠标消息需要客户区坐标。
+    """
+    import win32gui
+    client_x, client_y = win32gui.ScreenToClient(hwnd, (screen_x, screen_y))
+    return client_x, client_y
+
+
+def _resolve_message_target(root_hwnd, screen_x, screen_y):
+    """
+    从顶层窗口向下解析真正位于坐标下的子 HWND。
+
+    标准 Win32 应用通常由多个子窗口组成；直接向顶层 HWND 发送鼠标消息
+    经常不会触发实际控件。若解析失败则安全回退到顶层窗口。
+    """
+    import win32gui
+
+    current = int(root_hwnd)
+    flags = 0x0001 | 0x0002 | 0x0004  # skip invisible / disabled / transparent
+    for _ in range(16):
+        try:
+            client_point = win32gui.ScreenToClient(current, (int(screen_x), int(screen_y)))
+            child = win32gui.ChildWindowFromPointEx(current, client_point, flags)
+        except Exception:
+            break
+        if not child or int(child) == current:
+            break
+        current = int(child)
+
+    client_x, client_y = _screen_to_client(current, screen_x, screen_y)
+    return current, client_x, client_y
+
+
+def _post_click(hwnd, client_x, client_y, button="left", clicks=1):
+    """
+    通过 PostMessage 向目标窗口发送鼠标点击事件（不移动物理光标）。
+    坐标为客户区坐标。
+    """
+    user32 = ctypes.windll.user32
+    msg_down, msg_up, msg_dblclk, mk_flag = _BUTTON_MSG_MAP[button]
+
+    # lParam: 低16位=x, 高16位=y（客户区坐标）
+    lParam = ((client_y & 0xFFFF) << 16) | (client_x & 0xFFFF)
+
+    # 部分 Win32 控件只有在先收到鼠标移动后才会更新 hot/hover 状态。
+    user32.PostMessageW(hwnd, WM_MOUSEMOVE, 0, lParam)
+
+    for i in range(clicks):
+        if clicks == 2 and i == 1:
+            # 第二次点击发送双击消息
+            user32.PostMessageW(hwnd, msg_dblclk, mk_flag, lParam)
+            time.sleep(0.02)
+            user32.PostMessageW(hwnd, msg_up, 0, lParam)
+        else:
+            user32.PostMessageW(hwnd, msg_down, mk_flag, lParam)
+            time.sleep(0.02)
+            user32.PostMessageW(hwnd, msg_up, 0, lParam)
+        if i < clicks - 1:
+            time.sleep(0.05)
+
+
+def cmd_click_at(args):
+    """
+    执行 ClickAt 指令（双轨制）
+    - 前台模式（默认）: pyautogui.click()，物理移动光标
+    - 后台模式（background=true）: PostMessage，不移动光标
+    """
+    import pyautogui
+    a = normalize_args(args)
+
+    x = a.get("x")
+    y = a.get("y")
+    if x is None or y is None:
+        return {"status": "error", "error": "必须提供 x 和 y 坐标参数。"}
+
+    x = int(x)
+    y = int(y)
+    button = str(a.get("button", "left")).lower()
+    clicks = int(a.get("clicks", 1))
+    # 双轨开关
+    background = str(a.get("background") or a.get("bg") or "false").lower() in ("true", "1", "yes")
+    # relativeToWindow: 当为 true 时，(x,y) 被视为窗口内相对坐标
+    relative_to_window = str(a.get("relativetowindow") or a.get("relative_to_window") or a.get("relative") or "false").lower() in ("true", "1", "yes")
+
+    if button not in ("left", "right", "middle"):
+        return {"status": "error", "error": f"无效的button参数: '{button}'，可选值: left, right, middle。"}
+
+    # ── 双轨：后台模式（PostMessage，不劫持鼠标） ──
+    if background:
+        hwnd, title = _resolve_hwnd(a)
+        if hwnd is None:
+            return {"status": "error", "error": f"后台模式（background）必须提供 hwnd 或 windowTitle 来指定目标窗口。{title or ''}"}
+
+        import win32gui
+
+        if relative_to_window:
+            win_left, win_top, _, _ = win32gui.GetWindowRect(hwnd)
+            screen_x = win_left + x
+            screen_y = win_top + y
+            source_desc = f"窗口相对({x},{y})"
+        else:
+            screen_x, screen_y = x, y
+            source_desc = f"屏幕绝对({x},{y})"
+
+        target_hwnd, client_x, client_y = _resolve_message_target(
+            hwnd, screen_x, screen_y
+        )
+        coord_desc = (
+            f"{source_desc} → 子窗口 HWND:{target_hwnd} "
+            f"客户区({client_x},{client_y})"
+        )
+        _post_click(target_hwnd, client_x, client_y, button=button, clicks=clicks)
+
+        result_text = (
+            f"[后台模式] 已向窗口 \"{title}\" (HWND:{hwnd}) 发送 {button} 键点击 {clicks} 次。\n"
+            f"坐标: {coord_desc}\n"
+            f"鼠标光标未移动。"
+        )
+        return {"status": "success", "result": result_text}
+
+    # ── 双轨：前台模式（pyautogui，原有行为） ──
+    coord_mode = "屏幕绝对"
+    hwnd = a.get("hwnd")
+
+    if hwnd:
+        hwnd = int(hwnd)
+        try:
+            import win32gui
+            import win32con
+            if win32gui.IsIconic(hwnd):
+                win32gui.ShowWindow(hwnd, win32con.SW_RESTORE)
+            win32gui.SetForegroundWindow(hwnd)
+            time.sleep(0.3)
+
+            if relative_to_window:
+                win_left, win_top, _, _ = win32gui.GetWindowRect(hwnd)
+                orig_x, orig_y = x, y
+                x = win_left + x
+                y = win_top + y
+                coord_mode = f"窗口相对({orig_x},{orig_y}) → 屏幕绝对"
+        except Exception as e:
+            debug_log(f"SetForegroundWindow failed: {e}")
+            if relative_to_window:
+                return {"status": "error", "error": f"无法获取窗口位置进行坐标转换: {e}"}
+    elif relative_to_window:
+        return {"status": "error", "error": "使用 relativeToWindow 时必须同时提供 hwnd 参数。"}
+
+    virtual = get_virtual_screen_rect()
+    if not is_point_on_virtual_screen(x, y, virtual):
+        return {
+            "status": "error",
+            "error": (
+                f"最终屏幕坐标 ({x}, {y}) 超出虚拟桌面范围 "
+                f"({virtual.x},{virtual.y} {virtual.width}×{virtual.height})。"
+            )
+        }
+
+    pyautogui.click(x, y, button=button, clicks=clicks)
+
+    result_text = f"已在{coord_mode}坐标 ({x}, {y}) 执行 {button} 键点击 {clicks} 次。"
+    if hwnd:
+        result_text += f"\n(已先将窗口 HWND:{hwnd} 置于前台)"
+
+    return {
+        "status": "success",
+        "result": result_text
+    }
+
+
+# ============================================================
+# InspectUI 指令
+# ============================================================
+
+def cmd_inspect_ui(args):
+    """通过独立 UIA 模块探测窗口；保持旧字段并追加稳定元数据。"""
+    from screenpilot_core.uia import inspect
+
+    a = normalize_args(args)
+    hwnd, title = _resolve_hwnd(a)
+    if hwnd is None:
+        return {
+            "status": "error",
+            "error": title or "必须提供 windowTitle、processName 或 hwnd 来指定窗口。",
+        }
+
+    control_type_filter = a.get("controltype") or a.get("control_type") or a.get("type")
+    max_depth = int(a.get("maxdepth") or a.get("max_depth") or 5)
+    max_items = int(a.get("maxitems") or a.get("max_items") or 50)
+    time_budget_ms = int(
+        a.get("timebudgetms") or a.get("time_budget_ms") or a.get("uitimeoutms") or 3000
+    )
+    include_noninteractive = str(
+        a.get("includenoninteractive") or a.get("include_noninteractive") or "false"
+    ).lower() in ("true", "1", "yes")
+
+    try:
+        inspected = inspect(
+            hwnd,
+            max_depth=max_depth,
+            max_items=max_items,
+            control_type=control_type_filter,
+            include_noninteractive=include_noninteractive,
+            time_budget_ms=time_budget_ms,
+        )
+    except Exception as e:
+        details = error_payload(e, "UIA_INSPECT_FAILED")
+        return {"status": "error", "error": details["message"], "errorDetails": details}
+
+    elements = inspected["elements"]
+    actual_title = inspected.get("windowTitle") or title
+    text_lines = [
+        f"UI Automation 检查结果: {actual_title}",
+        f"找到 {len(elements)} 个元素"
+        + (f" (类型筛选: {control_type_filter})" if control_type_filter else ""),
+        (
+            f"遍历节点: {inspected['visitedNodes']}，耗时: {inspected['elapsedMs']}ms"
+            + (
+                f"，结果已截断({inspected['truncatedReason']})"
+                if inspected["truncated"] else ""
+            )
+        ),
+        "",
+    ]
+    for i, elem in enumerate(elements, 1):
+        cp = elem["clickablePoint"]
+        br = elem["boundingRect"]
+        identity = elem.get("automationId") or elem.get("className") or elem["elementId"]
+        text_lines.append(
+            f"  [{i}] {elem['controlType']}: \"{elem['name']}\" "
+            f"@ 点击坐标({cp['x']}, {cp['y']}) "
+            f"区域({br['x']},{br['y']} {br['width']}×{br['height']}) "
+            f"标识={identity}"
+            + (f" 值=\"{elem.get('value', '')}\"" if elem.get("value") else "")
+            + (" [屏幕外]" if elem.get("isOffscreen") else "")
+            + (" [已禁用]" if not elem.get("isEnabled", True) else "")
+        )
+
+    return {
+        "status": "success",
+        "result": {
+            "content": [{"type": "text", "text": "\n".join(text_lines)}],
+            "windowTitle": actual_title,
+            "hwnd": int(hwnd),
+            "elementCount": len(elements),
+            "elements": elements,
+            "visitedNodes": inspected["visitedNodes"],
+            "elapsedMs": inspected["elapsedMs"],
+            "truncated": inspected["truncated"],
+            "truncatedReason": inspected["truncatedReason"],
+        }
+    }
+
+
+def _uia_selector_from_args(a):
+    """从平铺工具参数构建 UIA 稳定选择器。"""
+    return {
+        key: value
+        for key, value in {
+            "elementId": a.get("elementid") or a.get("element_id"),
+            "name": a.get("name") or a.get("target") or a.get("label"),
+            "automationId": a.get("automationid") or a.get("automation_id"),
+            "controlType": a.get("controltype") or a.get("control_type") or a.get("type"),
+            "matchMode": a.get("matchmode") or a.get("match_mode") or "exact",
+            "index": a.get("index") or a.get("nth") or 1,
+        }.items()
+        if value is not None
+    }
+
+
+def cmd_ui_action(args):
+    """直接通过 UI Automation Pattern 执行语义动作。"""
+    from screenpilot_core.uia import perform_action
+
+    a = normalize_args(args)
+    hwnd, title = _resolve_hwnd(a)
+    if hwnd is None:
+        return {
+            "status": "error",
+            "error": title or "UIAction 必须提供 windowTitle、processName 或 hwnd。",
+        }
+
+    selector = _uia_selector_from_args(a)
+    if not selector.get("elementId") and not any(
+        selector.get(key) for key in ("name", "automationId", "controlType")
+    ):
+        return {
+            "status": "error",
+            "error": "UIAction 必须提供 elementId，或 name/automationId/controlType 选择器。",
+        }
+
+    action = a.get("action") or a.get("uiaction") or a.get("operation") or "invoke"
+    value = a.get("value")
+    if value is None:
+        value = a.get("text")
+
+    try:
+        action_result = perform_action(hwnd, selector, action, value)
+    except Exception as e:
+        details = error_payload(e, "UIA_ACTION_FAILED")
+        return {"status": "error", "error": details["message"], "errorDetails": details}
+
+    element = action_result["element"]
+    result_text = (
+        f"已通过 UI Automation 执行 {action_result['action']}。\n"
+        f"窗口: {title} (HWND:{hwnd})\n"
+        f"元素: {element.get('controlType')} \"{element.get('name')}\"\n"
+        f"原生模式: {action_result['pattern']}"
+    )
+    return {
+        "status": "success",
+        "result": {
+            "content": [{"type": "text", "text": result_text}],
+            "hwnd": int(hwnd),
+            **action_result,
+        },
+    }
+
+
+# ============================================================
+# ClickText 指令
+# ============================================================
+
+def _resolve_capture_target(a):
+    """
+    通用截图目标解析（供 ClickText / ClickVisual 共用）。
+    按优先级: hwnd → windowTitle → processName → 全屏
+    返回 (img, hwnd, window_rect, captured_title)
+    """
+    hwnd = a.get("hwnd")
+    window_title = a.get("windowtitle") or a.get("window_title") or a.get("title")
+    process_name = a.get("processname") or a.get("process_name") or a.get("process")
+
+    if hwnd:
+        hwnd = int(hwnd)
+        import win32gui
+        captured_title = win32gui.GetWindowText(hwnd) or f"HWND:{hwnd}"
+        left, top, right, bottom = win32gui.GetWindowRect(hwnd)
+        window_rect = {"x": left, "y": top, "width": right - left, "height": bottom - top}
+        img = capture_window_smart(hwnd)
+        capture_rect = _last_capture_info.get("capture_rect") or window_rect
+        return img, hwnd, capture_rect, captured_title
+
+    if window_title:
+        found_hwnd, found_title = find_window_by_title(window_title)
+        if found_hwnd is None:
+            return None, None, None, f"未找到标题包含 '{window_title}' 的窗口。"
+        import win32gui
+        left, top, right, bottom = win32gui.GetWindowRect(found_hwnd)
+        window_rect = {"x": left, "y": top, "width": right - left, "height": bottom - top}
+        img = capture_window_smart(found_hwnd)
+        capture_rect = _last_capture_info.get("capture_rect") or window_rect
+        return img, found_hwnd, capture_rect, found_title
+
+    if process_name:
+        found_hwnd, found_title, _ = find_window_by_process(process_name)
+        if found_hwnd is None:
+            return None, None, None, f"未找到进程名包含 '{process_name}' 的窗口。"
+        import win32gui
+        left, top, right, bottom = win32gui.GetWindowRect(found_hwnd)
+        window_rect = {"x": left, "y": top, "width": right - left, "height": bottom - top}
+        img = capture_window_smart(found_hwnd)
+        capture_rect = _last_capture_info.get("capture_rect") or window_rect
+        return img, found_hwnd, capture_rect, found_title
+
+    # 全屏
+    img = capture_fullscreen()
+    return img, None, _last_capture_info.get("capture_rect"), "全屏"
+
+
+def cmd_click_text(args):
+    """
+    执行 ClickText 指令:
+    截图 → OCR → 找到匹配文本 → 自动点击其中心坐标
+    """
+    import pyautogui
+    a = normalize_args(args)
+
+    target_text = a.get("text") or a.get("target") or a.get("label")
+    if not target_text:
+        return {"status": "error", "error": "必须提供 text 参数指定要点击的文本内容。"}
+
+    button = str(a.get("button", "left")).lower()
+    clicks = int(a.get("clicks", 1))
+    match_mode = str(a.get("matchmode") or a.get("match_mode") or a.get("match") or "fuzzy").lower()
+    index = int(a.get("index") or a.get("nth") or 1)  # 第几个匹配（从1开始）
+
+    # 1. 截图（通用解析，支持 hwnd/windowTitle/processName/全屏）
+    img, hwnd, window_rect, captured_title = _resolve_capture_target(a)
+    if img is None:
+        return {"status": "error", "error": captured_title}  # captured_title 此时是错误信息
+
+    # 2. OCR
+    try:
+        ocr_blocks = run_ocr(img, window_rect)
+    except Exception as e:
+        return {"status": "error", "error": f"OCR 检测失败: {e}"}
+
+    if not ocr_blocks:
+        return {"status": "error", "error": "截图中未检测到任何文本。"}
+
+    # 3. 查找匹配文本
+    def strip_noise(s):
+        """去除空格、标点和特殊符号，只留下字母数字和 CJK 文字"""
+        return re.sub(r'[\s\u3000!-/:-@\[-`{-~\u2000-\u206f\u3000-\u303f\uff00-\uff0f\uff1a-\uff20\uff3b-\uff40\uff5b-\uff65\u2010-\u2027\u2030-\u205e\u00a0-\u00bf]', '', s)
+
+    matches = []
+    target_lower = target_text.lower()
+    target_stripped = strip_noise(target_lower)
+    for blk in ocr_blocks:
+        blk_text = blk["text"]
+        blk_lower = blk_text.lower()
+        blk_stripped = strip_noise(blk_lower)
+        if match_mode == "exact":
+            if blk_lower == target_lower:
+                matches.append(blk)
+        elif match_mode == "startswith":
+            if blk_lower.startswith(target_lower):
+                matches.append(blk)
+        elif match_mode == "contains":
+            if target_lower in blk_lower:
+                matches.append(blk)
+        else:  # fuzzy (默认) — 去掉空格和标点后做 contains 匹配
+            if target_stripped and target_stripped in blk_stripped:
+                matches.append(blk)
+
+    if not matches:
+        # 返回所有检测到的文本帮助用户调试
+        all_texts = [f'"{b["text"]}"' for b in ocr_blocks[:20]]
+        return {
+            "status": "error",
+            "error": f"未找到包含 '{target_text}' 的文本。\n检测到的文本: {', '.join(all_texts)}"
+        }
+
+    # 选择第 index 个匹配
+    if index > len(matches):
+        return {
+            "status": "error",
+            "error": f"找到 {len(matches)} 个匹配 '{target_text}' 的文本，但请求的是第 {index} 个。"
+        }
+    selected = matches[index - 1]
+    click_x = selected["clickablePoint"]["x"]
+    click_y = selected["clickablePoint"]["y"]
+
+    # 4. 如果有 hwnd 先置前窗口
+    if hwnd:
+        try:
+            import win32gui
+            import win32con
+            if win32gui.IsIconic(int(hwnd)):
+                win32gui.ShowWindow(int(hwnd), win32con.SW_RESTORE)
+            win32gui.SetForegroundWindow(int(hwnd))
+            time.sleep(0.3)
+        except Exception as e:
+            debug_log(f"SetForegroundWindow failed: {e}")
+
+    # 5. 安全检查
+    virtual = get_virtual_screen_rect()
+    if not is_point_on_virtual_screen(click_x, click_y, virtual):
+        return {
+            "status": "error",
+            "error": f"文本 '{selected['text']}' 的坐标 ({click_x}, {click_y}) 超出虚拟桌面范围。"
+        }
+
+    # 6. 执行点击
+    pyautogui.click(click_x, click_y, button=button, clicks=clicks)
+
+    result_text = (
+        f"已点击文本 \"{selected['text']}\"\n"
+        f"屏幕坐标: ({click_x}, {click_y})\n"
+        f"匹配模式: {match_mode}，第 {index}/{len(matches)} 个匹配\n"
+        f"来源: {captured_title}"
+    )
+
+    return {
+        "status": "success",
+        "result": {
+            "content": [{"type": "text", "text": result_text}],
+            "clickedText": selected["text"],
+            "clickedPoint": {"x": click_x, "y": click_y},
+            "totalMatches": len(matches),
+            "allOcrTexts": [b["text"] for b in ocr_blocks],
+        }
+    }
+
+
+# ============================================================
+# ClickVisual 指令 — 视觉语义点击（通过图像编辑模型定位）
+# ============================================================
+
+def call_vision_edit_api(original_base64, prompt):
+    """
+    图生图局部编辑兼容入口。
+
+    实际 API 协议与图片解码已移入 screenpilot_core.image_edit；
+    保留函数名以兼容已有内部调用与外部补丁。
+    """
+    from screenpilot_core.image_edit import call_edit_api
+
+    return call_edit_api(
+        os.environ.get("VISION_API_BASE_URL", "").strip(),
+        os.environ.get("VISION_EDIT_MODEL", "").strip(),
+        os.environ.get("VISION_API_KEY", "").strip(),
+        os.environ.get("VISION_API_FORMAT", "chat").strip().lower(),
+        original_base64,
+        prompt,
+        debug_log,
+    )
+
+
+def _call_chat_completions_api(api_base, model, api_key, image_data_uri, prompt):
+    """
+    通过 /v1/chat/completions 调用图像编辑（Gemini / OpenAI 格式）
+    请求中图片作为 message content 的 image_url 部分发送。
+    返回图片字节。
+    """
+    import urllib.request
+    import urllib.error
+
+    url = api_base.rstrip('/')
+    if url.endswith('/v1'):
+        url += '/chat/completions'
+    else:
+        url += '/v1/chat/completions'
+
+    payload = json.dumps({
+        "model": model,
+        "stream": False,
+        "messages": [
+            {
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": prompt},
+                    {"type": "image_url", "image_url": {"url": image_data_uri}}
+                ]
+            }
+        ]
+    })
+
+    req = urllib.request.Request(
+        url,
+        data=payload.encode("utf-8"),
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        },
+        method="POST",
+    )
+
+    debug_log(f"ClickVisual [chat]: 调用 {model} @ {url}")
+
+    try:
+        with urllib.request.urlopen(req, timeout=300) as resp:
+            resp_data = json.loads(resp.read().decode("utf-8"))
+    except urllib.error.HTTPError as e:
+        body = e.read().decode("utf-8", errors="replace")[:500]
+        raise RuntimeError(f"Chat API 请求失败 (HTTP {e.code}) URL={url}: {body}")
+    except Exception as e:
+        raise RuntimeError(f"Chat API 请求异常 URL={url}: {e}")
+
+    # 解析返回的图片：从 message.content 中提取 markdown base64 图片
+    message = resp_data.get("choices", [{}])[0].get("message", {})
+    content = message.get("content", "")
+
+    # 匹配 markdown 图片: ![...](data:image/xxx;base64,...)
+    img_match = re.search(r'!\[.*?\]\((data:image/\w+;base64,[\s\S]*?)\)', content)
+    if img_match:
+        data_uri = img_match.group(1)
+        _, b64_part = data_uri.split(",", 1)
+        return base64.b64decode(b64_part.replace("\n", "").replace(" ", ""))
+
+    # 备用: 从 message.images 数组获取
+    if message.get("images") and len(message["images"]) > 0:
+        img_url = message["images"][0].get("image_url", {}).get("url", "")
+        if img_url:
+            return _download_image_data(img_url)
+
+    raise RuntimeError(
+        f"Chat API 未返回图片。可能触发了安全审核。"
+        f"模型返回的文本: {content[:200]}"
+    )
+
+
+def _call_images_generations_api(api_base, model, api_key, image_data_uri, prompt):
+    """
+    通过 /images/generations 调用图像编辑（SiliconFlow / Qwen 格式）
+    """
+    import urllib.request
+    import urllib.error
+
+    url = f"{api_base.rstrip('/')}/images/generations"
+
+    payload = json.dumps({
+        "model": model,
+        "prompt": prompt,
+        "image": image_data_uri,
+    })
+
+    req = urllib.request.Request(
+        url,
+        data=payload.encode("utf-8"),
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        },
+        method="POST",
+    )
+
+    debug_log(f"ClickVisual [images]: 调用 {model} @ {url}")
+
+    try:
+        with urllib.request.urlopen(req, timeout=120) as resp:
+            resp_data = json.loads(resp.read().decode("utf-8"))
+    except urllib.error.HTTPError as e:
+        body = e.read().decode("utf-8", errors="replace")[:500]
+        raise RuntimeError(f"Images API 请求失败 (HTTP {e.code}): {body}")
+    except Exception as e:
+        raise RuntimeError(f"Images API 请求异常: {e}")
+
+    images = resp_data.get("images") or resp_data.get("data")
+    if not images or len(images) == 0:
+        raise RuntimeError(f"API 未返回图片。响应: {json.dumps(resp_data, ensure_ascii=False)[:300]}")
+
+    img_item = images[0]
+    img_url = img_item.get("url") or img_item.get("b64_json")
+    if not img_url:
+        raise RuntimeError(f"API 返回格式异常: {json.dumps(img_item, ensure_ascii=False)[:200]}")
+
+    return _download_image_data(img_url)
+
+
+def _download_image_data(img_url):
+    """从 URL 或 data URI 或纯 base64 下载/解码图片数据"""
+    import urllib.request
+    if img_url.startswith("http"):
+        debug_log(f"ClickVisual: 下载编辑后图片...")
+        with urllib.request.urlopen(img_url, timeout=60) as img_resp:
+            return img_resp.read()
+    elif img_url.startswith("data:"):
+        _, b64_part = img_url.split(",", 1)
+        return base64.b64decode(b64_part.replace("\n", "").replace(" ", ""))
+    else:
+        return base64.b64decode(img_url)
+
+
+def find_white_circle(img_original, img_edited):
+    """
+    在编辑后的图片中找到模型画上的白色圆。
+    使用密度峰值定位法：先找白色像素最密集的区域（=圆所在位置），
+    再在该区域内计算质心。抗散布噪点能力强。
+    返回 (center_x, center_y, bounding_box, painted_pct) 或 None
+    """
+    import numpy as np
+
+    # 确保两图尺寸一致
+    if img_edited.size != img_original.size:
+        img_edited = img_edited.resize(img_original.size, resample=3)
+
+    arr_orig = np.array(img_original.convert("RGB"), dtype=np.uint8)
+    arr_edit = np.array(img_edited.convert("RGB"), dtype=np.uint8)
+
+    # 纯白色检测：R > 240, G > 240, B > 240
+    edit_is_white = (
+        (arr_edit[:, :, 0] > 240) &
+        (arr_edit[:, :, 1] > 240) &
+        (arr_edit[:, :, 2] > 240)
+    )
+
+    # 原图中已经是白色的区域（排除，避免白色背景干扰）
+    orig_is_white = (
+        (arr_orig[:, :, 0] > 240) &
+        (arr_orig[:, :, 1] > 240) &
+        (arr_orig[:, :, 2] > 240)
+    )
+
+    # 模型新画上的白色 = 编辑图是白色 且 原图不是白色
+    painted_mask = edit_is_white & ~orig_is_white
+
+    painted_count = int(np.sum(painted_mask))
+    total_pixels = painted_mask.shape[0] * painted_mask.shape[1]
+
+    if painted_count == 0:
+        return None
+
+    painted_pct = round(painted_count / total_pixels * 100, 2)
+
+    # === 密度峰值定位法 ===
+    # 把图切成小块，找白色像素最密集的块（= 圆的位置）
+    h, w = painted_mask.shape
+    block = 30  # 每块 30×30 像素
+    bh, bw = h // block, w // block
+
+    if bh == 0 or bw == 0:
+        # 图片太小，直接用全局质心
+        ys, xs = np.where(painted_mask)
+        center_x = int(np.mean(xs))
+        center_y = int(np.mean(ys))
+    else:
+        # 计算每个块的白色像素密度
+        trimmed = painted_mask[:bh * block, :bw * block]
+        blocks = trimmed.reshape(bh, block, bw, block)
+        density = blocks.sum(axis=(1, 3))
+
+        # 找到密度最高的块
+        peak_by, peak_bx = np.unravel_index(np.argmax(density), density.shape)
+
+        # 在峰值块周围 5 块范围内计算精确质心（只算圆的像素）
+        margin = 5
+        y_start = max(0, (peak_by - margin) * block)
+        y_end = min(h, (peak_by + margin + 1) * block)
+        x_start = max(0, (peak_bx - margin) * block)
+        x_end = min(w, (peak_bx + margin + 1) * block)
+
+        local_mask = painted_mask[y_start:y_end, x_start:x_end]
+        local_ys, local_xs = np.where(local_mask)
+
+        if len(local_xs) == 0:
+            # 降级到全局质心
+            ys, xs = np.where(painted_mask)
+            center_x = int(np.mean(xs))
+            center_y = int(np.mean(ys))
+        else:
+            center_x = int(np.mean(local_xs)) + x_start
+            center_y = int(np.mean(local_ys)) + y_start
+
+    # 边界框（基于圆的局部区域）
+    ys_all, xs_all = np.where(painted_mask)
+    bbox = {
+        "x": int(np.min(xs_all)), "y": int(np.min(ys_all)),
+        "width": int(np.max(xs_all) - np.min(xs_all)),
+        "height": int(np.max(ys_all) - np.min(ys_all)),
+    }
+
+    return center_x, center_y, bbox, painted_pct
+
+
+def cmd_click_visual(args):
+    """
+    执行 ClickVisual 指令:
+    截图 → 发送到图像编辑模型(涂色) → 像素差异定位 → 自动点击
+    """
+    import pyautogui
+    from PIL import Image
+    a = normalize_args(args)
+
+    description = a.get("description") or a.get("target") or a.get("desc") or a.get("text")
+    if not description:
+        return {"status": "error", "error": "必须提供 description 参数描述要点击的视觉元素。"}
+
+    button = str(a.get("button", "left")).lower()
+    clicks = int(a.get("clicks", 1))
+
+    # 1. 截图（通用解析，支持 hwnd/windowTitle/processName/全屏）
+    img, hwnd, window_rect, captured_title = _resolve_capture_target(a)
+    if img is None:
+        return {"status": "error", "error": captured_title}
+
+    # 2. 原图转 base64
+    original_data_uri = image_to_base64(img, fmt="PNG")
+    debug_log(f"ClickVisual: 截图完成 {img.size}, 准备调用图像编辑模型...")
+
+    # 3. 构建涂色指令：让模型用白色圆盖住目标
+    edit_prompt = (
+        f"请在图中找到「{description}」的精确位置，"
+        f"然后在它的正中心画一个纯白色(#FFFFFF)实心圆，"
+        f"圆的大小刚好能完全覆盖住或者标记目标正中心即可，不要画太大。"
+        f"圆心必须对准目标的中心。其他区域保持不变。"
+    )
+
+    # 4. 调用图像编辑 API
+    try:
+        edited_bytes = call_vision_edit_api(original_data_uri, edit_prompt)
+    except Exception as e:
+        return {"status": "error", "error": f"图像编辑 API 调用失败: {e}"}
+
+    # 5. 解析编辑后的图片
+    try:
+        edited_img = Image.open(io.BytesIO(edited_bytes)).convert("RGB")
+    except Exception as e:
+        return {"status": "error", "error": f"无法解析 API 返回的图片: {e}"}
+
+    # 5.5 保存调试图片（原图 + 编辑后）
+    debug_dir = os.path.join(get_screenshot_dir(), "debug")
+    os.makedirs(debug_dir, exist_ok=True)
+    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+    orig_path = os.path.join(debug_dir, f"clickvisual_{ts}_original.png")
+    edit_path = os.path.join(debug_dir, f"clickvisual_{ts}_edited.png")
+    img.save(orig_path, "PNG")
+    edited_img_resized = edited_img.resize(img.size, resample=3) if edited_img.size != img.size else edited_img
+    edited_img_resized.save(edit_path, "PNG")
+    debug_log(f"ClickVisual: 调试图片已保存 → {debug_dir}")
+
+    # 6. 通过独立图生图差分模块定位新绘制的白色标记。
+    from screenpilot_core.image_edit import find_white_marker
+    paint_result = find_white_marker(img, edited_img)
+
+    if paint_result is None:
+        return {
+            "status": "error",
+            "error": f"在编辑后的图中未检测到白色圆球，模型可能没有正确标记 '{description}'。\n调试图片已保存: {debug_dir}"
+        }
+
+    img_center_x, img_center_y, bbox, painted_pct = paint_result
+
+    # 安全检查：白色区域不能太大
+    if painted_pct > 30:
+        return {
+            "status": "error",
+            "error": f"白色区域占比 {painted_pct}% 过大，模型可能画错了。\n调试图片已保存: {debug_dir}"
+        }
+
+    debug_log(f"ClickVisual: 找到白色圆球 质心=({img_center_x},{img_center_y}) 占比={painted_pct}%")
+
+    # 7. 以实际 captureRect 为原点换算屏幕坐标。
+    # _resolve_capture_target 对全屏也会返回虚拟桌面矩形，因此支持负坐标副屏。
+    if window_rect:
+        click_x, click_y = image_point_to_screen(
+            img_center_x, img_center_y, window_rect
+        )
+    else:
+        click_x = int(img_center_x)
+        click_y = int(img_center_y)
+
+    # 8. 置前窗口并点击
+    if hwnd:
+        try:
+            import win32gui
+            import win32con
+            if win32gui.IsIconic(int(hwnd)):
+                win32gui.ShowWindow(int(hwnd), win32con.SW_RESTORE)
+            win32gui.SetForegroundWindow(int(hwnd))
+            time.sleep(0.3)
+        except Exception as e:
+            debug_log(f"SetForegroundWindow failed: {e}")
+
+    virtual = get_virtual_screen_rect()
+    if not is_point_on_virtual_screen(click_x, click_y, virtual):
+        return {
+            "status": "error",
+            "error": (
+                f"计算出的坐标 ({click_x}, {click_y}) 超出虚拟桌面范围 "
+                f"({virtual.x},{virtual.y} {virtual.width}×{virtual.height})。"
+            )
+        }
+
+    pyautogui.click(click_x, click_y, button=button, clicks=clicks)
+
+    result_text = (
+        f"已通过视觉定位点击: \"{description}\"\n"
+        f"屏幕坐标: ({click_x}, {click_y})\n"
+        f"涂色区域: ({bbox['x']},{bbox['y']}) {bbox['width']}×{bbox['height']} "
+        f"占比 {painted_pct}%\n"
+        f"来源: {captured_title}"
+    )
+
+    return {
+        "status": "success",
+        "result": {
+            "content": [{"type": "text", "text": result_text}],
+            "clickedPoint": {"x": click_x, "y": click_y},
+            "paintedRegion": bbox,
+            "paintedPercentage": painted_pct,
+        }
+    }
+
+
+# ============================================================
+# TypeText 指令（双轨制：前台剪贴板 / 后台 PostMessage WM_CHAR）
+# ============================================================
+
+def cmd_type_text(args):
+    """
+    执行 TypeText 指令（双轨制）
+    - 前台模式（默认）: 通过剪贴板粘贴输入，支持全Unicode/中文
+    - 后台模式（有 hwnd/windowTitle）: PostMessage WM_CHAR，不劫持键盘焦点
+    """
+    a = normalize_args(args)
+
+    text = a.get("text") or a.get("content") or a.get("value")
+    if not text:
+        return {"status": "error", "error": "必须提供 text 参数指定要输入的文本内容。"}
+
+    text = str(text)
+    # 是否在输入后按回车
+    press_enter = str(a.get("enter") or a.get("pressenter") or a.get("submit") or "false").lower() in ("true", "1", "yes")
+
+    # 双轨窗口查找
+    hwnd, title = _resolve_hwnd(a)
+
+    # ── 双轨：后台模式（PostMessage WM_CHAR，不劫持键盘） ──
+    if hwnd:
+        user32 = ctypes.windll.user32
+
+        for ch in text:
+            user32.PostMessageW(hwnd, WM_CHAR, ord(ch), 0)
+            time.sleep(0.005)  # 微小延迟避免丢字
+
+        if press_enter:
+            VK_RETURN = 0x0D
+            WM_KEYDOWN = 0x0100
+            WM_KEYUP = 0x0101
+            user32.PostMessageW(hwnd, WM_KEYDOWN, VK_RETURN, 0x001C0001)
+            time.sleep(0.02)
+            user32.PostMessageW(hwnd, WM_KEYUP, VK_RETURN, 0xC01C0001)
+
+        result_text = (
+            f"[后台模式] 已向窗口 \"{title}\" (HWND:{hwnd}) 发送文本输入。\n"
+            f"输入内容: \"{text[:100]}{'...' if len(text) > 100 else ''}\"\n"
+            f"字符数: {len(text)}"
+            + ("\n已按下回车键" if press_enter else "")
+            + "\n键盘焦点未被劫持。"
+        )
+        return {"status": "success", "result": result_text}
+
+    # ── 双轨：前台模式（剪贴板粘贴，支持全Unicode） ──
+    import pyautogui
+
+    # 保存原始剪贴板内容，输入后恢复
+    try:
+        import win32clipboard
+        win32clipboard.OpenClipboard()
+        try:
+            old_clipboard = win32clipboard.GetClipboardData(win32clipboard.CF_UNICODETEXT)
+        except Exception:
+            old_clipboard = None
+        win32clipboard.CloseClipboard()
+    except Exception:
+        old_clipboard = None
+
+    # 将文本写入剪贴板
+    try:
+        import win32clipboard
+        win32clipboard.OpenClipboard()
+        win32clipboard.EmptyClipboard()
+        win32clipboard.SetClipboardText(text, win32clipboard.CF_UNICODETEXT)
+        win32clipboard.CloseClipboard()
+    except Exception as e:
+        return {"status": "error", "error": f"无法写入剪贴板: {e}"}
+
+    # Ctrl+V 粘贴
+    pyautogui.hotkey('ctrl', 'v')
+    time.sleep(0.1)
+
+    # 按回车
+    if press_enter:
+        pyautogui.press('enter')
+
+    # 恢复原始剪贴板内容
+    try:
+        import win32clipboard
+        time.sleep(0.05)
+        win32clipboard.OpenClipboard()
+        win32clipboard.EmptyClipboard()
+        if old_clipboard is not None:
+            win32clipboard.SetClipboardText(old_clipboard, win32clipboard.CF_UNICODETEXT)
+        win32clipboard.CloseClipboard()
+    except Exception:
+        pass  # 恢复失败不影响主流程
+
+    result_text = (
+        f"已通过剪贴板粘贴输入文本。\n"
+        f"输入内容: \"{text[:100]}{'...' if len(text) > 100 else ''}\"\n"
+        f"字符数: {len(text)}"
+        + ("\n已按下回车键" if press_enter else "")
+    )
+    return {"status": "success", "result": result_text}
+
+
+# ============================================================
+# ScrollAt 指令（双轨制：前台 pyautogui / 后台 SendMessage）
+# ============================================================
+
+def cmd_scroll_at(args):
+    """
+    执行 ScrollAt 指令（双轨制）
+    - 前台模式（无 hwnd/windowTitle）: pyautogui.scroll()，简单快速但劫持鼠标位置
+    - 后台模式（有 hwnd 或 windowTitle）: SendMessage WM_MOUSEWHEEL，不劫持鼠标
+    """
+    import pyautogui
+    a = normalize_args(args)
+
+    direction = str(a.get("direction") or a.get("dir") or "").lower()
+    if direction not in ("up", "down"):
+        return {"status": "error", "error": "必须提供 direction 参数，可选值: up, down。"}
+
+    amount = int(a.get("amount") or a.get("clicks") or a.get("delta") or 3)
+    x = a.get("x")
+    y = a.get("y")
+
+    # 尝试查找目标窗口（双轨查找）
+    hwnd, title = _resolve_hwnd(a)
+
+    # 滚动量：向上为正，向下为负（标准 Windows 滚轮逻辑）
+    scroll_delta = amount * WHEEL_DELTA if direction == "up" else -(amount * WHEEL_DELTA)
+
+    # ── 双轨：后台模式（SendMessage WM_MOUSEWHEEL，不劫持鼠标） ──
+    if hwnd:
+        import win32gui
+
+        if x is not None and y is not None:
+            screen_x, screen_y = int(x), int(y)
+        else:
+            rect = win32gui.GetWindowRect(hwnd)
+            screen_x = (rect[0] + rect[2]) // 2
+            screen_y = (rect[1] + rect[3]) // 2
+
+        # WM_MOUSEWHEEL 的坐标是屏幕坐标（不是客户区坐标！这是个特例）
+        wParam = (scroll_delta << 16) & 0xFFFFFFFF
+        lParam = ((screen_y & 0xFFFF) << 16) | (screen_x & 0xFFFF)
+
+        user32 = ctypes.windll.user32
+        user32.SendMessageW(hwnd, WM_MOUSEWHEEL, wParam, lParam)
+
+        dir_text = "向上" if direction == "up" else "向下"
+        result_text = (
+            f"[后台模式] 已向窗口 \"{title}\" (HWND:{hwnd}) 发送滚轮{dir_text} {amount} 个刻度。\n"
+            f"滚动位置: 屏幕坐标({screen_x}, {screen_y})\n"
+            f"鼠标光标未移动。"
+        )
+        return {"status": "success", "result": result_text}
+
+    # ── 双轨：前台模式（pyautogui，直接在当前光标或指定位置滚动） ──
+    if x is not None and y is not None:
+        screen_x, screen_y = int(x), int(y)
+        pyautogui_clicks = amount if direction == "up" else -amount
+        pyautogui.moveTo(screen_x, screen_y)
+        pyautogui.scroll(pyautogui_clicks)
+        dir_text = "向上" if direction == "up" else "向下"
+        result_text = f"已在屏幕坐标 ({screen_x}, {screen_y}) 处{dir_text}滚动 {amount} 个刻度。"
+    else:
+        pyautogui_clicks = amount if direction == "up" else -amount
+        pyautogui.scroll(pyautogui_clicks)
+        dir_text = "向上" if direction == "up" else "向下"
+        result_text = f"已在当前鼠标位置{dir_text}滚动 {amount} 个刻度。"
+
+    return {"status": "success", "result": result_text}
+
+
+# ============================================================
+# 高级统一交互、等待与验证
+# ============================================================
+
+def _bool_arg(value, default=False):
+    if value is None or value == "":
+        return default
+    return str(value).strip().lower() in ("true", "1", "yes", "on")
+
+
+def _probe_ocr_text(a, target_text):
+    """截图并探测文字，不执行点击。"""
+    img, _, capture_rect, _ = _resolve_capture_target(a)
+    if img is None:
+        return None
+    blocks = run_ocr(img, capture_rect)
+    target = str(target_text).casefold()
+    match_mode = str(a.get("matchmode") or a.get("match_mode") or "contains").lower()
+    for block in blocks:
+        actual = str(block.get("text") or "").casefold()
+        matched = actual == target if match_mode == "exact" else target in actual
+        if matched:
+            return block
+    return None
+
+
+def cmd_wait_for(args):
+    """等待 UIA 元素或 OCR 文本出现/消失。"""
+    from screenpilot_core.interaction import wait_until
+    from screenpilot_core.uia import resolve_element
+
+    a = normalize_args(args)
+    timeout_ms = int(a.get("timeoutms") or a.get("timeout_ms") or 10000)
+    poll_ms = int(a.get("pollintervalms") or a.get("poll_interval_ms") or 200)
+    condition = str(a.get("condition") or a.get("waitfor") or "appear").lower()
+    command_hint = str(a.get("_wait_command") or "")
+    target_text = a.get("text") or a.get("target")
+    selector = _uia_selector_from_args(a)
+    has_uia_identity = any(
+        selector.get(key) for key in ("elementId", "name", "automationId", "controlType")
+    )
+    hwnd, title = _resolve_hwnd(a)
+
+    use_ocr = command_hint == "text" or (
+        target_text and not selector.get("automationId")
+        and not selector.get("elementId")
+        and not selector.get("controlType")
+        and _bool_arg(a.get("ocr"), hwnd is None)
+    )
+
+    if use_ocr:
+        if not target_text:
+            return {"status": "error", "error": "WaitForText 必须提供 text 参数。"}
+
+        def raw_probe():
+            return _probe_ocr_text(a, target_text)
+        description = f"文本“{target_text}”"
+    else:
+        if hwnd is None:
+            return {
+                "status": "error",
+                "error": title or "WaitForElement 必须提供目标窗口。",
+            }
+        if not has_uia_identity:
+            return {"status": "error", "error": "WaitForElement 必须提供元素选择器。"}
+
+        def raw_probe():
+            try:
+                _, info = resolve_element(
+                    hwnd,
+                    selector,
+                    time_budget_ms=min(max(poll_ms, 500), 2000),
+                )
+                return info
+            except ScreenPilotError as error:
+                if error.code in ("ELEMENT_NOT_FOUND", "ELEMENT_STALE"):
+                    return None
+                raise
+        description = f"UIA 元素 {selector}"
+
+    disappear = condition in ("disappear", "hidden", "absent")
+
+    def probe():
+        value = raw_probe()
+        return True if disappear and not value else (value if not disappear else False)
+
+    try:
+        value, attempts, elapsed_ms = wait_until(
+            probe,
+            timeout_ms=timeout_ms,
+            poll_interval_ms=poll_ms,
+            description=description + ("消失" if disappear else "出现"),
+        )
+    except Exception as e:
+        details = error_payload(e, "WAIT_FAILED")
+        return {"status": "error", "error": details["message"], "errorDetails": details}
+
+    return {
+        "status": "success",
+        "result": {
+            "content": [{
+                "type": "text",
+                "text": (
+                    f"等待成功: {description}已{'消失' if disappear else '出现'}。\n"
+                    f"尝试次数: {attempts}，耗时: {elapsed_ms}ms"
+                ),
+            }],
+            "condition": "disappear" if disappear else "appear",
+            "matched": None if disappear or value is True else value,
+            "attempts": attempts,
+            "elapsedMs": elapsed_ms,
+        },
+    }
+
+
+def _verify_after_action(a):
+    """执行动作后的可选验证；未配置验证时返回 None。"""
+    verify_text = (
+        a.get("verifytext") or a.get("verify_text")
+        or a.get("textappears") or a.get("text_appears")
+    )
+    disappear_text = a.get("textdisappears") or a.get("text_disappears")
+    if not verify_text and not disappear_text:
+        return None
+
+    verify_args = dict(a)
+    verify_args["text"] = verify_text or disappear_text
+    verify_args["condition"] = "appear" if verify_text else "disappear"
+    verify_args["_wait_command"] = "text"
+    verify_args["ocr"] = "true"
+    verify_args["timeoutms"] = (
+        a.get("verifytimeoutms") or a.get("verify_timeout_ms") or 8000
+    )
+    return cmd_wait_for(verify_args)
+
+
+def cmd_interact(args):
+    """
+    统一语义交互。
+
+    默认降级顺序：UIA 原生 Pattern → OCR 文本点击 → 图生图局部编辑定位。
+    图生图通道沿用 ClickVisual，不要求普通视觉模型输出坐标。
+    """
+    from screenpilot_core.interaction import parse_channels, run_fallback
+
+    a = normalize_args(args)
+    action = str(a.get("action") or a.get("operation") or "click").lower()
+    try:
+        channels = parse_channels(a.get("channels") or a.get("channelorder"))
+    except Exception as e:
+        details = error_payload(e, "INVALID_CHANNELS")
+        return {"status": "error", "error": details["message"], "errorDetails": details}
+
+    handlers = {}
+    selector = _uia_selector_from_args(a)
+    target_text = a.get("text") or a.get("name") or a.get("label")
+    description = a.get("description") or a.get("desc")
+
+    # 点击类动作中的 text 可同时充当 UIA Name、OCR 文本及图生图描述。
+    # setValue/type 的 text 是待写入值，不能误用为目标名称。
+    if (
+        action in ("click", "invoke")
+        and target_text
+        and not any(
+            selector.get(key)
+            for key in ("elementId", "name", "automationId", "controlType")
+        )
+    ):
+        selector["name"] = target_text
+
+    has_uia_identity = any(
+        selector.get(key) for key in ("elementId", "name", "automationId", "controlType")
+    )
+
+    if has_uia_identity and action in (
+        "click", "invoke", "set", "setvalue", "type", "toggle",
+        "select", "expand", "collapse", "focus",
+    ):
+        uia_args = dict(a)
+        uia_args["action"] = "invoke" if action == "click" else action
+        handlers["uia"] = lambda: cmd_ui_action(uia_args)
+
+    if target_text and action in ("click", "invoke"):
+        ocr_args = dict(a)
+        ocr_args["text"] = target_text
+        handlers["ocr"] = lambda: cmd_click_text(ocr_args)
+
+    if (description or target_text) and action in ("click", "invoke"):
+        image_edit_args = dict(a)
+        image_edit_args["description"] = description or target_text
+        handlers["image_edit"] = lambda: cmd_click_visual(image_edit_args)
+
+    try:
+        action_response, used_channel, attempts = run_fallback(channels, handlers)
+    except Exception as e:
+        details = error_payload(e, "INTERACT_FAILED")
+        return {"status": "error", "error": details["message"], "errorDetails": details}
+
+    verification = _verify_after_action(a)
+    if verification and verification.get("status") != "success":
+        return {
+            "status": "error",
+            "error": f"动作已执行，但验证失败: {verification.get('error')}",
+            "errorDetails": {
+                "code": "ACTION_NOT_VERIFIED",
+                "retryable": True,
+                "attempts": attempts,
+                "verification": verification.get("errorDetails"),
+            },
+        }
+
+    inner_result = action_response.get("result") if isinstance(action_response, dict) else action_response
+    summary = (
+        f"统一交互执行成功。\n动作: {action}\n"
+        f"使用通道: {used_channel}\n尝试通道数: {len(attempts)}"
+    )
+    result = {
+        "content": [{"type": "text", "text": summary}],
+        "action": action,
+        "usedChannel": used_channel,
+        "channelAttempts": attempts,
+        "actionResult": inner_result,
+    }
+    if verification:
+        result["verification"] = verification.get("result")
+    return {"status": "success", "result": result}
+
+
+# ============================================================
+# 指令分发与串行调用
+# ============================================================
+
+# ============================================================
+# QueryWindows 指令（调用 WindowSensor 更新实时窗口状态）
+# ============================================================
+
+def cmd_query_windows(args):
+    """
+    执行 QueryWindows 指令:
+    主动调用 WindowSensor 的 sensor.ps1 获取当前最新的窗口信息
+    """
+    import subprocess
+    import os
+    
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    sensor_path = os.path.join(current_dir, "..", "WindowSensor", "sensor.ps1")
+    
+    if not os.path.exists(sensor_path):
+        return {"status": "error", "error": f"找不到 sensor.ps1 脚本: {sensor_path}"}
+        
+    try:
+        result = subprocess.run(
+            ["powershell", "-ExecutionPolicy", "Bypass", "-NoProfile", "-File", sensor_path],
+            capture_output=True,
+            text=False,
+            timeout=10
+        )
+        
+        if result.returncode != 0:
+            err_msg = result.stderr.decode("utf-8", errors="replace")
+            return {"status": "error", "error": f"执行 sensor.ps1 失败 (退出码 {result.returncode}): {err_msg}"}
+            
+        output = result.stdout.decode("utf-8", errors="replace").strip()
+        
+        if not output:
+             return {"status": "error", "error": "执行 sensor.ps1 成功，但未返回任何输出。"}
+             
+        try:
+            parsed_data = json.loads(output)
+        except json.JSONDecodeError as e:
+            return {"status": "error", "error": f"解析 sensor.ps1 输出失败: {e}\n输出内容: {output[:200]}"}
+            
+        detailed_text = "成功获取窗口状态"
+        if "fold_blocks" in parsed_data:
+            for block in parsed_data["fold_blocks"]:
+                if block.get("threshold") == 0.7:
+                    detailed_text = block.get("content", detailed_text)
+                    break
+                    
+        return {
+            "status": "success",
+            "result": {
+                "content": [{"type": "text", "text": detailed_text}],
+                "sensorData": parsed_data
+            }
+        }
+    except subprocess.TimeoutExpired:
+        return {"status": "error", "error": "执行 sensor.ps1 超时。"}
+    except Exception as e:
+        return {"status": "error", "error": f"调用 sensor.ps1 异常: {e}"}
+
+
+COMMAND_MAP = {
+    "querywindows": cmd_query_windows,
+    "query": cmd_query_windows,
+    "getwindows": cmd_query_windows,
+    "screencapture": cmd_screen_capture,
+    "capture": cmd_screen_capture,
+    "screenshot": cmd_screen_capture,
+    "clickat": cmd_click_at,
+    "click": cmd_click_at,
+    "inspectui": cmd_inspect_ui,
+    "inspect": cmd_inspect_ui,
+    "uiinspect": cmd_inspect_ui,
+    "uiaction": cmd_ui_action,
+    "invokeui": cmd_ui_action,
+    "uiact": cmd_ui_action,
+    "clicktext": cmd_click_text,
+    "textclick": cmd_click_text,
+    "clickvisual": cmd_click_visual,
+    "visualclick": cmd_click_visual,
+    "scrollat": cmd_scroll_at,
+    "scroll": cmd_scroll_at,
+    "typetext": cmd_type_text,
+    "type": cmd_type_text,
+    "inputtext": cmd_type_text,
+    "interact": cmd_interact,
+    "smartinteract": cmd_interact,
+    "waitforelement": lambda args: cmd_wait_for({**args, "_wait_command": "element"}),
+    "waitforui": lambda args: cmd_wait_for({**args, "_wait_command": "element"}),
+    "waitfortext": lambda args: cmd_wait_for({**args, "_wait_command": "text"}),
+    "waitfordisappear": lambda args: cmd_wait_for({**args, "condition": "disappear"}),
+}
+
+
+def dispatch_command(command, params):
+    """根据 command 名调度到对应函数"""
+    cmd_key = command.lower().replace("_", "").replace("-", "")
+    handler = COMMAND_MAP.get(cmd_key)
+    if handler is None:
+        return {"status": "error", "error": f"未知指令: '{command}'。可用指令: ScreenCapture, ClickAt, ClickText, ClickVisual, InspectUI, UIAction, Interact, WaitForElement, WaitForText, WaitForDisappear, ScrollAt, TypeText, QueryWindows"}
+    return handler(params)
+
+
+def process_request(request):
+    """处理请求，支持单个和串行批量调用"""
+
+    # 检测串行调用模式: command1, command2, ...
+    serial_keys = sorted([k for k in request.keys() if re.match(r'^command\d+$', k)],
+                         key=lambda k: int(re.search(r'\d+', k).group()))
+
+    if serial_keys:
+        # 串行批量模式
+        results = []
+        for i, cmd_key in enumerate(serial_keys):
+            # 串行指令间插入 1 秒延迟，等待界面载入/刷新
+            if i > 0:
+                debug_log(f"串行指令间延迟 1 秒，等待界面刷新...")
+                time.sleep(1)
+
+            idx = re.search(r'\d+', cmd_key).group()
+            command = request[cmd_key]
+
+            # 提取该命令对应的参数（带相同数字后缀的 key）
+            params = {}
+            suffix = idx
+            for k, v in request.items():
+                if k == cmd_key:
+                    continue
+                if k.endswith(suffix) and k != cmd_key:
+                    # 去掉数字后缀得到参数名
+                    param_name = k[:-len(suffix)]
+                    params[param_name] = v
+
+            result = dispatch_command(command, params)
+            results.append({
+                "commandIndex": int(idx),
+                "command": command,
+                "result": result
+            })
+
+        # 汇总串行结果 — 始终返回 success（VCP 只认 success/error）
+        # 每步的成功/失败信息写在 content 和 serialResults 里
+        success_count = sum(1 for r in results if r["result"].get("status") == "success")
+        total = len(results)
+        summary_parts = []
+        for r in results:
+            s = r["result"].get("status", "unknown")
+            icon = "✅" if s == "success" else "❌"
+            summary_parts.append(f"  {icon} 指令{r['commandIndex']}({r['command']}): {s}")
+
+        header = f"串行执行完成: {success_count}/{total} 成功"
+        return {
+            "status": "success",
+            "result": {
+                "content": [
+                    {"type": "text", "text": header + "\n" + "\n".join(summary_parts)}
+                ],
+                "serialResults": results,
+                "totalCommands": total,
+                "successCount": success_count,
+            }
+        }
+
+    # 单指令模式
+    command = request.get("command")
+    if not command:
+        return {"status": "error", "error": "缺少 command 参数。可用指令: ScreenCapture, ClickAt, InspectUI, QueryWindows, etc."}
+
+    # 移除 command 键，剩余的都作为参数
+    params = {k: v for k, v in request.items() if k != "command"}
+    return dispatch_command(command, params)
+
+
+# ============================================================
+# 主入口
+# ============================================================
+
+def _write_worker_message(payload):
+    """向常驻协调器写入单行 JSON；Worker stdout 只允许承载此协议。"""
+    data = (json.dumps(payload, ensure_ascii=False) + "\n").encode("utf-8")
+    sys.stdout.buffer.write(data)
+    sys.stdout.buffer.flush()
+
+
+def run_worker():
+    """
+    JSONL 常驻 Worker。
+
+    输入:
+      {"id": "...", "request": {...}, "context": {...}}
+
+    输出:
+      {"id": "...", "status": "success", "result": ...}
+      {"id": "...", "status": "error", "error": {"code": "...", "message": "..."}}
+
+    request 的命令语义和 result 数据结构与原同步 stdio 入口保持一致。
+    """
+    _write_worker_message({
+        "event": "ready",
+        "protocolVersion": 1,
+        "pid": os.getpid(),
+    })
+
+    for raw_line in sys.stdin:
+        raw_line = raw_line.strip()
+        if not raw_line:
+            continue
+
+        request_id = None
+        try:
+            envelope = json.loads(raw_line)
+            if not isinstance(envelope, dict):
+                raise ValueError("Worker 请求信封必须是 JSON 对象。")
+
+            request_id = envelope.get("id")
+            request = envelope.get("request")
+            if not request_id:
+                raise ValueError("Worker 请求缺少 id。")
+            if not isinstance(request, dict):
+                raise ValueError("Worker 请求缺少 request 对象。")
+
+            debug_log(
+                f"Worker 收到请求 id={request_id}: "
+                f"{json.dumps(request, ensure_ascii=False)[:200]}"
+            )
+            response = process_request(request)
+            status = response.get("status", "success")
+
+            if status == "error":
+                details = response.get("errorDetails") or {}
+                _write_worker_message({
+                    "id": request_id,
+                    "status": "error",
+                    "error": {
+                        "code": details.get("code") or "COMMAND_FAILED",
+                        "message": str(response.get("error") or "ScreenPilot 指令执行失败。"),
+                        "retryable": bool(details.get("retryable", False)),
+                        "details": details.get("details") or details,
+                    },
+                })
+            else:
+                # 只发送旧同步协议中的 result，供 direct 混合入口原样返回。
+                _write_worker_message({
+                    "id": request_id,
+                    "status": "success",
+                    "result": response.get("result"),
+                })
+        except json.JSONDecodeError as e:
+            _write_worker_message({
+                "id": request_id,
+                "status": "error",
+                "error": {
+                    "code": "INVALID_JSON",
+                    "message": f"JSON 解析失败: {e}",
+                },
+            })
+        except Exception as e:
+            debug_log(f"Worker 未捕获异常: {traceback.format_exc()}")
+            _write_worker_message({
+                "id": request_id,
+                "status": "error",
+                "error": {
+                    "code": "WORKER_EXCEPTION",
+                    "message": f"插件执行异常: {str(e)}",
+                },
+            })
+
+
+def main():
+    try:
+        # 原同步模式保持不变：读取一个 JSON 请求，输出一个兼容响应后退出。
+        raw_input = sys.stdin.readline().strip()
+        if not raw_input:
+            output_result("error", error="没有收到任何输入。请通过 stdin 发送 JSON 参数。")
+            sys.exit(1)
+
+        request = json.loads(raw_input)
+        debug_log(f"收到请求: {json.dumps(request, ensure_ascii=False)[:200]}")
+
+        result = process_request(request)
+
+        output_result(result.get("status", "success"),
+                      result=result.get("result"),
+                      error=result.get("error"))
+
+    except json.JSONDecodeError as e:
+        output_result("error", error=f"JSON 解析失败: {e}")
+        sys.exit(1)
+    except Exception as e:
+        debug_log(f"未捕获异常: {traceback.format_exc()}")
+        output_result("error", error=f"插件执行异常: {str(e)}")
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    if "--worker" in sys.argv:
+        run_worker()
+    else:
+        main()

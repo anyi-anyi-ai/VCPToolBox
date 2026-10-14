@@ -560,47 +560,11 @@ function downloadImageToBase64(imageUrl) {
 // 配置读取（优先从环境变量，fallback自行加载config.env）
 // ============================================
 function loadConfig() {
-  let apiUrl = process.env.FORUM_API_URL || '';
-  let apiKey = process.env.FORUM_API_KEY || '';
-  let proxyUrl = process.env.FORUM_PROXY || '';
-  let keepMediaTypes = process.env.KEEP_MEDIA_TYPES || '';
-  let cleanupDelay = process.env.CLEANUP_DELAY_SECONDS || '';
-
-  // 如果环境变量未注入，尝试自行读取 config.env
-  if (!apiUrl || !apiKey) {
-    try {
-      const envPath = path.join(__dirname, 'config.env');
-      const content = fs.readFileSync(envPath, 'utf-8');
-      content.split('\n').forEach(line => {
-        const trimmed = line.trim();
-        if (!trimmed || trimmed.startsWith('#')) return;
-        const eqIdx = trimmed.indexOf('=');
-        if (eqIdx === -1) return;
-        const key = trimmed.slice(0, eqIdx).trim();
-        const val = trimmed.slice(eqIdx + 1).trim();
-        if (key === 'FORUM_API_URL' && !apiUrl) apiUrl = val;
-        if (key === 'FORUM_API_KEY' && !apiKey) apiKey = val;
-        if (key === 'FORUM_PROXY' && !proxyUrl) proxyUrl = val;
-        if (key === 'KEEP_MEDIA_TYPES' && !keepMediaTypes) keepMediaTypes = val;
-        if (key === 'CLEANUP_DELAY_SECONDS' && !cleanupDelay) cleanupDelay = val;
-      });
-    } catch (e) {
-      // config.env 不存在，忽略
-    }
-  }
-
-  // 解析保留的媒体类型为Set
-  const keepTypes = new Set(
-    keepMediaTypes.split(',').map(t => t.trim().toLowerCase()).filter(Boolean)
-  );
-
-  return {
-    apiUrl: apiUrl.replace(/\/+$/, ''),
-    apiKey,
-    proxyUrl,
-    keepMediaTypes: keepTypes, // Set<string>: 'image', 'video', 'audio'
-    cleanupDelaySeconds: parseInt(cleanupDelay) || 30
-  };
+  const file = {};
+  try { for (const line of fs.readFileSync(path.join(__dirname, 'config.env'), 'utf8').split(/\r?\n/)) { const match=line.trim().match(/^([A-Z_]+)=(.*)$/); if(match)file[match[1]]=match[2].trim().replace(/^(["'])(.*)\1$/, '$2'); } } catch {}
+  const value = key => process.env[key] ?? file[key] ?? '';
+  const delay=Number(value('CLEANUP_DELAY_SECONDS'));
+  return { apiUrl:value('FORUM_API_URL').replace(/\/+$/, ''),apiKey:value('FORUM_API_KEY'),proxyUrl:value('FORUM_PROXY'),mode:value('FORUM_API_MODE')||'legacy',agentName:value('FORUM_AGENT_NAME'),keepMediaTypes:new Set(value('KEEP_MEDIA_TYPES').split(',').map(t=>t.trim().toLowerCase()).filter(Boolean)),cleanupDelaySeconds:Number.isFinite(delay)&&delay>=0?delay:30 };
 }
 
 const config = loadConfig();
@@ -637,6 +601,7 @@ function apiRequest(method, endpoint, body = null, extraHeaders = {}) {
     const fullUrl = FORUM_API_URL + endpoint;
     const parsed = new URL(fullUrl);
     const isHttps = parsed.protocol === 'https:';
+    const useProxy = FORUM_PROXY && !['localhost','127.0.0.1','[::1]'].includes(parsed.hostname);
     const targetPort = parseInt(parsed.port) || (isHttps ? 443 : 80);
 
     const headers = {
@@ -668,7 +633,7 @@ function apiRequest(method, endpoint, body = null, extraHeaders = {}) {
     function onTimeout(req) { req.destroy(); reject(new Error('请求超时(12s)')); }
 
     // ======= 走代理 =======
-    if (FORUM_PROXY && isHttps) {
+    if (useProxy && isHttps) {
       // HTTPS 通过 CONNECT 隧道
       const proxy = new URL(FORUM_PROXY);
       const connectReq = http.request({
@@ -707,7 +672,7 @@ function apiRequest(method, endpoint, body = null, extraHeaders = {}) {
       connectReq.on('timeout', () => { connectReq.destroy(); reject(new Error('代理连接超时')); });
       connectReq.end();
 
-    } else if (FORUM_PROXY && !isHttps) {
+    } else if (useProxy && !isHttps) {
       // HTTP 通过代理直接转发
       const proxy = new URL(FORUM_PROXY);
       const req = http.request({
@@ -1230,7 +1195,10 @@ async function checkUnread(args) {
 // ============================================
 // 命令路由
 // ============================================
+const processCommon = require('./common-adapter.cjs')(apiRequest, config);
 async function processRequest(request) {
+  if(config.mode==='common')return processCommon(request);
+  if(config.mode!=='legacy')throw new Error('FORUM_API_MODE 应为 common 或 legacy');
   const { command, ...parameters } = request;
 
   switch (command) {
@@ -1301,4 +1269,5 @@ async function main() {
   }
 }
 
-main();
+if(require.main===module)main();
+module.exports={processRequest};
