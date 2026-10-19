@@ -1,5 +1,6 @@
 //! VCP-PATCH: immutable, SQL-rebuildable vector assets.
 //! File publication and SQL endorsement belong to the host, not this module.
+use crate::index::bq::MAX_BQ_DIM;
 use memmap2::Mmap;
 use std::collections::HashSet;
 use std::fs::File;
@@ -46,6 +47,16 @@ impl VectorAsset {
     /// The host must keep this file immutable while mapped (publish by rename).
     /// Never truncate or overwrite the inode underlying a live asset.
     pub fn open(path: &Path, expected: &AssetIdentity) -> io::Result<Self> {
+        Self::open_impl(path, expected, true)
+    }
+
+    /// Only for a host-endorsed generation. Check its stored stamp against SQL
+    /// before use; publication already performed the full CRC validation.
+    pub fn open_endorsed(path: &Path, expected: &AssetIdentity) -> io::Result<Self> {
+        Self::open_impl(path, expected, false)
+    }
+
+    fn open_impl(path: &Path, expected: &AssetIdentity, verify_crc: bool) -> io::Result<Self> {
         let mut file = File::open(path)?;
         // SAFETY: the host's immutable-asset protocol forbids in-place writes.
         let map = unsafe { Mmap::map(&file)? };
@@ -59,7 +70,7 @@ impl VectorAsset {
         let count = u64_at(&map, 16)?;
         let scope = map[24];
         let layout = map[25];
-        if version != FORMAT_VERSION || dimension == 0 || dimension > 3072
+        if version != FORMAT_VERSION || dimension == 0 || dimension > MAX_BQ_DIM
             || scope > 1 || layout > 1
             || map[26..32].iter().chain(map[144..HEADER].iter()).any(|v| *v != 0)
         {
@@ -102,17 +113,19 @@ impl VectorAsset {
         // mapping. Hashing the mmap eagerly faults the entire cold f32 matrix
         // into this process's working set before the first candidate rerank.
         // Use the SAME open file as the mapping, not a reopened pathname.
-        let mut hasher = crc32fast::Hasher::new();
-        let mut buffer = vec![0_u8; 256 * 1024];
-        let mut remaining = sm_end;
-        while remaining != 0 {
-            let length = remaining.min(buffer.len());
-            file.read_exact(&mut buffer[..length])?;
-            hasher.update(&buffer[..length]);
-            remaining -= length;
-        }
-        if hasher.finalize() != crc {
-            return Err(invalid("vector asset CRC mismatch"));
+        if verify_crc {
+            let mut hasher = crc32fast::Hasher::new();
+            let mut buffer = vec![0_u8; 256 * 1024];
+            let mut remaining = sm_end;
+            while remaining != 0 {
+                let length = remaining.min(buffer.len());
+                file.read_exact(&mut buffer[..length])?;
+                hasher.update(&buffer[..length]);
+                remaining -= length;
+            }
+            if hasher.finalize() != crc {
+                return Err(invalid("vector asset CRC mismatch"));
+            }
         }
         let mut seen = HashSet::with_capacity(count);
         for row in map[HEADER..ids_end].chunks_exact(8) {
@@ -129,7 +142,7 @@ impl VectorAsset {
     pub fn len(&self) -> usize { self.count }
     pub fn is_empty(&self) -> bool { self.count == 0 }
     pub fn mapped_bytes(&self) -> usize { self.map.len() }
-    /// CRC stamp is exposed only after envelope, layout and CRC validation.
+    /// Stored publication stamp; endorsed loads compare it with trusted SQL.
     pub fn file_stamp(&self) -> (u64, u32) {
         let end = self.map.len() - FOOTER;
         (self.map.len() as u64,
@@ -162,7 +175,7 @@ pub fn write_staging<F>(
 ) -> io::Result<()>
 where F: FnMut(usize, &mut Vec<f32>) -> bool {
     let dim = identity.dimension;
-    if dim == 0 || dim > 3072 || identity.scope > 1
+    if dim == 0 || dim > MAX_BQ_DIM || identity.scope > 1
         || graph.is_empty() != sm.is_empty()
         || ids.iter().any(|id| *id == 0 || *id > i64::MAX as u64)
         || ids.iter().copied().collect::<HashSet<_>>().len() != ids.len()

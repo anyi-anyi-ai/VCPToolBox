@@ -100,6 +100,46 @@ pub struct VexusIndex {
     pub(crate) memo_runtime: Arc<MemoRuntime>,
 }
 
+/// One staging file per fixed generational slot. The caller must hold its
+/// checkpoint gate until publication and SQL endorsement have finished.
+/// This is not an index identity or a process-owned vector backing file.
+pub(crate) struct CheckpointStaging(std::path::PathBuf);
+
+impl CheckpointStaging {
+    pub(crate) fn new(target: &std::path::Path) -> std::io::Result<Self> {
+        let mut path = target.as_os_str().to_os_string();
+        path.push(".tmp");
+        let path = std::path::PathBuf::from(path);
+        // Only called after publication is authorized and while its scope is
+        // serialized. A leftover staging file has no SQL endorsement.
+        match std::fs::remove_file(&path) {
+            Ok(()) => {}
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+            Err(error) => return Err(error),
+        }
+        Ok(Self(path))
+    }
+
+    pub(crate) fn path(&self) -> &std::path::Path {
+        &self.0
+    }
+}
+
+impl Drop for CheckpointStaging {
+    fn drop(&mut self) {
+        match std::fs::remove_file(&self.0) {
+            Ok(()) => {}
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+            Err(error) => eprintln!(
+                "[Vexus-Lite] Checkpoint staging cleanup failed ({}): {}",
+                self.0.display(), error
+            ),
+        }
+    }
+}
+
+// Standalone saves and independent workspaces can overlap; their temporary
+// names are not part of the SQL-endorsed generational index lifecycle.
 static INDEX_SAVE_SEQUENCE: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
 
 fn unique_index_sidecar_path(target: &std::path::Path, role: &str) -> std::path::PathBuf {
@@ -917,11 +957,10 @@ impl Task for RecoverTask {
         let _gate = publication_gate::acquire(&self.db_path, &[scope])
             .map_err(Error::from_reason)?;
         let revision = self.content_revision.load(Ordering::Acquire);
-        let staging = unique_index_sidecar_path(std::path::Path::new(&self.db_path), "recovery.vec");
         let build = storage::with_registered_read_transaction(&self.db_path, |connection| {
-            index_source::build_from_connection(
+            index_source::build_memory_from_connection(
                 connection, diary, self.dimensions as usize,
-                "unendorsed-standalone-recovery", &staging,
+                "unendorsed-runtime-recovery",
             )
         }).map_err(Error::from_reason)?;
         let count = u32::try_from(build.index().len())
@@ -1118,6 +1157,33 @@ fn wait_for_watcher_duration(running: &AtomicBool, duration: Duration) -> bool {
     running.load(Ordering::Acquire)
 }
 
+/// Full scans are replayable producers, not real-time notify callbacks. Apply
+/// cancellable backpressure instead of dropping events and triggering another
+/// full scan. Never hold the queue mutex while waiting for the JS consumer.
+fn enqueue_scan_event(
+    events: &Arc<Mutex<VecDeque<WatchEvent>>>,
+    overflowed: &AtomicBool,
+    running: &AtomicBool,
+    event: WatchEvent,
+) -> bool {
+    while running.load(Ordering::Acquire) {
+        {
+            let Ok(mut queue) = events.lock() else {
+                overflowed.store(true, Ordering::Release);
+                return false;
+            };
+            if queue.len() < WATCH_EVENT_QUEUE_CAPACITY {
+                queue.push_back(event);
+                return true;
+            }
+        }
+        if !wait_for_watcher_duration(running, Duration::from_millis(25)) {
+            return false;
+        }
+    }
+    false
+}
+
 fn emit_initial_watch_events(
     root_path: &Path,
     allowed_extensions: &HashSet<String>,
@@ -1218,9 +1284,10 @@ fn emit_initial_watch_events(
                 .and_then(|value| value.duration_since(UNIX_EPOCH).ok())
                 .map(|value| value.as_millis())
                 .unwrap_or(0);
-            enqueue_watch_event(
+            if !enqueue_scan_event(
                 events,
                 overflowed,
+                running,
                 WatchEvent {
                     event: "add".to_string(),
                     path: normalized_path,
@@ -1233,7 +1300,9 @@ fn emit_initial_watch_events(
                         .map(|value| value.as_millis().min(i64::MAX as u128) as i64)
                         .unwrap_or(0),
                 },
-            );
+            ) {
+                return;
+            }
         }
     }
 
@@ -1283,9 +1352,10 @@ fn emit_initial_watch_events(
             }
         }
         let generation = scan_generation;
-        enqueue_watch_event(
+        if !enqueue_scan_event(
             events,
             overflowed,
+            running,
             WatchEvent {
                 event: "unlink".to_string(),
                 path: normalized_path,
@@ -1298,7 +1368,9 @@ fn emit_initial_watch_events(
                     .map(|value| value.as_millis().min(i64::MAX as u128) as i64)
                     .unwrap_or(0),
             },
-        );
+        ) {
+            return;
+        }
     }
 }
 
@@ -2074,6 +2146,51 @@ mod path_filter_tests {
             assert_eq!(emitted, watcher_path_allowed(&path, &root, &extensions, &folders, &[], &[]));
         }
         drop(events);
+        std::fs::remove_dir_all(root).unwrap();
+    }
+}
+
+
+#[cfg(test)]
+mod sql_recovery_tests {
+    use super::*;
+
+    #[test]
+    fn compatibility_recovery_builds_memory_without_private_vector_files() {
+        let root = std::env::temp_dir().join(format!("kbm-memory-recovery-{}-{}",
+            std::process::id(), SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_nanos()));
+        std::fs::create_dir_all(&root).unwrap();
+        let db = root.join("test.sqlite").to_string_lossy().into_owned();
+        let (storage, _) = storage::SqliteStorageEngine::open_and_init(
+            &db, storage::StorageOptions::default()).unwrap();
+        storage.submit_write(|tx| {
+            let bytes = [1_f32,0.].iter().flat_map(|v| v.to_le_bytes()).collect::<Vec<_>>();
+            tx.execute("INSERT INTO tags(name,vector) VALUES ('tag',?1)", [bytes])
+                .map_err(|e| e.to_string())?;
+            Ok(storage::WriteReceipt {
+                operation:"fixture".into(),database_generation:0,facts_changed:true,
+            })
+        }).unwrap();
+        let index = VexusIndex::new(2, 16).unwrap();
+        let before = std::fs::read_dir(&root).unwrap().count();
+        let mut task = RecoverTask {
+            index:index.index.clone(),content_revision:index.content_revision.clone(),
+            db_path:db.clone(),table_type:"tags".into(),filter_diary_name:None,dimensions:2,
+        };
+        assert_eq!(task.compute().unwrap(), 1);
+        assert_eq!(std::fs::read_dir(&root).unwrap().count(), before);
+        assert_eq!(index.stats().unwrap().mmap_bytes, 0.);
+        storage::with_registered_read_transaction(&db, |connection| {
+            assert_eq!(index.index.read().unwrap().search_sql(connection, None, &[1.,0.], 1)
+                .map_err(|e| e.to_string())?, vec![(1,1.)]);
+            Ok(())
+        }).unwrap();
+        assert!(index.save(root.join("bypass.vec").to_string_lossy().into_owned())
+            .unwrap_err().reason.contains("generational publication"));
+        assert!(!root.join("bypass.vec").exists());
+        drop(task);
+        drop(index);
+        storage.shutdown().unwrap();
         std::fs::remove_dir_all(root).unwrap();
     }
 }
