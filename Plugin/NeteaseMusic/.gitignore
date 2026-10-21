@@ -1,3 +1,9 @@
-node_modules/
 config.env
-cookie.txt
+*cookies*.txt
+node_modules/
+downloads/
+output/
+*.mp3
+*.flac
+*.wav
+scratch/

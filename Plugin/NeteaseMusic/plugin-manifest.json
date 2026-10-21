@@ -1,61 +1,85 @@
 {
   "manifestVersion": "1.0.0",
   "name": "NeteaseMusic",
-  "displayName": "网易云音乐点歌",
-  "version": "1.0.0",
-  "description": "网易云音乐点歌插件，支持搜索歌曲、获取最高音质播放链接和获取歌词。需要网易云VIP账号。",
-  "author": "User",
+  "displayName": "网易云音乐助手",
+  "version": "1.2.0",
+  "description": "网易云音乐 VCP 同步插件，支持搜索、歌单、歌曲详情、歌词、分享短链解析、每日推荐、红心、歌单操作、个人数据查询、下载与多模态音乐分析。",
+  "author": "VCP Team",
   "pluginType": "synchronous",
   "entryPoint": {
     "type": "nodejs",
-    "command": "node NeteaseMusic.mjs"
+    "command": "node index.js"
   },
   "communication": {
     "protocol": "stdio",
-    "timeout": 30000
+    "timeout": 300000
   },
   "configSchema": {
-    "NETEASE_MUSIC_U": "string",
-    "NETEASE_PHONE": "string",
-    "NETEASE_PASSWORD": "string"
+    "NETEASE_COOKIE": {
+      "type": "string",
+      "description": "网易云音乐登录 Cookie。个人数据、每日推荐、红心和歌单写操作需要有效 Cookie。"
+    }
   },
   "capabilities": {
     "invocationCommands": [
       {
-        "command": "send_captcha",
-        "commandIdentifier": "send_captcha",
-        "description": "发送短信验证码到指定手机号，用于网易云音乐验证码登录。调用后请提示用户查看短信并提供验证码，然后调用 captcha_login 完成登录。\n参数:\n- command (字符串, 必需): 'send_captcha'\n- phone (字符串, 可选): 手机号，不填则使用 config.env 中的 NETEASE_PHONE\n\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NeteaseMusic「末」,\ncommand:「始」send_captcha「末」,\nphone:「始」手机号「末」\n<<<[END_TOOL_REQUEST]>>>",
-        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NeteaseMusic「末」,\ncommand:「始」send_captcha「末」,\nphone:「始」18711840129「末」\n<<<[END_TOOL_REQUEST]>>>"
-      },
+        "commandIdentifier": "NeteaseMusic",
+        "description": "【网易云音乐助手】参数为 action 加对应参数。支持 search, playlist, playlist_all_songs, song_detail, song_info, share_song, cover, song_url, lyric, my_playlists, user_playlist, recent_songs, top_songs, daily_recommend, today_listens, like_song, unlike_song, add_to_playlist, remove_from_playlist, top_playlist, login_status, download, analyze。歌曲类动作可传 id/ids/songId/url/shareUrl/shareText，支持 https://163cn.tv/... 这类短链和整段分享文案。daily_recommend 默认返回紧凑歌曲信息，包含 coverUrl、artistText、推荐理由与可用时的红心状态。recent_songs/top_songs/today_listens 默认返回听歌记录画像，包含 artistText、liked、playTime/playCount/score；如需扫描歌曲属于哪些歌单，请显式传 includePlaylistState=true。账号写操作支持 dryRun=true 安全预检。download 支持下载音乐文件，analyze 支持使用多模态大模型体毛级分析音乐音频节奏曲风等特征。",
+        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NeteaseMusic「末」\naction:「始」song_info「末」\nshareText:「始」分享Neuro-sama/Evil Neuro的单曲《NEVER (feat. Evil Neuro)》: https://163cn.tv/7mipOKo「末」\n<<<[END_TOOL_REQUEST]>>>"
+      }
+    ]
+  },
+  "jev": {
+    "schemaVersion": 1,
+    "enabled": true,
+    "category": "媒体娱乐",
+    "jevDescPrompt": "使用网易云音乐搜索歌曲、获取每日推荐歌单、查询歌词、解析分享短链或查看近期听歌画像。",
+    "jevPrompt": "根据用户的音乐操作意图裁决 action 枚举：按歌名或歌手搜索音乐选 search；获取今日个性化每日推荐歌曲选 daily_recommend；查看最近听歌记录选 recent_songs；查看听歌排行选 top_songs；获取歌曲歌词选 lyric；解析网易云分享链接或查询单曲详情选 song_info。未明确指定时默认 search。",
+    "agentPrompt": "当需要在网易云音乐搜歌、查看每日推荐或查询歌词时，使用 {媒体娱乐} 中的 `NeteaseMusic`，歌名或链接放入【主要内容】，动作放入 []（如 [搜索歌曲]、[每日推荐]、[获取歌词]）：\nJEV:「始」请使用 {媒体娱乐} 中的 `NeteaseMusic`，[搜索歌曲]【晴天 周杰伦】。「末」",
+    "defaultCommand": "NeteaseMusic",
+    "commands": [
       {
-        "command": "captcha_login",
-        "commandIdentifier": "captcha_login",
-        "description": "使用短信验证码完成网易云音乐登录。需先调用 send_captcha 发送验证码。登录成功后 cookie 自动缓存，后续搜歌/拿链接/拿歌词无需重复登录。\n参数:\n- command (字符串, 必需): 'captcha_login'\n- phone (字符串, 可选): 手机号，不填则使用 config.env 中的 NETEASE_PHONE\n- captcha (字符串, 必需): 用户收到的短信验证码\n\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NeteaseMusic「末」,\ncommand:「始」captcha_login「末」,\nphone:「始」手机号「末」,\ncaptcha:「始」验证码「末」\n<<<[END_TOOL_REQUEST]>>>",
-        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NeteaseMusic「末」,\ncommand:「始」captcha_login「末」,\nphone:「始」18711840129「末」,\ncaptcha:「始」1234「末」\n<<<[END_TOOL_REQUEST]>>>"
-      },
-      {
-        "command": "qr_login",
-        "commandIdentifier": "qr_login",
-        "description": "二维码登录网易云音乐（推荐，不会被风控拦截）。分两步使用：\n\n第一步 - 生成二维码：调用时传 action:\"generate\"，返回二维码图片(base64)和key。将二维码图片展示给用户，让用户用网易云App扫码。\n第二步 - 轮询状态：调用时传 action:\"poll\" 和第一步返回的 key，检查扫码状态。状态码：801=等待扫码，802=已扫码待确认，803=登录成功，800=二维码过期需重新生成。\n\n参数:\n- command (字符串, 必需): 'qr_login'\n- action (字符串, 必需): 'generate' 或 'poll'\n- key (字符串, action为poll时必需): generate 步骤返回的 key\n\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NeteaseMusic「末」,\ncommand:「始」qr_login「末」,\naction:「始」generate「末」\n<<<[END_TOOL_REQUEST]>>>",
-        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NeteaseMusic「末」,\ncommand:「始」qr_login「末」,\naction:「始」generate「末」\n<<<[END_TOOL_REQUEST]>>>"
-      },
-      {
-        "command": "search_song",
-        "commandIdentifier": "search_song",
-        "description": "搜索网易云音乐歌曲。返回匹配的歌曲列表（包含歌曲ID、名称、歌手、专辑、时长、付费类型），你可以根据列表选择合适的歌曲，再使用 get_song_url 获取播放链接。\n参数:\n- command (字符串, 必需): 'search_song'\n- keywords (字符串, 必需): 搜索关键词（歌曲名、歌手名等）\n- limit (数字, 可选): 返回结果数量，默认10，最大30\n\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NeteaseMusic「末」,\ncommand:「始」search_song「末」,\nkeywords:「始」搜索关键词「末」\n<<<[END_TOOL_REQUEST]>>>",
-        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NeteaseMusic「末」,\ncommand:「始」search_song「末」,\nkeywords:「始」周杰伦 晴天「末」\n<<<[END_TOOL_REQUEST]>>>"
-      },
-      {
-        "command": "get_song_url",
-        "commandIdentifier": "get_song_url",
-        "description": "通过歌曲ID获取网易云音乐最高音质播放链接、歌曲详情和歌词。返回结果包含：\n1. html 字段：一个带封面、播放/暂停控制、进度条和实时滚动歌词的音乐播放器页面，会自动开始播放。请将 html 字段的完整内容用代码块（三个反引号）包裹后原样输出给用户，不要修改HTML。\n2. songInfo 字段：歌曲基本信息（歌名、歌手、专辑、音质等），你可以阅读。\n3. lyrics 字段：纯文本歌词内容，你可以阅读并与用户讨论歌曲。\n4. lyricsTranslation 字段：翻译歌词（如有）。\n\n参数:\n- command (字符串, 必需): 'get_song_url'\n- id (数字/字符串, 必需): 歌曲ID（从搜索结果中获取）\n\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NeteaseMusic「末」,\ncommand:「始」get_song_url「末」,\nid:「始」歌曲ID「末」\n<<<[END_TOOL_REQUEST]>>>",
-        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NeteaseMusic「末」,\ncommand:「始」get_song_url「末」,\nid:「始」186016「末」\n<<<[END_TOOL_REQUEST]>>>"
-      },
-      {
-        "command": "get_lyrics",
-        "commandIdentifier": "get_lyrics",
-        "description": "通过歌曲ID获取歌词（包含原文歌词和翻译歌词）。\n参数:\n- command (字符串, 必需): 'get_lyrics'\n- id (数字/字符串, 必需): 歌曲ID（从搜索结果中获取）\n\n调用格式:\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」NeteaseMusic「末」,\ncommand:「始」get_lyrics「末」,\nid:「始」歌曲ID「末」\n<<<[END_TOOL_REQUEST]>>>",
-        "example": "<<<[TOOL_REQUEST]>>>\ntool_name:「始」NeteaseMusic「末」,\ncommand:「始」get_lyrics「末」,\nid:「始」186016「末」\n<<<[END_TOOL_REQUEST]>>>"
+        "commandIdentifier": "NeteaseMusic",
+        "description": "执行网易云音乐搜索、推荐与歌曲信息查询",
+        "aliases": ["网易云", "网易云音乐", "搜歌", "音乐查询"],
+        "injectCommand": false,
+        "parameters": {
+          "action": {
+            "type": "enum",
+            "required": true,
+            "description": "网易云音乐具体功能动作",
+            "values": {
+              "search": "按关键词搜索歌曲、歌手或专辑",
+              "daily_recommend": "获取今日个性化每日推荐歌曲列表",
+              "recent_songs": "查询最近播放的听歌记录",
+              "top_songs": "查询用户听歌次数排行榜",
+              "lyric": "获取指定歌曲的歌词文本",
+              "song_info": "解析分享链接或获取单曲完整详情"
+            },
+            "aliases": {
+              "search": ["搜索歌曲", "搜歌", "找歌", "搜索音乐"],
+              "daily_recommend": ["每日推荐", "日推", "今日推荐"],
+              "recent_songs": ["最近播放", "最近听歌", "听歌记录"],
+              "top_songs": ["听歌排行", "排行榜"],
+              "lyric": ["获取歌词", "查歌词", "歌词"],
+              "song_info": ["歌曲详情", "解析分享", "单曲信息"]
+            },
+            "default": "search"
+          },
+          "keywords": {
+            "type": "text",
+            "required": false,
+            "source": "primary",
+            "maxLength": 200,
+            "description": "搜索关键词（歌名、歌手或歌词片段）"
+          },
+          "id": {
+            "type": "text",
+            "source": "constraints",
+            "prefixes": ["歌曲ID", "id", "ID"],
+            "maxLength": 40
+          }
+        }
       }
     ]
   }

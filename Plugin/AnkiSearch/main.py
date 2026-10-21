@@ -1,5 +1,6 @@
 ﻿import sys
 import json
+import os
 import urllib.request
 import urllib.error
 import time
@@ -7,27 +8,60 @@ import time
 # Force UTF-8 output for VCP compatibility
 sys.stdout.reconfigure(encoding='utf-8')
 
-def request_anki(action, params=None, retries=3):
+PLUGIN_DIR = os.path.dirname(os.path.abspath(__file__))
+
+
+def load_plugin_env():
+    config_path = os.path.join(PLUGIN_DIR, 'config.env')
+    if not os.path.exists(config_path):
+        return
+
+    try:
+        with open(config_path, 'r', encoding='utf-8') as config_file:
+            for raw_line in config_file:
+                line = raw_line.strip()
+                if not line or line.startswith('#') or '=' not in line:
+                    continue
+                key, value = line.split('=', 1)
+                os.environ.setdefault(key.strip(), value.strip())
+    except OSError:
+        pass
+
+
+def positive_int(value, fallback):
+    try:
+        return max(1, int(value))
+    except (TypeError, ValueError):
+        return fallback
+
+
+load_plugin_env()
+ANKI_CONNECT_URL = os.environ.get('ANKI_CONNECT_URL', 'http://127.0.0.1:8765').rstrip('/')
+ANKI_CONNECT_TIMEOUT_SECONDS = positive_int(os.environ.get('ANKI_CONNECT_TIMEOUT_SECONDS'), 5)
+ANKI_CONNECT_RETRIES = positive_int(os.environ.get('ANKI_CONNECT_RETRIES'), 3)
+
+
+def request_anki(action, params=None, retries=ANKI_CONNECT_RETRIES):
     payload = {
         'action': action,
         'version': 6,
         'params': params or {}
     }
     data = json.dumps(payload).encode('utf-8')
-    
+
     last_error = None
     for attempt in range(retries):
         try:
-            req = urllib.request.Request('http://127.0.0.1:8765', data=data, method='POST')
-            with urllib.request.urlopen(req, timeout=5) as response:
+            req = urllib.request.Request(ANKI_CONNECT_URL, data=data, method='POST')
+            with urllib.request.urlopen(req, timeout=ANKI_CONNECT_TIMEOUT_SECONDS) as response:
                 return json.loads(response.read().decode('utf-8'))
         except urllib.error.URLError as e:
             last_error = f"连接失败: {e.reason}。请确保 Anki 已打开并安装了 AnkiConnect (端口 8765)。"
-            time.sleep(1) 
+            time.sleep(1)
         except Exception as e:
             last_error = str(e)
             time.sleep(1)
-            
+
     return {'error': last_error}
 
 def main():
@@ -35,7 +69,7 @@ def main():
         input_data = sys.stdin.read()
         if not input_data:
             return
-        
+
         try:
             request = json.loads(input_data)
         except json.JSONDecodeError:
@@ -49,22 +83,22 @@ def main():
              args = {k: v for k, v in request.items() if k != 'command'}
 
         result = {}
-        
+
         if command == 'anki_search_cards':
             query = args.get('query', '')
             resp = request_anki('findCards', {'query': query})
-            
+
             if resp.get('error'):
                 result = {"status": "error", "error": resp['error']}
             else:
                 card_ids = resp.get('result', [])
                 info_resp = request_anki('cardsInfo', {'cards': card_ids[:15]})
-                
+
                 simplified_cards = []
                 for c in info_resp.get('result', []):
                     fields_data = c.get('fields', {})
                     safe_fields = {k: v.get('value', '')[:100] for k, v in fields_data.items()}
-                    
+
                     simplified_cards.append({
                         "cardId": c.get('cardId'),
                         "deck": c.get('deckName', 'Unknown'),
@@ -91,7 +125,7 @@ def main():
             else:
                 decks = resp.get('result', {})
                 stats_resp = request_anki('getDeckStats', {'decks': list(decks.keys())})
-                
+
                 result = {
                     "status": "success",
                     "result": stats_resp.get('result', {}),
@@ -112,7 +146,7 @@ def main():
                         "name": name,
                         "fields": f_resp.get('result', [])
                     })
-                
+
                 result = {
                     "status": "success",
                     "result": models_info,

@@ -45,7 +45,7 @@
     },
     "VCPModelLiterature": {
       "displayName": "VCPModelLiterature",
-      "defaultModel": "gemini-3.5-flash-thinking",
+      "defaultModel": "gemini-3.6-flash",
       "fallbackModels": [
         "DeepSeek-V4-Pro"
       ],
