@@ -128,6 +128,16 @@ impl Ranker {
         })
     }
 
+    /// Per-query override; never mutates process configuration or another ranker.
+    pub(crate) fn with_jev_prompt(mut self, prompt: Option<String>) -> Self {
+        if self.jev {
+            if let Some(prompt) = prompt.filter(|value| !value.trim().is_empty()) {
+                self.prompt = prompt;
+            }
+        }
+        self
+    }
+
     pub(crate) fn backend(&self) -> &'static str {
         if self.jev { "jev" } else { "rerank" }
     }
@@ -261,6 +271,14 @@ fn parse_jev(response: &Value, docs: &[Value]) -> Result<Vec<(i64, f64)>, String
     Ok(scores)
 }
 
+/// External RRF weight; keep this mapping aligned with RAGDiaryPlugin.
+pub(crate) fn omega_rrf_alpha(omega: Option<f64>) -> f64 {
+    match omega.filter(|v| v.is_finite() && (0.0..=1.0).contains(v)) {
+        Some(value) => 1.0 - (0.5 + 0.8 * (value - 0.65)).clamp(0.3, 0.7),
+        None => 0.5,
+    }
+}
+
 /// Missing ranks contribute zero. Failed HTTP calls must not be supplied as ranks.
 pub(crate) fn fuse(mut river: Vec<Value>, external: &[(i64, f64)], alpha: f64) -> Vec<Value> {
     let mut scores = external.to_vec();
@@ -367,6 +385,22 @@ mod tests {
     }
 
     #[test]
+    fn prompt_override_is_local_and_preserves_legacy_default() {
+        let values = HashMap::from([
+            ("JEV_API_KEY".into(), "fixture".into()),
+            ("JevAdvancedRerank".into(), "true".into()),
+            ("JevRerankPrompt".into(), "legacy default".into()),
+        ]);
+        let legacy = Ranker::from_values(&values, None).unwrap();
+        assert_eq!(legacy.backend(), "jev");
+        let numbered = legacy.clone().with_jev_prompt(Some("preset two".into()));
+        assert_eq!(numbered.prompt, "preset two");
+        assert_eq!(legacy.prompt, "legacy default");
+        assert_eq!(legacy.clone().with_jev_prompt(None).prompt, "legacy default");
+        assert_eq!(legacy.with_jev_prompt(Some("  ".into())).prompt, "legacy default");
+    }
+
+    #[test]
     fn validates_complete_unique_external_scores() {
         let docs = vec![json!({"id":1}), json!({"id":2})];
         assert!(parse_rerank(&json!({"results":[{"index":0,"relevance_score":0.8}]}), &docs).is_err());
@@ -379,6 +413,16 @@ mod tests {
         assert!(parse_jev(&json!({"answers":{"best_memory":{"type":"choice","probabilities":{}}}}),
             &[json!({"id":1})]).is_err());
     }
+    #[test]
+    fn omega_weights_are_bounded_and_missing_values_are_neutral() {
+        for (omega, expected) in [(0.0, 0.7), (0.4, 0.7), (0.65, 0.5), (0.9, 0.3), (1.0, 0.3)] {
+            assert!((omega_rrf_alpha(Some(omega)) - expected).abs() < 1e-12);
+        }
+        for omega in [None, Some(f64::NAN), Some(f64::INFINITY), Some(-0.1), Some(1.1)] {
+            assert_eq!(omega_rrf_alpha(omega), 0.5);
+        }
+    }
+
     #[test]
     fn fusion_uses_both_orders() {
         let docs = vec![json!({"id":1}),json!({"id":2})];
