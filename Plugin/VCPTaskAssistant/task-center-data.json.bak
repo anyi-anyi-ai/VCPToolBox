@@ -39,19 +39,19 @@
       },
       "runtime": {
         "running": true,
-        "lastRunTime": "2026-10-22T03:59:00.361Z",
-        "lastFinishTime": "2026-10-21T12:23:35.514Z",
+        "lastRunTime": "2026-10-24T04:04:57.119Z",
+        "lastFinishTime": "2026-10-24T03:04:57.109Z",
         "lastResult": "running via interval-scheduler",
         "lastError": null,
-        "lastDurationMs": 29426,
-        "runCount": 4,
+        "lastDurationMs": 7139,
+        "runCount": 6,
         "successCount": 0,
-        "errorCount": 3,
-        "nextRunTime": "2026-10-22T03:59:00.357Z"
+        "errorCount": 5,
+        "nextRunTime": "2026-10-24T04:04:57.115Z"
       },
       "meta": {
         "createdAt": "2026-10-21T03:21:02.979Z",
-        "updatedAt": "2026-10-22T03:59:00.361Z"
+        "updatedAt": "2026-10-24T04:04:57.119Z"
       }
     }
   ],
@@ -103,6 +103,44 @@
       "startedAt": "2026-10-21T12:23:06.088Z",
       "finishedAt": "2026-10-21T12:23:35.514Z",
       "durationMs": 29426,
+      "status": "error",
+      "agents": [
+        "Nova"
+      ],
+      "originalAgents": [
+        "Nova"
+      ],
+      "randomTag": null,
+      "message": "Agent Nova 派发异常: {\"plugin_error\":\"调用 Agent 'Nova' 时发生错误。 API Status: 404.\"}"
+    },
+    {
+      "id": "run_1792641547639",
+      "taskId": "task_forum_patrol_轮胎_1792552862979",
+      "taskName": "轮胎",
+      "type": "forum_patrol",
+      "triggerSource": "interval-scheduler",
+      "startedAt": "2026-10-22T03:59:00.361Z",
+      "finishedAt": "2026-10-22T03:59:07.639Z",
+      "durationMs": 7278,
+      "status": "error",
+      "agents": [
+        "Nova"
+      ],
+      "originalAgents": [
+        "Nova"
+      ],
+      "randomTag": null,
+      "message": "Agent Nova 派发异常: {\"plugin_error\":\"调用 Agent 'Nova' 时发生错误。 API Status: 404.\"}"
+    },
+    {
+      "id": "run_1792811097109",
+      "taskId": "task_forum_patrol_轮胎_1792552862979",
+      "taskName": "轮胎",
+      "type": "forum_patrol",
+      "triggerSource": "interval-scheduler",
+      "startedAt": "2026-10-24T03:04:49.970Z",
+      "finishedAt": "2026-10-24T03:04:57.109Z",
+      "durationMs": 7139,
       "status": "error",
       "agents": [
         "Nova"
