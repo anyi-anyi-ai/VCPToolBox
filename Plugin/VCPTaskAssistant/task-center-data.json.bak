@@ -39,19 +39,19 @@
       },
       "runtime": {
         "running": true,
-        "lastRunTime": "2026-10-24T04:04:57.119Z",
-        "lastFinishTime": "2026-10-24T03:04:57.109Z",
+        "lastRunTime": "2026-10-24T13:58:31.665Z",
+        "lastFinishTime": "2026-10-24T12:58:31.633Z",
         "lastResult": "running via interval-scheduler",
         "lastError": null,
-        "lastDurationMs": 7139,
-        "runCount": 6,
+        "lastDurationMs": 165,
+        "runCount": 9,
         "successCount": 0,
-        "errorCount": 5,
-        "nextRunTime": "2026-10-24T04:04:57.115Z"
+        "errorCount": 8,
+        "nextRunTime": "2026-10-24T13:58:31.655Z"
       },
       "meta": {
         "createdAt": "2026-10-21T03:21:02.979Z",
-        "updatedAt": "2026-10-24T04:04:57.119Z"
+        "updatedAt": "2026-10-24T13:58:31.665Z"
       }
     }
   ],
@@ -141,6 +141,63 @@
       "startedAt": "2026-10-24T03:04:49.970Z",
       "finishedAt": "2026-10-24T03:04:57.109Z",
       "durationMs": 7139,
+      "status": "error",
+      "agents": [
+        "Nova"
+      ],
+      "originalAgents": [
+        "Nova"
+      ],
+      "randomTag": null,
+      "message": "Agent Nova 派发异常: {\"plugin_error\":\"调用 Agent 'Nova' 时发生错误。 API Status: 404.\"}"
+    },
+    {
+      "id": "run_1792814697291",
+      "taskId": "task_forum_patrol_轮胎_1792552862979",
+      "taskName": "轮胎",
+      "type": "forum_patrol",
+      "triggerSource": "interval-scheduler",
+      "startedAt": "2026-10-24T04:04:57.119Z",
+      "finishedAt": "2026-10-24T04:04:57.291Z",
+      "durationMs": 172,
+      "status": "error",
+      "agents": [
+        "Nova"
+      ],
+      "originalAgents": [
+        "Nova"
+      ],
+      "randomTag": null,
+      "message": "Agent Nova 派发异常: {\"plugin_error\":\"调用 Agent 'Nova' 时发生错误。 API Status: 404.\"}"
+    },
+    {
+      "id": "run_1792843111445",
+      "taskId": "task_forum_patrol_轮胎_1792552862979",
+      "taskName": "轮胎",
+      "type": "forum_patrol",
+      "triggerSource": "interval-scheduler",
+      "startedAt": "2026-10-24T11:58:25.267Z",
+      "finishedAt": "2026-10-24T11:58:31.445Z",
+      "durationMs": 6178,
+      "status": "error",
+      "agents": [
+        "Nova"
+      ],
+      "originalAgents": [
+        "Nova"
+      ],
+      "randomTag": null,
+      "message": "Agent Nova 派发异常: {\"plugin_error\":\"调用 Agent 'Nova' 时发生错误。 API Status: 404.\"}"
+    },
+    {
+      "id": "run_1792846711633",
+      "taskId": "task_forum_patrol_轮胎_1792552862979",
+      "taskName": "轮胎",
+      "type": "forum_patrol",
+      "triggerSource": "interval-scheduler",
+      "startedAt": "2026-10-24T12:58:31.468Z",
+      "finishedAt": "2026-10-24T12:58:31.633Z",
+      "durationMs": 165,
       "status": "error",
       "agents": [
         "Nova"

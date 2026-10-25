@@ -1,15 +1,17 @@
 {
-  "enabled": false,
+  "enabled": true,
   "approveAll": false,
-  "timeoutMinutes": 5,
-  "fuzzyToolMatching": false,
+  "timeoutMinutes": 10,
+  "fuzzyToolMatching": true,
+  "allowChainedCommandWhitelist": true,
   "privacyProtection": {
-    "enabled": false
+    "enabled": true
   },
   "approvalList": [
     "PowerShellExecutor",
     "ServerPowerShellExecutor",
     "FileOperator",
     "ServerFileOperator"
-  ]
+  ],
+  "whitelist": []
 }
