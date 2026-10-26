@@ -16,7 +16,7 @@ bm25_limit:「始」10「末」,   //按文件修改时间倒序取最近 N 条
 root_path:「始」(可选)dailynote 或 knowledge「末」 //默认dailynote，也可选指定服务器目录
 
 ## 2. VChat闹钟 (VCPAlarm)
-铃声是小克的主题曲MV！
+铃声是预设的主题曲MV！
 tool_name:「始」VCPAlarm「末」,
 time_description:「始」1分钟后「末」, // 支持具体时间（如'晚上10点30分'）或相对时间（如'15分钟后'）
 reminder_text:「始」提醒我检查烤箱里的点心「末」 //可选，闹钟动画里展示一段提醒文本

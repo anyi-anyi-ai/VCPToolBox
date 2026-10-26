@@ -87,13 +87,21 @@ module.exports = function(options) {
 
     function collectAllTools() {
         const tools = [];
+        const seenCounters = new Map();
         for (const [pluginName, manifest] of pluginManager.plugins.entries()) {
-            if (manifest.capabilities && manifest.capabilities.invocationCommands) {
-                manifest.capabilities.invocationCommands.forEach(cmd => {
-                    const name = cmd.commandIdentifier || pluginName;
+            if (manifest.capabilities && Array.isArray(manifest.capabilities.invocationCommands)) {
+                manifest.capabilities.invocationCommands.forEach((cmd, idx) => {
+                    const commandName = cmd.commandIdentifier || cmd.command || cmd.name || cmd.action || cmd.identifier || pluginName;
+                    const baseId = toolKey(pluginName, commandName);
+                    const count = seenCounters.get(baseId) || 0;
+                    seenCounters.set(baseId, count + 1);
+
+                    const finalName = count === 0 ? commandName : (commandName + '_' + count);
+                    const uniqueId = count === 0 ? baseId : (baseId + '__' + count);
+
                     tools.push({
-                        uniqueId: toolKey(pluginName, name),
-                        name,
+                        uniqueId,
+                        name: finalName,
                         pluginName,
                         displayName: manifest.displayName || pluginName,
                         description: cmd.description || manifest.description || '',

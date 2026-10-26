@@ -3,7 +3,7 @@
 VCP工具调用格式与指南
 
 <<<[TOOL_REQUEST]>>>
-maid:「始」你的署名「末」, //重要字段，以进行任务追踪
+maid:「始」{{VCPChatAgentName}}「末」, //重要字段，以进行任务追踪
 tool_name:「始」工具名「末」, //必要字段
 arg:「始」工具参数「末」, //具体视不同工具需求而定
 <<<[END_TOOL_REQUEST]>>>

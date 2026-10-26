@@ -9,7 +9,7 @@
   },
   "VCPMediaToolBox": {
     "file": "MediaToolBox.txt",
-    "description": "该收纳箱收纳了各种多媒体处理，图片生成，视频生成和编辑，音乐生成相关的工具，用于动态向 Agent 提供说明。"
+    "description": "该收纳箱收纳了核心文生图、修图、垫图与多图融合的高画质图像生成工具，用于动态向 Agent 提供说明。"
   },
   "VCPSearchToolBox": {
     "file": "SearchToolBox.txt",
@@ -18,6 +18,42 @@
   "VCPContactToolBox": {
     "file": "ContactToolBox.txt",
     "description": "该收纳箱收纳了各种通讯、社交、消息推送，话题管理，日程管理，日常小工具相关的工具，用于动态向 Agent 提供说明。"
+  },
+  "VCPMusicToolBox": {
+    "file": "MusicToolBox.txt",
+    "description": "该收纳箱收纳了Suno音乐生成、网易云音乐点歌与歌词、全网音源解析、MimoDubbing高保真配音及MIDI编曲工具。"
+  },
+  "VCPVideoToolBox": {
+    "file": "VideoToolBox.txt",
+    "description": "该收纳箱收纳了Grok高清视频生成与续写、Agnes动态镜头动漫视频、通用视频合成及富媒体卡片交互渲染工具。"
+  },
+  "VCP3DCreator": {
+    "file": "3DCreatorToolBox.txt",
+    "description": "该收纳箱收纳了Blender 3D建模与材质渲染、Aseprite像素艺术与逐帧动画、PPT海报排版及动漫画风工坊工具。"
+  },
+  "VCPScienceToolBox": {
+    "file": "ScienceToolBox.txt",
+    "description": "该收纳箱收纳了arXiv顶会论文、PubMed权威医学库、NCBI基因组、KEGG代谢通路、学术PDF解析及符号科学计算工具。"
+  },
+  "VCPDevStation": {
+    "file": "DevStationToolBox.txt",
+    "description": "该收纳箱收纳了Linux远程日志监控、Chrome浏览器CDP自动化接管、AST深层语法树检索、桌面窗口探测及屏幕控制工具。"
+  },
+  "VCPKnowledgeMind": {
+    "file": "KnowledgeMindToolBox.txt",
+    "description": "该收纳箱收纳了Obsidian双链笔记管理、Anki记忆卡片全生命周期、GitHub官方Wiki同步、电子书切片及多源协作检索工具。"
+  },
+  "VCPCommunityFun": {
+    "file": "CommunityFunToolBox.txt",
+    "description": "该收纳箱收纳了VCP角色论坛交流、QQ群聊同步、塔罗牌/梅花易数/数理占卜、真随机数及英日语学习辅导工具。"
+  },
+  "VCPFinance": {
+    "file": "GuanLanToolBox.txt",
+    "description": "观澜专属A股数据引擎与深度投研系统，包含实时行情、K线技术指标、行业板块、资金流向及财报指标查询。"
+  },
+  "VCPGuanLan": {
+    "file": "GuanLanToolBox.txt",
+    "description": "观澜专属A股数据引擎与深度投研系统，包含实时行情、K线技术指标、行业板块、资金流向及财报指标查询。"
   },
   "VCPDesktopToolBox": {
     "file": "DesktopToolBox.txt",

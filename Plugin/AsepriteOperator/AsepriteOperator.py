@@ -30,8 +30,29 @@ def load_env_from_config():
 
 class AsepriteRunner:
     def __init__(self):
+        plugin_dir = os.path.dirname(os.path.abspath(__file__))
+        custom_path = os.environ.get("ASEPRITE_PATH")
+        if custom_path:
+            if not os.path.isabs(custom_path):
+                custom_path = os.path.normpath(os.path.join(plugin_dir, custom_path))
+            if os.path.exists(custom_path):
+                self.aseprite_path = custom_path
+                return
+            self.aseprite_path = custom_path
+            return
+
+        candidates = [
+            os.path.join(plugin_dir, "bin", "aseprite.exe"),
+            os.path.join(plugin_dir, "bin", "Aseprite.exe"),
+            os.path.normpath(os.path.join(plugin_dir, "..", "..", "resources", "aseprite-1.3.16.1-dev-windows-x64-portable", "aseprite.exe")),
+        ]
+        for cand in candidates:
+            if os.path.exists(cand):
+                self.aseprite_path = cand
+                return
+
         default = "Aseprite.exe" if os.name == "nt" else "aseprite"
-        self.aseprite_path = os.environ.get("ASEPRITE_PATH", default)
+        self.aseprite_path = default
 
     def run(self, args: List[str]) -> Tuple[bool, str, str]:
         cmd = [self.aseprite_path] + args
@@ -43,6 +64,26 @@ class AsepriteRunner:
             return False, "", f"Aseprite executable not found: {self.aseprite_path}"
         except Exception as e:
             return False, "", f"Unexpected error executing Aseprite: {str(e)}"
+
+    def launch_gui(self, filename: Optional[str] = None) -> Tuple[bool, str]:
+        cmd = [self.aseprite_path]
+        if filename:
+            resolved = resolve_filename(filename, ensure_dir=False)
+            if os.path.exists(resolved):
+                cmd.append(resolved)
+            else:
+                cmd.append(filename)
+        try:
+            flags = 0
+            if os.name == "nt":
+                DETACHED_PROCESS = 0x00000008
+                CREATE_NEW_PROCESS_GROUP = 0x00000200
+                flags = DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP
+            subprocess.Popen(cmd, creationflags=flags, close_fds=True)
+            target_info = f" with file '{filename}'" if filename else ""
+            return True, f"Aseprite GUI launched successfully{target_info}"
+        except Exception as e:
+            return False, f"Failed to launch Aseprite GUI: {str(e)}"
 
     def execute_lua(self, script_content: str, filename: Optional[str] = None) -> Tuple[bool, str, str]:
         tmp = None
@@ -614,6 +655,11 @@ def handle_export_sprite(runner: AsepriteRunner, args: Dict[str, Any]) -> Tuple[
     return False, f"Failed to export sprite: {err.strip() or out.strip()}"
 
 
+def handle_launch_gui(runner: AsepriteRunner, args: Dict[str, Any]) -> Tuple[bool, Any]:
+    fn = get_first(args, ["filename", "file", "path", "filepath"])
+    return runner.launch_gui(fn)
+
+
 COMMAND_MAP = {
     "createcanvas": handle_create_canvas,
     "addlayer": handle_add_layer,
@@ -625,6 +671,11 @@ COMMAND_MAP = {
     "drawcircle": handle_draw_circle,
     "saveas": handle_save_as,
     "exportsprite": handle_export_sprite,
+    "openapp": handle_launch_gui,
+    "launchapp": handle_launch_gui,
+    "opengui": handle_launch_gui,
+    "openaseprite": handle_launch_gui,
+    "startaseprite": handle_launch_gui,
 }
 
 
@@ -640,6 +691,10 @@ def dispatch_single(runner: AsepriteRunner, req: Dict[str, Any]) -> Tuple[bool, 
         return False, f"Unknown command: {cmd}"
     try:
         ok, res = handler(runner, req)
+        if ok and cmd.replace("_", "").replace("-", "").lower() not in ("openapp", "launchapp", "opengui", "openaseprite", "startaseprite"):
+            if parse_bool(get_first(req, ["open_gui", "open_app", "launch_gui", "launch_app", "opengui", "open"]), False):
+                fn = get_first(req, ["filename", "output_filename", "save_as", "file"])
+                runner.launch_gui(fn)
         return ok, res
     except Exception as e:
         return False, f"Exception during '{cmd}': {str(e)}"
@@ -715,6 +770,15 @@ def dispatch_batch(runner: AsepriteRunner, req: Dict[str, Any]) -> Tuple[bool, A
                     steps.append({"index": int(s), "command": cmd, "status": "error", "error": res})
         except Exception as e:
             steps.append({"index": int(s), "command": cmd, "status": "error", "error": f"Exception: {str(e)}"})
+    if parse_bool(get_first(req, ["open_gui", "open_app", "launch_gui", "launch_app", "opengui", "open"]), False):
+        fn = get_first(req, ["filename", "output_filename", "save_as", "file"])
+        if not fn:
+            for s in reversed(suffixes):
+                sub = build_sub_args(req, s)
+                fn = get_first(sub, ["filename", "output_filename", "save_as", "file"])
+                if fn:
+                    break
+        runner.launch_gui(fn)
     return True, {"steps": steps}
 
 

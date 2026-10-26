@@ -1,15 +1,15 @@
 [===vcp_fold:0.1===]
 
 # VCP 联网与搜索工具箱能力收纳
-这里收纳了 VCP 强大的联网检索、网页爬取及深度研究工具。
+这里收纳了 VCP 强大的联网检索、网页爬取、社媒多模态内容提取及深度研究工具。
 
 ## 1. 语义穿透联网检索 (VSearch)
 首选联网引擎。简单搜索只需填写完整的 SearchTopic，由搜索 AI 自行理解和扩展意图；不要为简单搜索强行拆分关键词。
 tool_name:「始」VSearch「末」,
 SearchTopic:「始」OpenAI 最近发布了哪些新模型「末」,
-SearchMode:「始」grounding「末」,  //可选：'grounding' (Gemini-Google搜索-快)、'grok' (Grok推理级搜索-缓慢-支持舆论媒体搜索-注意偏见)、'tavily'、'kimisearch'
+SearchMode:「始」grounding「末」,  // 可选：'grounding' (Gemini-Google搜索-快)、'grok' (Grok推理级搜索-缓慢)、'tavily'、'kimisearch'
 ShowURL:「始」false「末」,
-ink:「始」mark_history「末」 //可选，是否将检索结果写入history.json
+ink:「始」mark_history「末」 // 可选：是否将检索结果写入history.json
 
 深度研究需要控制多个检索分支时，才额外提供 Keywords；用逗号或换行分隔：
 SearchTopic:「始」探讨AI在医疗诊断中的最新应用「末」,
@@ -21,7 +21,7 @@ tool_name:「始」UrlFetch「末」,
 url:「始」(必需) 网页/文件 URL (本地路径请以 file:// 开头)「末」, 
 mode:「始」(可选) 'text' (默认) 或 'snapshot' (多模态网页快照) 或 'jina' (AI级网页转md，推荐该模式) 或 'image' (读取网络图片)「末」
 
-[===vcp_fold:0.35::desc:B站视频工具===]
+[===vcp_fold:0.35::desc:B站视频字幕弹幕与UP主投稿抓取===]
 
 ## 3. B站视频/内容爬虫 (BilibiliFetch)
 获取 B 站视频文本（TTS 转化）、弹幕、评论及高清快照。
@@ -31,8 +31,8 @@ lang:「始」(可选) 字幕语言，如 'ai-zh'「末」,
 danmaku_num:「始」(可选) 弹幕数量「末」,
 comment_num:「始」(可选) 评论数量「末」,
 snapshots:「始」(可选) 时间点截图，逗号分隔「末」,
-hd_snapshot:「始」true「末」, //是否调用 ffmpeg 获取超清截图
-need_subs:「始」true「末」, //是否获取字幕
+hd_snapshot:「始」true「末」, // 是否调用 ffmpeg 获取超清截图
+need_subs:「始」true「末」, // 是否获取字幕
 
 ### 检索 B 站视频/UP主
 action:「始」search「末」,
@@ -44,34 +44,34 @@ action:「始」get_up_videos「末」,
 mid:「始」用户 ID「末」,
 pn:「始」1「末」
 
-[===vcp_fold:0.5===]
+[===vcp_fold:0.35::desc:Tavily 全能 AI 搜索引擎===]
 
 ## 4. 全能联网搜索 (TavilySearch)
 AI 专属搜索引擎。支持搜图和原始网页内容转化。
 tool_name:「始」TavilySearch「末」,
 query:「始」(必需) 搜索关键词「末」,
 topic:「始」general / news / finance「末」,
-search_depth:「始」advanced「末」, //语义搜索模式
-include_raw_content:「始」'markdown'「末」 //获取原始内容
+search_depth:「始」advanced「末」, // 语义搜索模式
+include_raw_content:「始」'markdown'「末」 // 获取原始内容
 
-## 5. 专业级实时与垂直领域检索，AnySearch，单次最多五路真并发
-想查实时信息、专业资料或网页正文时用这个工具。普通搜索只给 query；垂直搜索再加 sub_domain 和必要的 params。
+[===vcp_fold:0.35::desc:AnySearch 多路真并发与垂直领域检索===]
 
-[===vcp_fold:0::desc:AnySearch 基础搜索与编排===]
+## 5. 专业级实时与垂直领域检索 (AnySearch)
+单次最多五路真并发。普通搜索只给 query；垂直搜索再加 sub_domain 和必要的 params。
 
-核心参数:
+### 核心参数
 - query: 默认搜索词；sub_domain: 「域.子域」；params: 优先写 k=v,k2=v2；max_results: 1-10。
 - queries: 同一路线批量搜索 1-5 个词，用 | 分隔。
-- 编号路线: query1..query5、sub_domain1..5、params1..5、max_results1..5，最多五路并发；每路继承顶层默认值，queryN 仅在该路线需要改写搜索词时填写；不能与 queries 混用。
-- url: 提取网页正文。领域或深参数不确定时，用 command=get_sub_domains, domain=域 查询，不要猜。
+- 编号路线: query1..query5、sub_domain1..5、params1..5、max_results1..5，最多五路并发；每路继承顶层默认值。
+- url: 提取网页正文。领域或深参数不确定时，用 command=get_sub_domains, domain=域 查询。
 
-基础搜索:
+### 基础搜索示例
 <<<[TOOL_REQUEST]>>>
 tool_name:「始」AnySearch「末」,
 query:「始」what is photosynthesis「末」
 <<<[END_TOOL_REQUEST]>>>
 
-多路线搜索:
+### 多路线并发示例
 <<<[TOOL_REQUEST]>>>
 tool_name:「始」AnySearch「末」,
 query:「始」Go 1.26 有哪些重要变化「末」,
@@ -83,150 +83,43 @@ sub_domain3:「始」general「末」,
 max_results:「始」3「末」
 <<<[END_TOOL_REQUEST]>>>
 
-[===vcp_fold:0.5===]
+[===vcp_fold:0.4::desc:DeepSeek联网推理搜索与全网实时热榜追踪===]
 
-[===vcp_fold:0.35::desc:AnySearch 批量搜索、正文提取与兼容参数===]
+## 6. DeepSeek 联网推理级检索 (DeepSeekSearch)
+调用 DeepSeek 联网推理接口，支持长思维链思考与多源事实溯源。
+tool_name:「始」DeepSeekSearch「末」,
+query:「始」近期国内外大模型上下文窗口架构演进与最新突破「末」
 
-同路多词用 queries，顶层 sub_domain/params/max_results 会注入每条:
-<<<[TOOL_REQUEST]>>>
-tool_name:「始」AnySearch「末」,
-sub_domain:「始」finance.news「末」,
-params:「始」type=general「末」,
-queries:「始」AI 芯片需求 2026|全球 EV 市场展望「末」
-<<<[END_TOOL_REQUEST]>>>
+## 7. 全网平台实时热榜与舆情追踪 (DailyHot)
+获取微博、知乎、B站、抖音、今日头条、百度等全网各平台的即时热搜榜单。
+tool_name:「始」DailyHot「末」,
+platform:「始」weibo「末」, // 可选：'weibo', 'zhihu', 'bilibili', 'douyin', 'baidu', 'all'
+limit:「始」10「末」
 
-提取正文只给 url。params 使用逗号分隔的 k=v 文本；目录括号是官方 Required 标记，部分受 type 等条件约束。不适用的参数不要传，完整规则用 get_sub_domains 查询。
-<<<[TOOL_REQUEST]>>>
-tool_name:「始」AnySearch「末」,
-url:「始」https://example.com/article「末」
-<<<[END_TOOL_REQUEST]>>>
+[===vcp_fold:0.4::desc:原生浏览器无头渲染与网页截取===]
 
-[===vcp_fold:0.5===]
+## 8. 原生浏览器渲染检索与网页截取 (BrowserSearch / TinyFishBrowser)
+使用轻量无头浏览器渲染 JavaScript 动态页面，并提取清理后的正文文本。
+tool_name:「始」TinyFishBrowser「末」,
+url:「始」https://news.ycombinator.com「末」,
+extract_mode:「始」clean_text「末」
 
-[===vcp_fold:0.35::desc:AnySearch 复杂参数与多领域编排示例===]
+[===vcp_fold:0.35::desc:小红书笔记爬取、知乎搜索与YouTube视频字幕===]
 
-复杂参数调用原则：已知参数语义时，直接把多个参数写成逗号分隔的 k=v 文本；字段含义、枚举、格式或条件必填不确定时，先查 get_sub_domains，读完返回规则再搜索。不适用的参数不要传空值。
+## 9. 小红书图文与视频笔记爬虫 (XiaohongshuFetch)
+专用于抓取小红书图文笔记、正文内容、标签与精选评论。
+tool_name:「始」XiaohongshuFetch「末」,
+url:「始」http://xhslink.com/a/xxxxxx「末」
 
-指定软件包漏洞：
-<<<[TOOL_REQUEST]>>>
-tool_name:「始」AnySearch「末」,
-query:「始」Jinja2 2.4.1 已知漏洞与修复建议「末」,
-sub_domain:「始」security.vuln「末」,
-params:「始」type=package,value=PyPI:jinja2@2.4.1「末」,
-max_results:「始」5「末」
-<<<[END_TOOL_REQUEST]>>>
+## 10. 知乎站内与全网搜索 (ZhihuSearch)
+调用知乎开放平台 API，搜索知乎问答、专栏长文、点赞数与评论数，返回面向 AI 的 Markdown 结构化内容。
+tool_name:「始」ZhihuSearch「末」,
+query:「始」如何评价具身智能机器人的发展现状「末」,
+limit:「始」5「末」
 
-多条件生物医学文献筛选：
-<<<[TOOL_REQUEST]>>>
-tool_name:「始」AnySearch「末」,
-query:「始」large language models in clinical diagnosis「末」,
-sub_domain:「始」academic.biomedical「末」,
-params:「始」sort=date,source=MED,field=tiab,year_from=2024,has_pdf=true,open_access=false「末」
-<<<[END_TOOL_REQUEST]>>>
-
-跨领域复杂研究——顶层 query 是默认词，各编号路线只写需要覆盖的字段：
-<<<[TOOL_REQUEST]>>>
-tool_name:「始」AnySearch「末」,
-query:「始」OpenAI 近期动态「末」,
-sub_domain1:「始」finance.news「末」,
-params1:「始」type=general「末」,
-query2:「始」OpenAI research papers 2026「末」,
-sub_domain2:「始」academic.search「末」,
-query3:「始」OpenAI API examples「末」,
-sub_domain3:「始」code.snippet「末」,
-query4:「始」OpenAI legal cases「末」,
-sub_domain4:「始」legal.case「末」,
-sub_domain5:「始」general「末」,
-max_results:「始」3「末」
-<<<[END_TOOL_REQUEST]>>>
-
-参数不确定时只查目标领域，不要猜：
-<<<[TOOL_REQUEST]>>>
-tool_name:「始」AnySearch「末」,
-command:「始」get_sub_domains「末」,
-domain:「始」travel「末」
-<<<[END_TOOL_REQUEST]>>>
-读完返回的完整规则后，再按其中的子域、枚举、格式和条件要求调用搜索。
-
-[===vcp_fold:0.5===]
-
-[===vcp_fold:0.35::desc:学术与文献检索 academic===]
-
-想查学术论文、数据集、预印本、引用或生物医学文献时用 academic 领域。
-
-子域与必填参数:
-- academic.search: 通用学术搜索
-- academic.dataset: 数据集搜索
-- academic.preprint: 预印本搜索
-- academic.citation(id): 引用搜索，必填 id
-- academic.biomedical: 生物医学文献
-
-academic.biomedical 常用参数:
-- sort: relevance / date / pub_date / author / journal / cited
-- source: MED / PMC / PPR / AGR / PAT
-- field: tiab（标题+摘要）
-- year_from / year_to: 年份范围
-- has_pdf: true / false
-- open_access: true / false
-- date_type: 日期类型
-
-示例:
-<<<[TOOL_REQUEST]>>>
-tool_name:「始」AnySearch「末」,
-query:「始」large language models in clinical diagnosis「末」,
-sub_domain:「始」academic.biomedical「末」,
-params:「始」sort=date,source=MED,field=tiab,year_from=2024,has_pdf=true「末」
-<<<[END_TOOL_REQUEST]>>>
-
-不确定参数含义时，用 command=get_sub_domains, domain=academic 查询完整 schema。
-
-[===vcp_fold:0.5===]
-
-[===vcp_fold:0.35::desc:金融与市场检索 finance===]
-
-想查股票、基金、宏观经济、日历或筛选器时用 finance 领域。
-
-子域与必填参数:
-- finance.news(type): 新闻，必填 type
-- finance.quote(type,symbol,cn_code): 行情，必填 type 和 symbol 或 cn_code
-- finance.fundamental(type,symbol,cn_code): 基本面
-- finance.macro(type): 宏观经济
-- finance.calendar(type): 经济日历
-- finance.screen(type): 筛选器
-
-示例:
-<<<[TOOL_REQUEST]>>>
-tool_name:「始」AnySearch「末」,
-query:「始」Apple 最新公司新闻「末」,
-sub_domain:「始」finance.news「末」,
-params:「始」type=stock,symbol=AAPL「末」
-<<<[END_TOOL_REQUEST]>>>
-
-不确定参数含义时，用 command=get_sub_domains, domain=finance 查询完整 schema。
-
-[===vcp_fold:0.5===]
-
-[===vcp_fold:0.35::desc:其他垂直领域选择===]
-
-其他常用领域：legal 法律，health 医药健康，business 商业/公司/职位，security 威胁情报与漏洞，energy 能源电力，travel 航班，gaming 游戏与电竞，resource 图片，social_media 社媒，ip IP 信息，environment 空气质量，agriculture 农业，film 影视资源。
-选择领域后使用「域.子域」；具体子域、必填项、枚举或罕见参数必须用 command=get_sub_domains, domain=域 查询，不要依赖此处静态复制。
-
-[===vcp_fold:0.5===]
-
-[===vcp_fold:0.35::desc:代码与技术文档检索 code===]
-
-想查编程文档或代码片段时用 code 领域。
-
-子域与必填参数:
-- code.doc(library): 官方文档，必填 library
-- code.snippet: 代码片段
-
-示例:
-<<<[TOOL_REQUEST]>>>
-tool_name:「始」AnySearch「末」,
-query:「始」Go 1.26 release notes「末」,
-sub_domain:「始」code.doc「末」,
-params:「始」library=golang「末」
-<<<[END_TOOL_REQUEST]>>>
-
-[===vcp_fold:0.5===]
+## 11. YouTube 综合内容与字幕获取 (YoutubeFetch / YTFetch)
+获取 YouTube 视频完整元数据、字幕文本（含自动生成字幕）、频道信息与评论。
+tool_name:「始」YoutubeFetch「末」,
+url:「始」https://www.youtube.com/watch?v=dQw4w9WgXcQ「末」,
+need_transcript:「始」true「末」,
+lang:「始」zh,en「末」

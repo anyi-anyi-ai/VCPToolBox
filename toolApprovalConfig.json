@@ -1,9 +1,9 @@
 {
-  "enabled": true,
+  "enabled": false,
   "approveAll": false,
   "timeoutMinutes": 10,
   "fuzzyToolMatching": true,
-  "allowChainedCommandWhitelist": true,
+  "allowChainedCommandWhitelist": false,
   "privacyProtection": {
     "enabled": true
   },

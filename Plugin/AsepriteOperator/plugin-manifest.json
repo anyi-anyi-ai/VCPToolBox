@@ -76,6 +76,11 @@
         "command": "Batch",
         "commandIdentifier": "Batch",
         "description": "一次性串行執行多個指令。請以 command1/command2… 與對應參數後綴 1/2… 提供；陣列（如 pixelsX）必須為原生 JSON 陣列，非字串。示例：\\n<<<[TOOL_REQUEST]>>>\\ntool_name:「始」AsepriteOperator「末」,\\ncommand:「始」Batch「末」,\\ncommand1:「始」CreateCanvas「末」,\\nwidth1:「始」64「末」,\\nheight1:「始」64「末」,\\nfilename1:「始」C:/Project/VCPToolBox/image/Aseprite/batch.aseprite「末」,\\ncommand2:「始」DrawLine「末」,\\nfilename2:「始」C:/Project/VCPToolBox/image/Aseprite/batch.aseprite「末」,\\nx_start2:「始」0「末」,\\ny_start2:「始」0「末」,\\nx_end2:「始」63「末」,\\ny_end2:「始」63「末」,\\ncolor2:「始」#FF0000「末」,\\ncommand3:「始」DrawPixels「末」,\\nfilename3:「始」C:/Project/VCPToolBox/image/Aseprite/batch.aseprite「末」,\\npixels3:「始」[{\"x\":13,\"y\":12,\"color\":\"#FFFFFF\"}]「末」\\n<<<[END_TOOL_REQUEST]>>>"
+      },
+      {
+        "command": "OpenApp",
+        "commandIdentifier": "OpenApp",
+        "description": "打开 Aseprite 图形编辑软件界面（GUI）。参数: filename(str, 可选；若指定则在 Aseprite 软件中打开该工程/图片)。示例：\\n<<<[TOOL_REQUEST]>>>\\ntool_name:「始」AsepriteOperator「末」,\\ncommand:「始」OpenApp「末」,\\nfilename:「始」H:/VCP/VCPzhangduan/VCPToolBox/image/Aseprite/scene1.aseprite「末」\\n<<<[END_TOOL_REQUEST]>>>"
       }
     ]
   }

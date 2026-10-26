@@ -93,7 +93,10 @@ format3:「始」png「末」
 
 ## 4. 配置与环境要求
 
-- **运行环境**：Python 3.8+，本地需已安装 Aseprite 商业版或开源编译版。
-- **配置项 (`config.env` 或系统环境变量)**：
-  - `ASEPRITE_PATH`：Aseprite 可执行程序绝对路径，例如：`C:\Program Files\Aseprite\Aseprite.exe` 或 `D:\steam\steamapps\common\Aseprite\Aseprite.exe`。
+- **内置运行程序**：本插件已在 `bin/` 目录下内置了完整便携版 Aseprite (`bin/aseprite.exe` 及相关运行库与资源文件)，开箱即用，无需额外安装。
+- **便捷启动**：
+  - 启动 GUI 界面：直接双击插件根目录下的 `start_aseprite.bat` 即可启动 Aseprite 图像编辑器。
+  - 插件自动探测：若未显式配置 `ASEPRITE_PATH`，插件会自动定位并使用内置的 `bin/aseprite.exe`。
+- **自定义配置 (`config.env` 或系统环境变量，可选)**：
+  - `ASEPRITE_PATH`：若需使用外部自定义版本，可配置绝对路径或相对路径（如 `./bin/aseprite.exe`）。
 - **推荐目录**：建议操作工程存放在 `image/Aseprite/` 目录下，确保 VCP 静态文件服务器可直接预览导出的资源。

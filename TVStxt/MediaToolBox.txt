@@ -1,82 +1,70 @@
-# VCP 多媒体工具箱能力收纳
-这里收纳了各种强大的多媒体生成与控制工具。
+# VCP 图像生成与视觉创意收纳箱 (VCPMediaToolBox)
+这里收纳了 VCP 核心文生图、修图、垫图与多图融合模型。统一支持自然语言 prompt（中英文均可），需要文字排版、特定画风、构图细节时直接在 prompt 中描述即可。
 
-[===vcp_fold:0.3===]
+[===vcp_fold:0.3::desc:核心首选图像生成与统一调用格式===]
 
-## 1. 统一生图/修图/多图合成
-以下生图工具已做字段兼容，AI无需记多套命令。所有模型的prompt均支持纯自然语言描述，中文或英文都可以；需要文字排版、字体特效、画面风格、人物动作、镜头语言时直接在prompt中详细描述即可。
+## 1. 统一生图/修图/多图合成调用格式
+以下主力生图工具已全面实现字段标准化，统一调用格式如下：
 
-### 推荐优先使用
-- ZImageTurboGen：国产开源图像模型，支持文本生成、修图、多图合成，NSFW相对宽松。每日有100点免费算力额度。
-- DoubaoGen：国产强图像模型，字体/中文排版/海报类任务表现强，输出规格偏高。
-- NanoBananaGen2：顶级图像编辑AI，适合长描述、复杂修图、多图参考和角色一致性任务。
-- GPTImageGen：OpenAI超大参数图片编辑模型，适合通用生成与编辑，但昂贵而缓慢。
-
-### 统一调用格式
 tool_name:「始」ZImageTurboGen 或 DoubaoGen 或 NanoBananaGen2 或 GPTImageGen「末」,
 command:「始」generate / edit / compose「末」,
-prompt:「始」(必需) 用于生成、编辑或合成图片的自然语言描述，支持中文或英文。纯文本描述即可，不需要特殊格式。「末」,
-size:「始」(可选) 统一尺寸字段，也兼容resolution和image_size。可写1024x1024、1536x1024、2K、4K、adaptive等，具体可用值取决于所选模型。「末」,
-image:「始」(编辑/合成时必需) 单图URL/base64/data URI，或图片数组，例如["url1","url2"]。也兼容image_url、image_1、image_2、image_url_1、image_base64_1等字段。「末」,
-negative_prompt:「始」(可选) 不希望出现的内容，例如模糊、低质量、变形、错误文字等。只有Zimage支持该功能。「末」,
-showbase64:「始」(可选) 是否在返回结果中附带 base64 图片数据供直接查看，默认 false。可填 true 或 false。「末」
+prompt:「始」(必需) 用于生成、编辑或合成图片的自然语言描述，支持中文或英文。「末」,
+size:「始」(可选) 统一尺寸规格，如 1024x1024、1536x1024、2K、4K、adaptive 等。「末」,
+image:「始」(编辑/合成时必需) 单图 URL/base64 或数组 ["url1", "url2"]，也兼容 image_1、image_2。「末」,
+negative_prompt:「始」(可选) 负面提示词，如低质量、模糊、畸变等。「末」,
+showbase64:「始」(可选) 是否在返回中附带 base64 数据直接预览，默认 false。「末」
 
-### 使用规则
-- image可以直接写数组：image:「始」["url1","url2"]「末」
-- image也可以写编号字段分开传url：image_1、image_2。
+### 主力推荐模型特点
+- **ZImageTurboGen**：国产开源强模，每日赠送免费额度，响应极快，NSFW 相对宽松，日常生图首选。
+- **DoubaoGen**：字节火山引擎豆包文生图，中文排版、海报设计与汉字渲染能力极佳，建议尺寸设为 2K 或 2048x2048。
+- **NanoBananaGen2**：顶级图像编辑与角色一致性模型，支持超长详细 Prompt 与复杂局部垫图修改。
+- **GPTImageGen**：调用 gpt-image-2 模型，写实光影、物理质感与多模态理解顶尖，最高支持 4K。
 
-### 模型差异注意
-- ZImageTurboGen：文生图会自动贴近固定支持分辨率；输入比例/尺寸会被映射到最接近的可用规格。编辑/合成走异步任务，输入图片会先转base64再提交。
-- DoubaoGen：不适合生成低于2K的图片，建议size写2K、4K、2048x2048或adaptive。
-- NanoBananaGen2：image_size主要支持1K、2K、4K；长prompt和复杂修图适合优先使用。
-- GPTImageGen：支持具体宽高如1024x1024、1536x1024；4K属于实验性/不稳定能力，失败时降低尺寸重试。
+[===vcp_fold:0.4::desc:前沿大厂模型与开源生图矩阵===]
 
-## 2. VCP点歌台 (MusicController)
-用于控制服务器音乐播放。
-tool_name:「始」MusicController「末」,
-command:「始」playSong「末」,
-songname:「始」星の余韻「末」 // 注意观察当前服务器音乐列表是否包含曲目，可用LightMemo检索。
+## 2. Gemini 视觉生成 (GeminiImageGen / GeminiNewAPIImageGen)
+基于 Google Imagen 3 / Gemini Flash Preview 视觉架构，对复杂语义指令与写实光影理解深刻。
+tool_name:「始」GeminiImageGen「末」,
+command:「始」generate_image「末」,
+prompt:「始」A modern Scandinavian living room with soft morning sunlight streaming through sheer curtains, photorealistic「末」,
+aspect_ratio:「始」16:9「末」
 
-[===vcp_fold:0.6::desc:音频视频生成工具===]
+## 3. 通义万相文生图 (QwenImageGen)
+基于通义实验室 Wanx 模型，擅长东方唯美古风、国潮插画与写实人像。
+tool_name:「始」QwenImageGen「末」,
+command:「始」generate_image「末」,
+prompt:「始」中国水墨江南烟雨图，小桥流水人家，青砖黛瓦，意境深远「末」,
+size:「始」1024x1024「末」
 
-## 3. Suno 音乐生成 (SunoGen)
-著名的 Suno 音乐生成器。
-tool_name:「始」SunoGen「末」,
-command:「始」generate_song「末」,
-prompt:「始」[Verse 1]...「末」,
-tags:「始」acoustic, pop, happy「末」,
-title:「始」Sunny Days「末」,
-gpt_description_prompt:「始」纯音乐描述「末」
+## 4. FLUX.1 极致画质生成 (FluxGen)
+基于顶尖开源 FLUX.1-schnell / dev 权重，在手部解剖结构、文字细节与微距质感上表现卓越。
+tool_name:「始」FluxGen「末」,
+command:「始」generate「末」,
+prompt:「始」Macro photography of a dewdrop on a vibrant green monstera leaf, refraction of light, 8k resolution「末」
 
-## 4. Grok 视频生成 (GrokVideoGen)
-马斯克出品，极速生成 6 秒视频，包含高质量配音，支持 NSFW。
-tool_name:「始」GrokVideoGen「末」,
-image_url:「始」(必需) 底图链接「末」,
-prompt:「始」(必需) 描述视频内容和配音「末」,
-video_url:「始」(可选) 用于视频续写「末」
+## 5. 火山引擎 Seedream 4.0 (SeedreamGen / DMXDoubaoGen)
+支持高质量图文融合与组图生图，支持 doubao-seedream-4-0 旗舰版。
+tool_name:「始」SeedreamGen「末」,
+command:「始」generate「末」,
+prompt:「始」A cybernetic white fox standing atop a futuristic neon skyscraper at rainy night「末」,
+size:「始」2K「末」
 
-### 视频拼接
-command:「始」concat「末」,
-video_url1:「始」[第一个URL]「末」,
-video_url2:「始」[第二个URL]「末」
+## 6. 魔搭 ModelScope AIGC (ModelScopeImageGen)
+通过阿里魔搭社区 API 调度各种开源社区前沿 Diffusion 与 SDXL 微调权重。
+tool_name:「始」ModelScopeImageGen「末」,
+prompt:「始」Retro 80s anime city street aesthetic, lofi illustration, pastel colors「末」
 
-[===vcp_fold:0.5===]
+[===vcp_fold:0.5::desc:ComfyUI 本地工作流与高精微调===]
 
-7.## 7. GPT 图像生成 (GPTImageGen)
-调用 gpt-image-2 模型，支持高质量文生图与图生图（垫图/风格转换），最高支持4K分辨率。
-tool_name:「始」GPTImageGen「末」,
+## 7. ComfyUI 本地工作流定制 (ComfyUIGen)
+调用本地或局域网 ComfyUI 实例，支持指定工作流模板、LoRA 权重串联与质量增强词。
+tool_name:「始」ComfyUIGen「末」,
+command:「始」generate「末」,
+workflow:「始」sdxl_lora_master「末」, // 工作流模板名称
+prompt:「始」Masterpiece, highly detailed cyberpunk portrait of a female hacker with holographic interface「末」,
+lora:「始」cyberpunk_style:0.8「末」
 
-### 文生图
-command:「始」GPTGenerateImage「末」,
-prompt:「始」(必需) 图像生成提示词，建议使用英文。「末」,
-size:「始」(可选) 分辨率，如 1024x1024、1536x1024，最高支持 3840x2160。「末」,
-quality:「始」(可选) 图像质量：low / medium / high / auto。「末」,
-background:「始」(可选) 背景模式：opaque / auto。「末」,
-n:「始」(可选) 生成数量 1-4。「末」
-
-### 图生图（垫图/风格转换）
-command:「始」GPTEditImage「末」,
-prompt:「始」(必需) 描述如何修改/转换该图片。「末」,
-image:「始」(必需) 原始图片来源。支持 URL、base64、本地路径，或多图JSON数组（最多16张），单张≤4MB。「末」,
-size:「始」(可选) 输出分辨率。「末」,
-quality:「始」(可选) 图像质量：low / medium / high / auto。「末」
+## 8. 通义 Z-Image 原生模型 (ZImageGen / ZImageGen2)
+通过 Hugging Face 或通义实验室原生接口调用 Z-Image-Turbo 进行基础高质量出图。
+tool_name:「始」ZImageGen「末」,
+prompt:「始」A whimsical treehouse illuminated by fairy lights in an ancient forest, digital art「末」

@@ -1,7 +1,7 @@
 VCP工具调用格式与指南，总格式指导。
 
 <<<[TOOL_REQUEST]>>>
-maid:「始」你的署名「末」, //重要字段，以进行任务追踪了解工具由谁发起，男性Agent可以使用valet字段，逻辑相同。
+maid:「始」{{VCPChatAgentName}}「末」, //重要字段，以进行任务追踪了解工具由谁发起，男性Agent可以使用valet字段，逻辑相同。
 tool_name:「始」工具名「末」, //必要字段，以了解你要调用什么工具
 command:「始」工具参数「末」, //具体视不同工具需求而定
 timely_contact:「始」//(可选) 设置一个未来时间点定时调用工具，格式为 YYYY-MM-DD-HH:mm (例如 2025-07-05-14:00)。如果提供此字段，工具调用将被安排在指定时间调用。「末」,
@@ -17,7 +17,7 @@ river:「始」mode「末」//(可选) 调用工具时传递上下文让工具�
 
 查询一个 timely_contact 调用工具的执行进度或者执行历史结果。
 <<<[TOOL_REQUEST]>>>
-maid:「始」Nova「末」,
+maid:「始」{{VCPChatAgentName}}「末」,
 tool_name:「始」TimedTaskQuery「末」,
 task_id:「始」task-1779106560000-650e398d「末」,
 action:「始」cancel「末」 // (可选),输入该字段代表取消一个未来调用的任务以避免其被执行。

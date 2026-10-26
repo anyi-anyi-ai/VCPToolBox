@@ -1,44 +1,77 @@
-# VCP 工具箱能力收纳
-这里收纳了各种强大的 VCP 辅助工具，供不同的场景调用。
+# VCP 长期记忆、日记管理与思维沉淀收纳箱 (VCPMemoToolBox)
+这里收纳了 VCP 强大的拓扑语义回忆、跨智能体记忆同步、日记全量管理检索、时间线脉络与元思维学习工具。
 
-## 1. 基于浪潮V10语义的快速回忆插件 (LightMemo)
-该插件用于你主动检索日记本或者知识库，功能极强，在主动回忆场景优先考虑。
-由于VCP浪潮RAG是基于上下文本体进行逻辑链条的回忆，所以LightMemo的主要应用场景是进行上下文未提及内容的补充回忆。常用于补足自动记忆召回不全的情况。
-maid:「始」Nova「末」, //可选，从该角色的记忆库搜索，代表搜索该角色署名的记忆
+[===vcp_fold:0.25::desc:语义快速回忆与跨Agent近期记忆检索===]
+
+## 1. 浪潮拓扑语义回忆 (LightMemo)
+用于主动检索日记本或知识库，基于原创语义寻道算法补足自动记忆召回不全的场景。
 tool_name:「始」LightMemo「末」,
-folder:「始」小吉的地缘政治「末」, //可选，从特定的索引检索，一般不需要输入 // 支持输入多个索引，用逗号或者|隔开。
-query:「始」关于上次A项目会议的讨论内容「末」, //基于VCP原创rag语义化目的性寻道算法实现。 // 特殊检索语法 '[音乐检索]煮咖啡时适合听的歌'，用于语义检索VCP音乐库，该功能会覆盖其它所有模式。//支持时间范围约（如 [2025-04-11~2025-05-12] 或 [2026-02-14] 美国军事动向）以精确过滤记忆片段。
-k:「始」3「末」,  //(可选)返回的结果数量，默认5
-rerank:「始」true「末」, //(可选)是否开启重排，使用0.6之类的数字触发倒数秩融合RFF技术(和浪潮排序兼容)
-tag_boost:「始」0.6「末」, //（可选）是否开启VCP浪潮拓扑RAG算法，可输入0.6+来启用浪潮V8测地线向量检测系统(非KNN)
-search_all_knowledge_bases:「始」false「末」, //是否搜索其它人的日记知识库。
+query:「始」关于上次讨论架构拆解的核心结论「末」,
+maid:「始」{{VCPChatAgentName}}「末」, // 可选：指定署名角色，不填则默认
+folder:「始」项目记录「末」, // 可选：指定知识库目录，支持逗号或竖线分隔
+k:「始」5「末」, // 返回条数
+rerank:「始」true「末」, // 是否启用重排
+tag_boost:「始」0.6「末」 // 启用浪潮测地线拓扑算法加权
 
-[===vcp_fold:0.65===]
+## 2. 跨智能体近期记忆同步 (RecentMemo)
+独立跨角色记忆共享与近期重要记忆脉络检索，自动拉取近期重要经历与协作事实。
+tool_name:「始」RecentMemo「末」,
+maid:「始」{{VCPChatAgentName}}「末」,
+query:「始」今天上午与用户共同制定的工作计划「末」
 
-## 2. 深度回忆插件 (DeepMemo)
-该插件用于直接回忆之前的聊天历史文件(自动跳过当前窗口上下文)
-tool_name:「始」DeepMemo「末」,
-maid:「始」你的名字「末」, //该插件中这是必须字段
-keyword：「始」搜索关键词「末」, //语法示例详见下方说明。
-window_size：「始」匹配深度「末」, //非必须参数，可不填。可选1-10,代表命中范围的上下文召回层数。
-rerank:「始」true「末」//是否启用rerank,默认false
+## 3. 滑窗历史记忆召回 (AIMemo)
+基于历史聊天记录 JSON 的关键词滑窗定位，快速追溯过去的某个上下文片段。
+tool_name:「始」AIMemo「末」,
+keyword:「始」API密钥「末」,
+window_size:「始」5「末」
 
-DeepMemo检索词语法：
-# 关键词使用,隔开。
-# 支持以下高级语法:
-#   - 普通词:           VCP
-#   - 精确短语:         "VCP服务器"
-#   - 正向加权 (0.0-2.0): (重要概念:1.5)
-#   - 负向排除 :         [闲聊] //不支持权重
-#   - OR 逻辑:          {破解|渗透|测试} //支持正向权重
+[===vcp_fold:0.35::desc:日记全生命周期写入、整理与Rust全文检索===]
 
-[===vcp_fold:0.7===]
+## 4. 日记创建与更新 (DailyNote / DailyNoteWrite)
+向角色专属日记中记录今日事件、思考或感悟，保证原子写入与知识库同步。
+tool_name:「始」DailyNoteWrite「末」,
+maidName:「始」Nova「末」,
+dateString:「始」2026-10-25「末」,
+contentText:「始」### 12:20 插件体系梳理\n今天全面完成了 168 个插件的分类治理，拆解为核心宏与垂直专业宏。「末」
 
-## 3. 话题回忆插件 (TopicMemo)
-用于回忆Vchat中具体的聊天记录。
-tool_name:「始」TopicMemo「末」,
-获取你的聊天列表。 
-command:「始」ListTopics「末」  注意，话题标题由自动话题总结模型生成，对于超长聊天内容难以覆盖所有信息。
-回忆一个对应的话题上下文。
-command:「始」GetTopicContent「末」,
-topic_id:「始」topic_1766164936527「末」
+## 5. Rust 超高速日记与知识库检索 (DailyNoteSearcher)
+基于 Rust 高性能引擎，支持日记与知识库全文正则、精准词组与 BM25 概率相关度检索。
+tool_name:「始」DailyNoteSearcher「末」,
+command:「始」search「末」,
+query:「始」插件分类 JEV 路由「末」,
+mode:「始」bm25「末」, // 可选：'text' (精确文本), 'regex' (正则表达式), 'bm25' (相关度评分)
+maidName:「始」Nova「末」
+
+## 6. 日记归档、整理与联想 (DailyNoteManager)
+按时间范围批量整理日记碎片、合并同类事项或提取关键联想。
+tool_name:「始」DailyNoteManager「末」,
+command:「始」organize「末」,
+maidName:「始」Nova「末」,
+startDate:「始」2026-10-01「末」,
+endDate:「始」2026-10-25「末」
+
+## 7. 日记可视化看板状态查询 (DailyNotePanel)
+查询当前日记系统整体统计指标（总字数、活跃条目数、最近修改日期等）。
+tool_name:「始」DailyNotePanel「末」,
+command:「始」get_stats「末」
+
+[===vcp_fold:0.45::desc:RAG日记向量注入、时间线与思维元学习===]
+
+## 8. RAG 向量日记注入 (RAGDiaryPlugin)
+通过高维向量计算动态检索最相关的多篇日记片段，为复杂对话提供深层背景事实。
+tool_name:「始」RAGDiaryPlugin「末」,
+query:「始」用户的核心审美偏好与历史定制需求「末」,
+top_k:「始」3「末」
+
+## 9. 智能体时间线脉络生成 (VCPTimeLine / TimelineInjector)
+扫描角色历史事件，按月梳理时间线摘要，生成结构化人物经历全景。
+tool_name:「始」VCPTimeLine「末」,
+agent_name:「始」Nova「末」,
+action:「始」get_timeline「末」
+
+## 10. AI 思维链与元学习编辑 (ThoughtClusterManager)
+用于管理和编辑智能体自身的思维链（Chain of Thought）沉淀文件，实现认知自演进。
+tool_name:「始」ThoughtClusterManager「末」,
+action:「始」update_thought「末」,
+topic:「始」多模态工具决策模式「末」,
+content:「始」遇到生图请求时，优先判断是否涉及 3D/像素，如果是则转入专业工坊。「末」

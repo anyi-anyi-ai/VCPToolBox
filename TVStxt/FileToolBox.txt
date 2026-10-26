@@ -50,8 +50,8 @@ ServerPowerShellExecutor
 
 后端不套用前端字段；提权时按要求提供实时安全码。
 
-有什么事情或者报告可以调用`VCPClawMail`给莱恩主人的网易邮箱(红莲の狮子)发邮件。
-command:'send_mail', to:'lionsky75@163.com', subject, body
+有什么事情或者报告可以调用`VCPClawMail`给主人的网易邮箱发邮件。
+command:'send_mail', to:'your_mail@example.com', subject, body
 
 或者直接调用插件`WaitingForUrReply` — 弹出浮窗等待用户回复。
 参数：prompt；title?；option01～option09?；placeholder?（预填文本）。
@@ -226,3 +226,50 @@ CreateCanvas(fileName, content)
 ```
 
 创建代码或文档协同编辑窗口；用文件名及扩展名标识内容类型。
+
+
+[===vcp_fold:0.5::desc:Git仓库协作与远程代码检索，LinuxShell执行，AI代码重构与目录树生成===]
+
+## Git 管理、远程执行与增强代码工程
+
+### 1. Git 仓库智能操作 (GitOperator)
+支持多仓库 Profile 管理、上游分支同步、自动化提交、分支切换与 Token 脱敏。
+tool_name:「始」GitOperator「末」,
+command:「始」status / commit / push / sync_upstream「末」,
+repo_path:「始」H:/VCP/VCPzhangduan/VCPToolBox「末」,
+message:「始」feat: 规范化宏与插件分类「末」
+
+### 2. 全网代码托管平台统一检索 (GitSearch)
+聚合 GitHub、GitLab、Gitee 三大平台的只读检索，搜索开源代码、仓库结构与提交记录。
+tool_name:「始」GitSearch「末」,
+platform:「始」github「末」, // 可选：'github'、'gitee'、'gitlab'
+query:「始」repo:facebook/react useState implementation「末」
+
+### 3. 增强型分布式文件操作 (DistributeFileOperator)
+支持跨受限目录的文件流式读写、块分片追加与批量树形迁移。
+tool_name:「始」DistributeFileOperator「末」,
+command:「始」read_file_slices / copy_tree「末」
+
+### 4. Linux / 远程 Shell 执行 (LinuxShellExecutor)
+在已配置的远程 Linux 服务器或 WSL 环境中执行 Bash 脚本与系统状态排查命令。
+tool_name:「始」LinuxShellExecutor「末」,
+command:「始」uname -a && docker ps「末」
+
+### 5. AI 代码工坊与规范化重构 (AICodeWorker)
+代码规范化审查、模式提取与自动生成结构化修改报告。
+tool_name:「始」AICodeWorker「末」,
+command:「始」analyze / refactor「末」,
+file_path:「始」modules/foldProtocol.js「末」
+
+### 6. 目录文件清单与目录树生成 (FileListGenerator / FileTreeGenerator)
+扫描指定目录层级结构，自动输出标准化文件列表或 Markdown 目录树。
+tool_name:「始」FileTreeGenerator「末」,
+target_dir:「始」H:/VCP/VCPzhangduan/VCPToolBox/Plugin「末」,
+max_depth:「始」2「末」
+
+
+### 7. 本地文件秒搜 (VCPEverything / ServerSearchController)
+基于 Everything 原生命令行的高速秒搜，支持文件名正则与全盘快速定位。
+tool_name:「始」ServerSearchController「末」,
+query:「始」*.aseprite「末」,
+maxResults:「始」10「末」
