@@ -62,12 +62,11 @@ function debugLog(...args) {
 }
 
 // Helper to validate input arguments
-function isValidComfyUIGenArgs(args) {
-    if (!args || typeof args !== 'object') return false;
-    // 对于图生图，prompt 可以为空，但需要有 image
-    if (typeof args.prompt === 'string' && args.prompt.trim()) return true;
-    if (args.image) return true; // 图生图模式
-    return false;
+function isValidComfyUIGenArgs(args, requiresPrompt = true) {
+    if (!args || typeof args !== 'object' || Array.isArray(args)) return false;
+    if (requiresPrompt && (typeof args.prompt !== 'string' || !args.prompt.trim())) return false;
+    if (!requiresPrompt && args.prompt !== undefined && typeof args.prompt !== 'string') return false;
+    return true;
 }
 
 // 加载工作流模板
@@ -84,7 +83,6 @@ async function loadWorkflowTemplate(templateName = 'text2img_basic') {
 
 
 const { randomBytes } = require('crypto');
-const FormData = require('form-data'); // 需要 npm install form-data
 
 // 生成合法随机种子（0..2^32-1）使用加密学安全源，避免 Math.random 偏差
 function generateRandomSeed() {
@@ -114,7 +112,23 @@ function resolveNumericArg(value, fallback) {
 function fillWorkflowParameters(workflow, args, config) {
     const settings = config.userSettings || {};
     const userPrompt = args.prompt || '';
+
+    // 含缩放占位符的模板使用各自默认倍率；拒绝非法输入。
+    let resizeScale;
+    if (JSON.stringify(workflow).includes('{{RESIZE_SCALE}}')) {
+        const candidate = args.resize_scale ?? settings.defaultResizeScale ?? 2;
+        resizeScale = Number(candidate);
+        if ((typeof candidate !== 'number' && typeof candidate !== 'string') ||
+            String(candidate).trim() === '' || !Number.isFinite(resizeScale) || resizeScale <= 0) {
+            throw new Error('resize_scale must be a finite number greater than 0.');
+        }
+    }
     
+    const facePrompt = args.face_prompt ?? settings.facePrompt ?? '';
+    if (JSON.stringify(workflow).includes('{{FACE_PROMPT}}') && typeof facePrompt !== 'string') {
+        throw new Error('face_prompt must be a string.');
+    }
+
     // 构建LoRA字符串
     const lorasString = buildLoRAsString(settings.loras || []);
     
@@ -142,6 +156,7 @@ function fillWorkflowParameters(workflow, args, config) {
         '{{IMAGE}}': args.image || '',
         '{{IMAGE_2}}': args.image_2 || '',
         '{{RESOLUTION}}': resolveNumericArg(args.resolution, settings.defaultResolution ?? 0),
+        '{{RESIZE_SCALE}}': resizeScale,
         '{{MODEL}}': args.model || settings.defaultModel || 'sd_xl_base_1.0.safetensors',
         '{{WIDTH}}': resolveNumericArg(args.width, settings.defaultWidth || 1024),
         '{{HEIGHT}}': resolveNumericArg(args.height, settings.defaultHeight || 1024),
@@ -159,6 +174,7 @@ function fillWorkflowParameters(workflow, args, config) {
         '{{USER_PROMPT}}': userPrompt || '',
         '{{PROMPT_INPUT}}': userPrompt || '', // 独立提示词输入
         '{{LORA_PROMPT}}': args.lora_prompt || '',
+        '{{FACE_PROMPT}}': facePrompt,
         
         // 组件字符串
         '{{LORAS}}': lorasString,
@@ -178,11 +194,7 @@ function fillWorkflowParameters(workflow, args, config) {
         '{{FD_MAX_SIZE}}': settings.faceDetailerMaxSize || 1024,
         '{{FD_SAM_DILATION}}': settings.faceDetailerSamDilation || 0,
         '{{FD_SAM_DETECTION_HINT}}': settings.faceDetailerSamDetectionHint || 'center-1',
-        '{{FD_GUIDE_SIZE}}': settings.faceDetailerGuideSize || 512,
-        
-        // 图片输入占位符（用于图生图/重绘）
-        '{{IMAGE}}': args._uploadedImage || '',
-        '{{MASK}}': args._uploadedMask || ''
+        '{{FD_GUIDE_SIZE}}': settings.faceDetailerGuideSize || 512
     };
     
     // 安全的JSON替换 - 精确匹配时保留数值/布尔类型，嵌入字符串时再转为文本
@@ -354,96 +366,6 @@ async function prepareWorkflowImages(args, requiredInputs, config) {
     return prepared;
 }
 // 提交工作流到ComfyUI队列
-// 上传图片到 ComfyUI
-async function uploadImageToComfyUI(imagePath, config, filename = null) {
-    const comfyuiAxios = axios.create({
-        baseURL: config.COMFYUI_BASE_URL,
-        headers: config.COMFYUI_API_KEY ? { 'Authorization': `Bearer ${config.COMFYUI_API_KEY}` } : {},
-        timeout: 60000
-    });
-    
-    try {
-        // 读取图片文件
-        const imageBuffer = await fs.readFile(imagePath);
-        const imageFilename = filename || path.basename(imagePath);
-        
-        // 创建 FormData
-        const formData = new FormData();
-        formData.append('image', imageBuffer, {
-            filename: imageFilename,
-            contentType: 'image/png' // 或根据文件扩展名判断
-        });
-        formData.append('type', 'input');
-        formData.append('overwrite', 'true');
-        
-        debugLog('Uploading image to ComfyUI:', imageFilename);
-        
-        const response = await comfyuiAxios.post('/upload/image', formData, {
-            headers: {
-                ...formData.getHeaders()
-            }
-        });
-        
-        debugLog('Image uploaded successfully:', response.data);
-        return response.data;
-    } catch (error) {
-        debugLog('Image upload failed:', error.message);
-        throw new Error(`Failed to upload image to ComfyUI: ${error.message}`);
-    }
-}
-
-// 从 URL 或本地路径获取图片并上传到 ComfyUI
-async function prepareImageForComfyUI(imageSource, config) {
-    let tempFilePath = null;
-    
-    try {
-        if (imageSource.startsWith('http://') || imageSource.startsWith('https://')) {
-            // 从 URL 下载图片
-            debugLog('Downloading image from URL:', imageSource);
-            const response = await axios({
-                method: 'get',
-                url: imageSource,
-                responseType: 'arraybuffer',
-                timeout: 30000
-            });
-            
-            // 保存到临时文件
-            const tempDir = path.join(config.PROJECT_BASE_PATH, 'temp');
-            await fs.mkdir(tempDir, { recursive: true });
-            tempFilePath = path.join(tempDir, `temp_${Date.now()}.png`);
-            await fs.writeFile(tempFilePath, response.data);
-        } else if (imageSource.startsWith('data:')) {
-            // 处理 base64 图片
-            debugLog('Processing base64 image');
-            const base64Data = imageSource.split(',')[1];
-            const buffer = Buffer.from(base64Data, 'base64');
-            
-            const tempDir = path.join(config.PROJECT_BASE_PATH, 'temp');
-            await fs.mkdir(tempDir, { recursive: true });
-            tempFilePath = path.join(tempDir, `temp_${Date.now()}.png`);
-            await fs.writeFile(tempFilePath, buffer);
-        } else {
-            // 本地文件路径
-            debugLog('Using local file path:', imageSource);
-            tempFilePath = imageSource;
-        }
-        
-        // 上传到 ComfyUI
-        const uploadResult = await uploadImageToComfyUI(tempFilePath, config);
-        return uploadResult.name;
-    } finally {
-        // 清理临时文件（只清理下载的临时文件，不清理用户指定的本地文件）
-        if (tempFilePath && (imageSource.startsWith('http') || imageSource.startsWith('data:'))) {
-            try {
-                await fs.unlink(tempFilePath);
-            } catch (e) {
-                debugLog('Warning: Failed to clean up temp file:', e.message);
-            }
-        }
-    }
-}
-
-// 提交工作流到ComfyUI队列
 async function queuePrompt(workflow, config) {
     const comfyuiAxios = axios.create({
         baseURL: config.COMFYUI_BASE_URL,
@@ -590,39 +512,11 @@ async function generateImageAndSave(args) {
         throw new Error(`ComfyUI Plugin Error: Missing environment variables: ${missing.join(', ')}. Available env vars: ${Object.keys(process.env).filter(k => k.includes('HTTP') || k.includes('PORT') || k.includes('IMAGE')).join(', ')}`);
     }
 
-    if (!isValidComfyUIGenArgs(args)) {
-        throw new Error(`ComfyUI Plugin Error: Invalid arguments. Required: prompt (string). Received: ${JSON.stringify(args)}`);
+    if (!args || typeof args !== 'object' || Array.isArray(args)) {
+        throw new Error('ComfyUI Plugin Error: Invalid arguments. Expected an object.');
     }
 
     debugLog('Starting image generation with args:', args);
-
-    // 处理图片输入（用于图生图/重绘）
-    let uploadedImageName = null;
-    let uploadedMaskName = null;
-    
-    if (args.image) {
-        debugLog('Processing input image:', args.image);
-        try {
-            uploadedImageName = await prepareImageForComfyUI(args.image, config);
-            debugLog('Image uploaded to ComfyUI as:', uploadedImageName);
-        } catch (error) {
-            throw new Error(`ComfyUI Plugin Error: Failed to process input image: ${error.message}`);
-        }
-    }
-    
-    if (args.mask) {
-        debugLog('Processing input mask:', args.mask);
-        try {
-            uploadedMaskName = await prepareImageForComfyUI(args.mask, config);
-            debugLog('Mask uploaded to ComfyUI as:', uploadedMaskName);
-        } catch (error) {
-            throw new Error(`ComfyUI Plugin Error: Failed to process input mask: ${error.message}`);
-        }
-    }
-    
-    // 将图片信息添加到 args 中，供 fillWorkflowParameters 使用
-    args._uploadedImage = uploadedImageName;
-    args._uploadedMask = uploadedMaskName;
 
     // 通用回退序列
     const userPrompt = args.prompt || '';
@@ -649,7 +543,11 @@ async function generateImageAndSave(args) {
             
             // 兼容旧格式（直接是工作流）和新格式（包含元数据和 workflow 键）
             const workflowObject = wfTemplate.workflow || wfTemplate;
-            strictWorkflow = Array.isArray(wfTemplate.requiredInputs) && wfTemplate.requiredInputs.length > 0;
+            strictWorkflow = wfTemplate.requiresPrompt === false ||
+                (Array.isArray(wfTemplate.requiredInputs) && wfTemplate.requiredInputs.length > 0);
+            if (!isValidComfyUIGenArgs(args, wfTemplate.requiresPrompt !== false)) {
+                throw new Error('ComfyUI Plugin Error: Invalid arguments. Required: prompt (string), except for workflows with requiresPrompt=false.');
+            }
             const preparedArgs = await prepareWorkflowImages(args, wfTemplate.requiredInputs || [], config);
             const workflowConfig = {
                 ...config,
@@ -697,7 +595,8 @@ async function generateImageAndSave(args) {
     }
     
     // 7. 构建返回结果 - 结构化格式
-    const altText = args.prompt.substring(0, 80) + (args.prompt.length > 80 ? "..." : "");
+    const altPrompt = args.prompt || usedWorkflow || 'ComfyUI';
+    const altText = altPrompt.substring(0, 80) + (altPrompt.length > 80 ? "..." : "");
     
     let textContent = `ComfyUI 图片生成成功！共生成 ${savedImages.length} 张图片\n\n`;
     textContent += `详细信息：\n`;
@@ -739,7 +638,7 @@ async function generateImageAndSave(args) {
         content: content,
         details: {
             workflow: usedWorkflow,
-            prompt: args.prompt,
+            prompt: args.prompt || '',
             imageCount: savedImages.length,
             images: savedImages.map(img => ({
                 serverPath: `image/comfyuigen/${img.filename}`,
@@ -793,6 +692,7 @@ if (require.main === module) {
 }
 
 module.exports = {
+    isValidComfyUIGenArgs,
     fillWorkflowParameters,
     configureWorkflowLora,
     resolveSeed,
