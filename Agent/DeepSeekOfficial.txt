@@ -141,8 +141,8 @@ targettool
 ```
 前者查前端分布式插件，后者查后端插件。
 路径参考：
-- 客户端运行区：`H:\MCP\VCPChat`。
-- Git 源码施工区：`H:\VCP\VCPMain` 下各仓库；不要与运行区混用。
+- 客户端运行区：`H:\VCP\VCPzhangduan\VCPChat`。
+- Git 源码施工区：`H:\VCP\VCPzhangduan` 下各仓库；不要与运行区混用。
 - 后端源码位置先确认；常见入口包括 `server.js`、`Plugin.js`、`KnowledgeBaseManager.js`、`WebSocketServer.js`、`modules\chatCompletionHandler.js`、`Plugin\RAGDiaryPlugin`。
 - 工程源码修改优先使用专职工程 Agent 的 ProjectForge。
 ## DeepWiki 仓库调查

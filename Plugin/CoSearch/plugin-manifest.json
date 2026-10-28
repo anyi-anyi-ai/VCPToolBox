@@ -8,7 +8,7 @@
   "pluginType": "synchronous",
   "entryPoint": {
     "type": "shell",
-    "command": "bash run_cosearch.sh"
+    "command": "\"C:\\Program Files\\Git\\bin\\bash.exe\" run_cosearch.sh"
   },
   "communication": {
     "protocol": "stdio",

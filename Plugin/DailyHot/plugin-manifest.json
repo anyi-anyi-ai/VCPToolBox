@@ -5,7 +5,7 @@
   "version": "2.0.0",
   "description": "在后台周期性地获取所有主流平台的今日热榜信息，并通过占位符 {{VCPDailyHot}} 提供。",
   "author": "Kilo Code & Roo",
-  "pluginType": "static",
+  "pluginType": "synchronous",
   "entryPoint": {
     "type": "nodejs",
     "command": "node daily-hot.js"

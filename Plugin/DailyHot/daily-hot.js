@@ -253,7 +253,7 @@ async function readCacheOnError() {
         };
     }
 
-    const output = JSON.stringify(foldOutput, null, 2);
+    const output = JSON.stringify({ status: 'success', result: foldOutput }, null, 2);
     _originalStdoutWrite(output, 'utf-8', () => {
         process.exit(0);
     });

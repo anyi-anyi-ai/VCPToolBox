@@ -5,7 +5,7 @@
   "displayName": "文件列表生成器",
   "description": "生成 'file' 目录下的文件和文件夹列表，并提供给 {{VCPFileServer}} 占位符。",
   "author": "Kilo Code",
-  "pluginType": "static",
+  "pluginType": "synchronous",
   "entryPoint": {
     "type": "command",
     "command": "node file-list-generator.js"

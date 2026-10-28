@@ -3,7 +3,7 @@
   "upstreamUrl": "http://127.0.0.1:6005",
   "upstreamKey": "",
   "upstreamType": "chat",
-  "defaultModel": "gemini-3.6-flash",
+  "defaultModel": "DeepSeek-V4.1-Flash",
   "systemPrompt": "{{agent:Nova}} {{VarToolList}},\n{{VCPMemoToolBox}}\n{{VCPMediaToolBox}}\n{{VCPSearchToolBox}}\n{{VCPContactToolBox}}\n{{VCPFileToolBox}}              ",
   "hijackMode": "replace",
   "modelMap": {},

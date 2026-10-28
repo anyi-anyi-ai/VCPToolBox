@@ -3,7 +3,7 @@
   "displayName": "文件树生成器",
   "version": "1.0.0",
   "description": "扫描指定目录的文件夹结构，并通过占位符提供给AI。",
-  "pluginType": "static",
+  "pluginType": "synchronous",
   "communication": {
     "protocol": "stdio",
     "timeout": 60000
