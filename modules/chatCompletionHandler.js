@@ -724,27 +724,98 @@ class ChatCompletionHandler {
     }
 
     const shouldShowVCP = SHOW_VCP_OUTPUT || forceShowVCP;
-    const applyChinaModelThinkingControl = (body) => {
-      if (!body || !body.model || !chinaModel1 || !Array.isArray(chinaModel1) || chinaModel1.length === 0) {
-        return body;
-      }
+    const applyThinkingIntensityControl = (body) => {
+      if (!body || !body.model) return body;
 
-      const modelNameLower = String(body.model).toLowerCase();
-      const isChinaModel = chinaModel1.some(m => modelNameLower.includes(String(m).toLowerCase()));
-      if (!isChinaModel) return body;
+      const modelLower = String(body.model).toLowerCase();
+      const rawIntensity = body.thinkingIntensity !== undefined
+        ? body.thinkingIntensity
+        : (body.reasoning_effort === "none" ? "off" : body.reasoning_effort);
 
-      if (chinaModel1Cot) {
-        body.thinking = { type: "enabled" };
+      const isClaude = modelLower.includes("claude");
+      const isOseries = /^(o[134]|o[134]-)/.test(modelLower) || modelLower.includes("-o1") || modelLower.includes("-o3") || modelLower.includes("-o4");
+      const isGemini = modelLower.includes("gemini") || modelLower.includes("argon");
+      const isDeepSeekOrReasoning = modelLower.includes("deepseek") || modelLower.includes("reasoner") || modelLower.includes("r1");
+      const isConfiguredChinaModel = Array.isArray(chinaModel1) && chinaModel1.some(m => modelLower.includes(String(m).toLowerCase()));
+      const isKnownNonReasoning = /^(gpt-4o|gpt-4-turbo|gpt-3\.5|claude-3-5|claude-3-opus|claude-3-haiku)/.test(modelLower) && !modelLower.includes("thinking");
+
+      if (rawIntensity && rawIntensity !== "auto") {
+        const normalizedIntensity = String(rawIntensity).trim().toLowerCase();
+
+        if (normalizedIntensity === "off" || normalizedIntensity === "none") {
+          if (isClaude) {
+            body.thinking = { type: "disabled" };
+            delete body.reasoning_effort;
+          } else if (isGemini) {
+            body.reasoning_effort = "none";
+            body.thinkingConfig = { thinkingBudget: 0 };
+            body.thinking = { type: "disabled" };
+          } else if (isDeepSeekOrReasoning || isConfiguredChinaModel) {
+            delete body.thinking;
+            delete body.reasoning_effort;
+          } else {
+            delete body.reasoning_effort;
+            delete body.thinking;
+            delete body.thinkingConfig;
+          }
+          if (DEBUG_MODE) {
+            console.log(`[ThinkingControl] 模型 '${body.model}' 思考强度已显式关闭 (off)`);
+          }
+        } else if (["low", "medium", "high"].includes(normalizedIntensity)) {
+          if (isClaude) {
+            const budgetMap = { low: 2048, medium: 8192, high: 16384 };
+            const budget = budgetMap[normalizedIntensity] || 4096;
+            body.thinking = { type: "enabled", budget_tokens: budget };
+            if (!body.max_tokens || body.max_tokens <= budget) {
+              body.max_tokens = Math.max(body.max_tokens || 0, budget + 4096);
+            }
+            delete body.temperature;
+            delete body.top_p;
+            body.reasoning_effort = normalizedIntensity;
+          } else if (isOseries) {
+            body.reasoning_effort = normalizedIntensity;
+            delete body.temperature;
+            delete body.top_p;
+            delete body.thinking;
+          } else if (isGemini) {
+            const geminiBudgets = { low: 1024, medium: 4096, high: 8192 };
+            body.reasoning_effort = normalizedIntensity;
+            body.thinkingConfig = { thinkingBudget: geminiBudgets[normalizedIntensity] || 4096 };
+            body.thinking = { type: "enabled" };
+          } else if (isDeepSeekOrReasoning || isConfiguredChinaModel) {
+            body.thinking = { type: "enabled" };
+            body.reasoning_effort = normalizedIntensity;
+          } else if (isKnownNonReasoning) {
+            delete body.reasoning_effort;
+            delete body.thinking;
+            delete body.thinkingConfig;
+            console.warn(`[ThinkingControl] 模型 '${body.model}' 为已知非思考模型，已剥离思考参数以避免 400 错误。`);
+          } else {
+            body.reasoning_effort = normalizedIntensity;
+            body.thinking = { type: "enabled" };
+          }
+
+          if (DEBUG_MODE) {
+            console.log(`[ThinkingControl] 模型 '${body.model}' 思考强度已配置为: ${normalizedIntensity}`);
+          }
+        }
       } else {
-        delete body.thinking;
+        if (isConfiguredChinaModel) {
+          if (chinaModel1Cot) {
+            body.thinking = { type: "enabled" };
+          } else {
+            delete body.thinking;
+          }
+          if (DEBUG_MODE) {
+            console.log(`[ChinaModel] 模型 '${body.model}' 匹配配置。思维链状态: ${chinaModel1Cot ? "开启 (enabled)" : "关闭 (已移除字段)"}`);
+          }
+        }
       }
 
-      if (DEBUG_MODE) {
-        console.log(`[ChinaModel] 模型 '${body.model}' 匹配成功。思维链状态: ${chinaModel1Cot ? '开启 (enabled)' : '关闭 (已移除字段)'}`);
-      }
-
+      delete body.thinkingIntensity;
       return body;
     };
+    const applyChinaModelThinkingControl = applyThinkingIntensityControl;
 
     let clientIp = normalizeClientIp(req.ip);
 
