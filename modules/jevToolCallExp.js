@@ -424,6 +424,23 @@ class JevToolCallExp {
             return { ...args, ...anySearchArgs };
         }
 
+        if (toolKey === 'deepseek') {
+            args.query = main;
+            const joined = constraints.join(' ');
+            if (constraints.length > 0) {
+                const extraTerms = constraints.filter(c => !/正文|条|篇|json|markdown|need_content/i.test(c));
+                if (extraTerms.length > 0) {
+                    args.query = [main, ...extraTerms].join(' ');
+                }
+            }
+            if (/正文|抓取正文|need_content/i.test(joined)) {
+                args.need_content = 'true';
+            }
+            const countMatch = joined.match(/(\d+)\s*(?:条|个|项|篇)/);
+            if (countMatch) args.count = countMatch[1];
+            return args;
+        }
+
         if (toolKey === 'bilibili_search') {
             args.keyword = main;
             const joined = constraints.join(' ');
