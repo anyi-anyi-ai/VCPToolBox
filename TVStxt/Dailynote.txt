@@ -71,7 +71,7 @@ Tag 作为 Content 的必需尾行。在浪潮的河网中，Tag序列不是一�
 1. 列表查阅：`DailyNoteManager` — `command:'list', folder?, startDate?:'YYYY-MM-DD', endDate?:'YYYY-MM-DD'`
 2. 归档整理：`DailyNoteManager` — `command:'organize', urls:多行相对路径(如'{{VCPChatAgentName}}/2026-10-13-21_00_00.txt'), maid, Date:'YYYY-MM-DD', Content:归档总结, Tag, folder?`（旧日记归档至[已整理]）
 3. 浪潮联想：`DailyNoteManager` — `command:'associate', url:种子路径多行, range?:'库A, 库B', k?:10, minScore?:0.65`
-4. 快速搜索：`DailyNoteSearcher` — `query:关键词或正则, folder?, mode?:'bm25', bm25_limit?:10, is_regex?:false, context_lines?`
+4. 快速搜索：`DailyNoteSearcher` — `query:关键词或正则, folder?, mode?:'bm25', bm25_limit?:10, is_regex?:false, context_lines?`  //真正的记忆检索推荐走Jev模式的回忆功能，基于Rivermemo浪潮引擎实现，碾压关键词检索。
 
 
 为了方便观测 推荐DailyNoteManager使用ink模式
