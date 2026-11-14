@@ -5,9 +5,13 @@
   "description": "Use ModelScope API-Inference (AIGC) to generate images from text prompts (async task + polling).",
   "author": "VCPToolBox",
   "pluginType": "synchronous",
-  "entry": "ModelScopeImageGen.mjs",
   "outputType": "markdown",
-  "tags": ["image", "aigc", "modelscope", "text2image"],
+  "tags": [
+    "image",
+    "aigc",
+    "modelscope",
+    "text2image"
+  ],
   "parameters": {
     "prompt": {
       "type": "string",
@@ -54,5 +58,13 @@
       "required": false,
       "description": "Polling interval seconds"
     }
+  },
+  "entryPoint": {
+    "type": "nodejs",
+    "command": "node ModelScopeImageGen.mjs"
+  },
+  "communication": {
+    "protocol": "stdio",
+    "timeout": 180000
   }
-}
+}

@@ -1,0 +1,97 @@
+# VCP 音乐创作、音频解析与高拟真配音收纳箱 (VCPMusicToolBox)
+这里收纳了 Suno 原创音乐生成、多平台音乐检索点歌、高保真配音合成与 MIDI 编曲工具。
+
+[===vcp_fold:0.35::desc:Suno 原创音乐生成与续写===]
+
+## 1. Suno 原创音乐生成 (SunoGen)
+调用 Suno API 进行 AI 音乐创作。支持自定义歌词、灵感描述以及现有歌曲片段续写。歌曲生成需要 15~30 秒，任务提交后会返回音频直链。
+tool_name:「始」SunoGen「末」,
+command:「始」generate_song「末」,
+
+### 模式一：自定义歌词创作 (Custom Mode)
+prompt:「始」[Verse 1]\nSunlight on my face\nA gentle, warm embrace\n[Chorus]\nFly away, to the sky「末」,
+tags:「始」acoustic, pop, happy, female vocal「末」,
+title:「始」Sunny Days「末」,
+mv:「始」chirp-v4「末」 // 模型版本：chirp-v3-0 / chirp-v3-5 / chirp-v4 (默认)
+
+### 模式二：纯音乐/灵感描述创作 (Inspiration Mode)
+gpt_description_prompt:「始」一首关于星空和梦想的安静空灵钢琴曲，带有轻柔弦乐铺底「末」,
+make_instrumental:「始」true「末」
+
+### 模式三：歌曲片段续写 (Continuation Mode)
+task_id:「始」前次任务ID「末」,
+continue_at:「始」60「末」, // 从第几秒开始继续
+continue_clip_id:「始」clip_id「末」
+
+[===vcp_fold:0.35::desc:网易云点歌与歌单查询===]
+
+## 2. 网易云音乐助手 (NeteaseMusic)
+用于网易云音乐检索、点播、歌单获取与歌词分析。
+tool_name:「始」NeteaseMusic「末」,
+
+### 搜索歌曲
+action:「始」search「末」,
+keywords:「始」富士山下「末」,
+limit:「始」5「末」
+
+### 获取歌曲详情与播放直链
+action:「始」song_detail「末」,
+id:「始」186016「末」
+
+### 获取歌词
+action:「始」lyric「末」,
+id:「始」186016「末」
+
+### 获取歌单内歌曲列表
+action:「始」playlist「末」,
+id:「始」歌单ID「末」
+
+## 3. 网易云深度抓取 (NeteaseFetch)
+专门用于抓取网易云音乐的精细化元数据、精彩热评与长篇评论列表。
+tool_name:「始」NeteaseFetch「末」,
+song_id:「始」歌曲ID「末」,
+fetch_type:「始」comments「末」 // 可选：'detail' (详情), 'comments' (精选热评), 'lyrics' (带时间戳歌词)
+
+[===vcp_fold:0.4::desc:全网音乐解析与高拟真角色配音===]
+
+## 4. 全网多平台音乐抓取 (ChKSzMusicFetch)
+跨平台音乐检索与无损音源直链提取，支持网易云(163)、QQ音乐(qq)、酷狗(kugou)。
+tool_name:「始」ChKSzMusicFetch「末」,
+command:「始」search_music「末」,
+keyword:「始」起风了「末」,
+platform:「始」163「末」 // 平台可选：'163'、'qq'、'kugou'
+
+### 提取直链
+command:「始」get_music_url「末」,
+song_id:「始」歌曲平台ID「末」,
+platform:「始」qq「末」
+
+## 5. 多角色高拟真 AI 配音合成 (MimoDubbing)
+异步将 SRT/WebVTT 字幕时间轴或多段台词合成为 24kHz 单声道广播级 WAV 音频，支持情感设计与音色克隆。
+tool_name:「始」MimoDubbing「末」,
+command:「始」submit「末」,
+
+### 多段对话合成
+text1:「始」早上好，今天天气真不错呢。「末」,
+voice1:「始」warm_female_1「末」,
+text2:「始」是啊，适合一起出门散散步。「末」,
+voice2:「始」calm_male_1「末」
+
+### 任务查询
+command:「始」query「末」,
+request_id:「始」提交回执中的UUID「末」
+
+[===vcp_fold:0.5::desc:MIDI乐谱解析与DSL编曲生成===]
+
+## 6. MIDI 乐谱转换与生成 (MIDITranslator)
+基于 Rust 高性能内核的 MIDI 音符与 DSL 双向转换引擎。
+tool_name:「始」MIDITranslator「末」,
+
+### 从 DSL 生成 MIDI 文件
+command:「始」generate_midi「末」,
+dslContent:「始」Timeline: [0-1920]120|4/4|TPB480\nTrack0: [c4,0.0,100,ch0] [~c4,4.0,ch0] [e4,1.0,100,ch0] [~e4,5.0,ch0] [g4,2.0,100,ch0] [~g4,6.0,ch0]「末」,
+outputFileName:「始」melody.mid「末」
+
+### 解析既有 MIDI 文件为乐谱 DSL
+command:「始」parse_midi「末」,
+fileName:「始」sample.mid「末」

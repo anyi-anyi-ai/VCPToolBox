@@ -10,6 +10,28 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+function loadLocalEnv() {
+    const envPath = path.join(__dirname, 'config.env');
+    if (existsSync(envPath)) {
+        try {
+            const content = readFileSync(envPath, 'utf8');
+            content.split(/\r?\n/).forEach(line => {
+                const trimmed = line.trim();
+                if (!trimmed || trimmed.startsWith('#')) return;
+                const idx = trimmed.indexOf('=');
+                if (idx > -1) {
+                    const k = trimmed.slice(0, idx).trim();
+                    const v = trimmed.slice(idx + 1).trim();
+                    if (!process.env[k]) {
+                        process.env[k] = v;
+                    }
+                }
+            });
+        } catch (_) {}
+    }
+}
+loadLocalEnv();
+
 // ============================================================
 //  Configuration & Environment
 // ============================================================

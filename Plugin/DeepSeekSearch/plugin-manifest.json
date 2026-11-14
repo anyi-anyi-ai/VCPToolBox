@@ -1,0 +1,39 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "DeepSeekSearch",
+  "displayName": "DeepSeek 搜索与抓取插件",
+  "version": "1.0.0",
+  "description": "基于 DeepSeek 官方 Search & Fetch API 实现的高性能搜索与网页正文抓取插件。由 DeepSeek 自研 AI 原生搜索引擎提供支持，自动过滤 SEO 作弊与低质垃圾内容；支持结构化相关性得分（rerank_score）、摘要及正文提取，支持使用 | 分隔多个关键词进行并发搜索，以及指定 URL 进行 Markdown 正文清洗抓取。",
+  "author": "VCP Engineering",
+  "pluginType": "synchronous",
+  "entryPoint": {
+    "type": "nodejs",
+    "command": "node DeepSeekSearch.js"
+  },
+  "communication": {
+    "protocol": "stdio",
+    "timeout": 60000
+  },
+  "configSchema": {
+    "DeepSeekApiKey": "string",
+    "DeepSeekApiBase": "string",
+    "DeepSeekSearchTimeout": "number",
+    "DeepSeekMaxConcurrent": "number"
+  },
+  "capabilities": {
+    "invocationCommands": [
+      {
+        "command": "DeepSeekSearch",
+        "commandIdentifier": "DeepSeekSearch",
+        "description": "调用 DeepSeek 官方自研搜索引擎执行高质量网络搜索。支持通过 | 管道符传入多个关键词进行并发多路搜索。参数说明：\n- query: 必填。搜索关键词，支持 1~128 字符。支持高级搜索语法：site:domain（限定站点，如 site:github.com）、-site:domain（排除站点）、-关键词（排除词）、-\"短语\"。多个关键词可用 | 分隔并发执行。\n- count / max_results: 可选。每个关键词返回的搜索结果数，范围 1~50，默认 10。\n- need_content: 可选。是否在搜索结果中直接抓取并返回网页正文内容（true/false，默认 false）。\n- ori_question: 可选。触发搜索的用户原始问题，可增强搜索引擎对搜索意图的语义理解。\n- localization: 可选。优先返回本地化结果的 IP 地址。\n- format: 可选。输出格式，可选 'markdown'（默认，供模型阅读阅读）或 'json'。\n\n调用示例：\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」DeepSeekSearch「末」,\ncommand:「始」DeepSeekSearch「末」,\nquery:「始」DeepSeek 架构设计 site:github.com | Transformer 注意力机制优化「末」,\ncount:「始」5「末」,\nneed_content:「始」false「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "```text\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」DeepSeekSearch「末」,\ncommand:「始」DeepSeekSearch「末」,\nquery:「始」2026年最新AI模型进展「末」,\ncount:「始」5「末」\n<<<[END_TOOL_REQUEST]>>>\n```"
+      },
+      {
+        "command": "DeepSeekFetch",
+        "commandIdentifier": "DeepSeekFetch",
+        "description": "调用 DeepSeek 官方 Fetch 接口对指定的网页 URL 进行抓取，自动过滤网页广告与低质样式，将其提取并转换为结构化的 Markdown 正文。参数说明：\n- url: 必填。目标网页的完整 URL 地址（如 https://example.com/article）。支持使用 | 管道符分隔传入多个 URL 进行并行抓取。\n\n调用示例：\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」DeepSeekSearch「末」,\ncommand:「始」DeepSeekFetch「末」,\nurl:「始」https://github.com/trending「末」\n<<<[END_TOOL_REQUEST]>>>",
+        "example": "```text\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」DeepSeekSearch「末」,\ncommand:「始」DeepSeekFetch「末」,\nurl:「始」https://api-docs.deepseek.com/zh-cn/guides/search「末」\n<<<[END_TOOL_REQUEST]>>>\n```"
+      }
+    ]
+  }
+}

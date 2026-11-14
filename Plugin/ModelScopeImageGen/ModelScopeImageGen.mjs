@@ -170,3 +170,53 @@ export default async function ModelScopeImageGen(ctx = {}) {
     `\n\n\`\`\`json\n${JSON.stringify(meta, null, 2)}\n\`\`\``
   ].join('');
 }
+
+
+import { fileURLToPath } from 'url';
+import fsSync from 'fs';
+
+// Stdio runner for VCP protocol
+if (process.argv[1] && process.argv[1].includes('ModelScopeImageGen.mjs')) {
+  (async () => {
+    try {
+      const __dirname = path.dirname(fileURLToPath(import.meta.url));
+      const envPath = path.join(__dirname, 'config.env');
+      if (fsSync.existsSync(envPath)) {
+        const lines = fsSync.readFileSync(envPath, 'utf8').split(/\r?\n/);
+        for (const l of lines) {
+          const trimmed = l.trim();
+          if (!trimmed || trimmed.startsWith('#')) continue;
+          const idx = trimmed.indexOf('=');
+          if (idx > -1) {
+            const k = trimmed.slice(0, idx).trim();
+            const v = trimmed.slice(idx + 1).trim();
+            if (!process.env[k]) process.env[k] = v;
+          }
+        }
+      }
+
+      let input = '';
+      for await (const chunk of process.stdin) {
+        input += chunk;
+      }
+      input = input.trim();
+      let params = {};
+      if (input) {
+        const match = input.match(/<<<\\[TOOL_REQUEST\\]>>>([\\s\\S]*?)<<<\\[TOOL_REQUEST_END\\]>>>/);
+        if (match) input = match[1].trim();
+        try { params = JSON.parse(input); } catch (_) {}
+      }
+      const res = await ModelScopeImageGen(params);
+      console.log(JSON.stringify({
+        status: 'success',
+        result: res
+      }));
+    } catch (err) {
+      console.log(JSON.stringify({
+        status: 'error',
+        error: `ModelScopeImageGen error: ${err.message}`
+      }));
+      process.exit(1);
+    }
+  })();
+}

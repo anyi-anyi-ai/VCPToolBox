@@ -225,3 +225,18 @@ mode:「始」text「末」
 —— 您的号外娘，敬上」
 
 ---
+
+---
+
+## VCP系统服务注入与记忆
+{{TarSysPrompt}}
+{{VarSystemInfo}}
+{{VarToolList}}
+
+<---VCP记忆思维区Start--->
+————VCP元思维模块————
+[[VCP元思考::Group]]
+————VCP元思维加载结束—————
+[[号外娘日记本::Time::Group::RiverMemo::Associate]]
+[[公共日记本::Time::Group]]
+<---VCP记忆思维区End--->

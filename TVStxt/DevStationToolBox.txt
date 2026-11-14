@@ -1,0 +1,93 @@
+# VCP 系统运维、桌面自动化与极客工作站 (VCPDevStation)
+这里收纳了远程 Linux 日志监控、Chrome 浏览器自动化接管、AST 语法树代码检索、桌面 GUI 控制、截图摄像与故障排查工具。
+
+[===vcp_fold:0.35::desc:桌面窗口感知与屏幕截图控制===]
+
+## 1. 桌面窗口探测器 (WindowSensor)
+探测当前操作系统活跃窗口标题、进程名称、几何坐标与 Z 轴层级。
+tool_name:「始」WindowSensor「末」,
+command:「始」get_active_window「末」
+
+## 2. 屏幕截取 (PyScreenshot)
+快速捕获当前屏幕或指定显示器、指定窗口的像素快照。
+tool_name:「始」PyScreenshot「末」,
+command:「始」capture_screen「末」,
+monitor:「始」1「末」, // 默认主屏幕
+save_path:「始」temp/screen_snapshot.png「末」
+
+## 3. 外接摄像头画面抓取 (PyCameraCapture)
+调用本地外接 USB 摄像头或内置摄像头捕获单帧实景照片。
+tool_name:「始」PyCameraCapture「末」,
+command:「始」capture_camera「末」,
+device_index:「始」0「末」
+
+## 4. 屏幕飞控与 GUI 自动化 (ScreenPilot)
+基于视觉与坐标驱动的桌面自动化操作器，支持鼠标点击、拖拽、滚轮与键盘文本敲击。
+tool_name:「始」ScreenPilot「末」,
+action:「始」click「末」,
+x:「始」960「末」,
+y:「始」540「末」,
+button:「始」left「末」
+
+[===vcp_fold:0.35::desc:Chrome 浏览器自动化接管===]
+
+## 5. Chrome 浏览器 CDP 桥接器 (ChromeBridge)
+通过 Chrome DevTools Protocol 深度控制本地 Chrome，支持页面跳转、DOM 操作、Cookie 获取与无痕提取。
+tool_name:「始」ChromeBridge「末」,
+
+### 导航并等待页面就绪
+command:「始」navigate「末」,
+url:「始」https://github.com「末」
+
+### 在网页中执行 JavaScript 脚本
+command:「始」evaluate「末」,
+script:「始」document.title「末」
+
+### 点击网页指定 CSS 选择器
+command:「始」click「末」,
+selector:「始」button.primary-btn「末」
+
+[===vcp_fold:0.4::desc:代码语法树检索与项目技术债审计===]
+
+## 6. AST 深层代码语义检索 (FathomSearch)
+基于抽象语法树（AST）与符号引用图谱的代码结构化检索，精确查找类继承、函数调用链路与接口实现。
+tool_name:「始」FathomSearch「末」,
+query:「始」find implementations of interface PluginProcessor「末」,
+root_path:「始」H:/VCP/VCPzhangduan/VCPToolBox「末」
+
+## 7. 项目架构复杂度与技术债评估 (ProjectAnalyst)
+自动化扫描代码仓库目录，统计代码行数、循环依赖、复杂度分布及技术债热点。
+tool_name:「始」ProjectAnalyst「末」,
+command:「始」analyze_project「末」,
+project_path:「始」H:/VCP/VCPzhangduan/VCPToolBox「末」
+
+## 8. Agent 自动化技能工程 (SkillFactory)
+根据自然语言规范或代码模式，自动化生成标准 VCP 插件骨架代码、Manifest 与测试用例。
+tool_name:「始」SkillFactory「末」,
+command:「始」create_skill_scaffold「末」,
+skill_name:「始」StockTracker「末」,
+description:「始」A tool to track real-time stock ticker prices「末」
+
+[===vcp_fold:0.5::desc:Linux日志监控与调用链追踪===]
+
+## 9. Linux 远程服务器日志监控 (LinuxLogMonitor)
+实时 tail 远端 Linux 服务器系统与服务日志（journalctl、nginx、app logs），支持关键字告警触发。
+tool_name:「始」LinuxLogMonitor「末」,
+command:「始」get_recent_logs「末」,
+log_path:「始」/var/log/syslog「末」,
+lines:「始」50「末」,
+filter:「始」error「末」
+
+## 10. 云端算力异步通道 (SnowBridge)
+桥接高性能远程 GPU 计算节点，用于提交耗时深度学习任务并异步拉取结果。
+tool_name:「始」SnowBridge「末」,
+command:「始」submit_job「末」,
+job_type:「始」fine_tune「末」,
+config_payload:「始」{"epochs": 3, "batch_size": 8}「末」
+
+## 11. 工具链调用排错与审计 (ToolCallRecordQuery)
+查询系统内 Agent 工具调用历史记录，定位失败错误码、耗时超时与参数异常。
+tool_name:「始」ToolCallRecordQuery「末」,
+command:「始」query_recent_calls「末」,
+limit:「始」20「末」,
+status_filter:「始」error「末」

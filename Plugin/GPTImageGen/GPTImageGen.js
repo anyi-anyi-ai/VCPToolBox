@@ -17,14 +17,48 @@ import https from 'https';
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
-import { URL } from 'url';
+import { URL, fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+function loadLocalEnv() {
+    const envPath = path.join(__dirname, 'config.env');
+    if (fs.existsSync(envPath)) {
+        try {
+            const content = fs.readFileSync(envPath, 'utf8');
+            content.split(/\r?\n/).forEach(line => {
+                const trimmed = line.trim();
+                if (!trimmed || trimmed.startsWith('#')) return;
+                const idx = trimmed.indexOf('=');
+                if (idx > -1) {
+                    const k = trimmed.slice(0, idx).trim();
+                    const v = trimmed.slice(idx + 1).trim();
+                    if (!process.env[k]) {
+                        process.env[k] = v;
+                    }
+                }
+            });
+        } catch (_) {}
+    }
+}
+loadLocalEnv();
+
+function getCleanBaseUrl(raw) {
+    let u = (raw || 'https://api.openai.com').trim().replace(/\/+$/, '');
+    if (u.toLowerCase().endsWith('/v1')) {
+        u = u.slice(0, -3).replace(/\/+$/, '');
+    }
+    return u;
+}
 
 // ============================================================
 // 环境变量读取
 // ============================================================
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '';
-const OPENAI_BASE_URL = (process.env.OPENAI_BASE_URL || 'https://api.openai.com').replace(/\/+$/, '');
+const OPENAI_BASE_URL = process.env.OPENAI_BASE_URL || 'https://api.openai.com';
+const CLEAN_BASE_URL = getCleanBaseUrl(OPENAI_BASE_URL);
 const GPT_IMAGE_MODEL = process.env.GPT_IMAGE_MODEL || 'gpt-image-2';
 const DEFAULT_SIZE = process.env.DEFAULT_SIZE || '1024x1024';
 const DEFAULT_QUALITY = process.env.DEFAULT_QUALITY || 'auto';
@@ -612,17 +646,9 @@ function parseApiResponse(response) {
 }
 
 function buildImageGenerationUrls() {
-    const normalizedBase = OPENAI_BASE_URL.replace(/\/+$/, '');
     const urls = [];
-
-    // 标准 OpenAI 兼容写法
-    urls.push(`${normalizedBase}/v1/images/generations`);
-
-    // 某些兼容渠道直接把文生图挂在 /v1/images
-    if (!/\/v1\/images$/i.test(normalizedBase)) {
-        urls.push(`${normalizedBase}/v1/images`);
-    }
-
+    urls.push(`${CLEAN_BASE_URL}/v1/images/generations`);
+    urls.push(`${CLEAN_BASE_URL}/v1/images`);
     return [...new Set(urls)];
 }
 
@@ -648,7 +674,7 @@ function shouldFallbackToChatCompletions(error) {
  */
 async function callImageAPIViaChatCompletions(params) {
     const normalizedBase = OPENAI_BASE_URL.replace(/\/+$/, '');
-    const apiUrl = `${normalizedBase}/v1/chat/completions`;
+    const apiUrl = `${CLEAN_BASE_URL}/v1/chat/completions`;
 
     debugLog('Chat Completions mode: using', apiUrl);
 
@@ -1010,7 +1036,7 @@ function parseDataURI(dataURI) {
  * @returns {Promise<object>} API 响应体
  */
 async function callEditAPI(params) {
-    const apiUrl = `${OPENAI_BASE_URL}/v1/images/edits`;
+    const apiUrl = `${CLEAN_BASE_URL}/v1/images/edits`;
     const boundary = `----VCPBoundary${crypto.randomUUID().replace(/-/g, '')}`;
 
     debugLog('Edit API Request URL:', apiUrl);

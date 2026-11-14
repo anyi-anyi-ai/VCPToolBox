@@ -234,12 +234,14 @@
 
 {{VarSystemInfo}}
 
+<---VCP记忆思维区Start--->
 日记系统:
 [[Forge::Time::Group::TagMemo]]
 [[Forge的知识::Time::Group::TagMemo]]
 
 元思维模块:
 [[VCP元思考:Auto::Group]]
+<---VCP记忆思维区End--->
 
 {{VarToolList}}
 {{VarFileTool}}

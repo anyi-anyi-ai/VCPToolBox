@@ -1,0 +1,92 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "HuggingFaceGen",
+  "displayName": "Hugging Face 官方开源绘图生成器",
+  "version": "1.0.0",
+  "description": "基于 Hugging Face 官方 Serverless Inference API 打造的开源绘图插件。注册免费账号即可获取官方 API Token，享受每月充足的免费生成额度。支持全球公认顶级开源模型 FLUX.1-schnell、SDXL 1.0、二次元动漫神级模型 Animagine-XL-3.1 等，更支持动态输入任意 Hugging Face 模型仓库地址进行出图。",
+  "author": "VCP Engineering",
+  "pluginType": "synchronous",
+  "entryPoint": {
+    "type": "nodejs",
+    "command": "node HuggingFaceGen.js"
+  },
+  "communication": {
+    "protocol": "stdio",
+    "timeout": 180000
+  },
+  "configSchema": {
+    "HUGGINGFACE_API_TOKEN": "string(必需)，Hugging Face 个人设置中生成的免费 User Access Token (以 hf_ 开头)",
+    "DEFAULT_MODEL": "string(可选)，默认模型，可选 black-forest-labs/FLUX.1-schnell, stabilityai/stable-diffusion-xl-base-1.0, cagliostrolab/animagine-xl-3.1, ByteDance/SDXL-Lightning",
+    "HTTP_PROXY": "string(可选)，网络代理地址，如 http://127.0.0.1:7890",
+    "SAVE_DIR": "string(可选)，本地图片保存目录，留空使用项目根目录下的 image/huggingface"
+  },
+  "capabilities": {
+    "invocationCommands": [
+      {
+        "command": "HuggingFaceGenerateImage",
+        "commandIdentifier": "HuggingFaceGenerateImage",
+        "description": "调用 Hugging Face 官方 Serverless 免费接口生成高画质图像。参数说明：\n- prompt: 必需。画面提示词，支持中英文。\n- model: 可选。HF 模型 ID，支持：\n  * 'black-forest-labs/FLUX.1-schnell' (默认主力，FLUX架构画质之王)\n  * 'cagliostrolab/animagine-xl-3.1' (二次元/动漫最强模型)\n  * 'stabilityai/stable-diffusion-xl-base-1.0' (SDXL 1.0 官方版)\n  * 'ByteDance/SDXL-Lightning' (字节跳动 4-step 极速版)\n  * 或任意 Hugging Face 公开文生图仓库名。\n- negative_prompt: 可选。负向提示词。\n- width: 可选。宽度，默认 1024。\n- height: 可选。高度，默认 1024。\n- seed: 可选。随机数种子。\n- num_inference_steps: 可选。推理步数。\n- guidance_scale: 可选。提示词引导系数 (CFG)。\n- show_base64: 可选。是否返回 base64 数据流，默认 false。",
+        "example": "```text\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」HuggingFaceGen「末」,\ncommand:「始」HuggingFaceGenerateImage「末」,\nprompt:「始」masterpiece, best quality, 1girl, hatsune miku, concert stage, neon lights, 4k resolution「末」,\nmodel:「始」cagliostrolab/animagine-xl-3.1「末」\n<<<[END_TOOL_REQUEST]>>>\n```"
+      }
+    ]
+  },
+  "jev": {
+    "schemaVersion": 1,
+    "enabled": true,
+    "category": "媒体娱乐",
+    "jevDescPrompt": "调用 Hugging Face 官方开源 Serverless 算力生成图像（每月充足免费配额，支持 FLUX.1 与二次元 Animagine-XL）。",
+    "jevPrompt": "根据画风选择模型：高质量写实与通用场景选 flux；二次元动漫、角色立绘选 animagine；经典欧美艺术选 sdxl（默认 flux）。",
+    "agentPrompt": "当需要使用 Hugging Face 官方开源免费算力生图时，使用 {媒体娱乐} 中的 `HuggingFaceGen`，在【】中写提示词，在 [] 中可选指明模型与尺寸：\nJEV:「始」请使用 {媒体娱乐} 中的 `HuggingFaceGen`，围绕【初音未来演唱会舞台】，并参考[cagliostrolab/animagine-xl-3.1, 1024x1024]。「末」",
+    "defaultCommand": "HuggingFaceGenerateImage",
+    "commands": [
+      {
+        "commandIdentifier": "HuggingFaceGenerateImage",
+        "description": "通过 Hugging Face 官方 API 生成图像",
+        "aliases": [
+          "hf生图",
+          "huggingface绘图",
+          "hf画图",
+          "生成图片"
+        ],
+        "parameters": {
+          "prompt": {
+            "type": "text",
+            "source": "primary",
+            "description": "画面提示词与主体描述"
+          },
+          "model": {
+            "type": "enum",
+            "description": "生图模型风格",
+            "values": {
+              "flux": "FLUX.1 官方极速版，综合画质最高",
+              "animagine": "二次元动漫最强模型",
+              "sdxl": "SDXL 1.0 官方经典版",
+              "lightning": "字节跳动 4步极速出图"
+            },
+            "aliases": {
+              "flux": [
+                "flux1",
+                "黑森林",
+                "默认"
+              ],
+              "animagine": [
+                "二次元",
+                "动漫",
+                "初音"
+              ],
+              "sdxl": [
+                "sdxl1.0",
+                "经典"
+              ],
+              "lightning": [
+                "极速",
+                "闪电"
+              ]
+            },
+            "default": "flux"
+          }
+        }
+      }
+    ]
+  }
+}

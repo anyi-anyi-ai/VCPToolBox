@@ -2,24 +2,54 @@
 
 import axios from 'axios';
 import fs from 'fs/promises';
+import fsSync from 'fs';
 import path from 'path';
 import sharp from 'sharp';
 import { v4 as uuidv4 } from 'uuid';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+function loadLocalEnv() {
+    const envPath = path.join(__dirname, 'config.env');
+    if (fsSync.existsSync(envPath)) {
+        try {
+            const content = fsSync.readFileSync(envPath, 'utf8');
+            content.split(String.fromCharCode(10)).forEach(line => {
+                const trimmed = line.trim();
+                if (!trimmed || trimmed.startsWith('#')) return;
+                const idx = trimmed.indexOf('=');
+                if (idx > -1) {
+                    const k = trimmed.slice(0, idx).trim();
+                    const v = trimmed.slice(idx + 1).trim();
+                    if (!process.env[k]) {
+                        process.env[k] = v;
+                    }
+                }
+            });
+        } catch (_) {}
+    }
+}
+loadLocalEnv();
 
 const API_KEY = process.env.SENSENOVA_API_KEY;
-const PROJECT_BASE_PATH = process.env.PROJECT_BASE_PATH;
-const SERVER_PORT = process.env.SERVER_PORT;
-const IMAGESERVER_IMAGE_KEY = process.env.IMAGESERVER_IMAGE_KEY;
-const VAR_HTTP_URL = process.env.VarHttpUrl;
-const VAR_HTTPS_URL = process.env.VarHttpsUrl;
+const PROJECT_BASE_PATH = process.env.PROJECT_BASE_PATH || path.resolve(__dirname, '..', '..');
+const SERVER_PORT = process.env.SERVER_PORT || '5000';
+const IMAGESERVER_IMAGE_KEY = process.env.IMAGESERVER_IMAGE_KEY || '';
+const VAR_HTTP_URL = process.env.VarHttpUrl || 'http://localhost';
+const VAR_HTTPS_URL = process.env.VarHttpsUrl || VAR_HTTP_URL;
 const USE_PUBLIC_URL = process.env.USE_PUBLIC_URL === 'true' || process.env.USE_PUBLIC_URL === '1';
 
 const API_ENDPOINT = 'https://token.sensenova.cn/v1/images/generations';
-const MODEL_NAME = 'sensenova-u1-fast';
-const DEFAULT_SIZE = '2752x1536';
+const MODEL_NAME = process.env.SENSENOVA_MODEL || 'sensenova-u1.5-lite';
+const DEFAULT_SIZE = process.env.DEFAULT_SIZE || '1024x1024';
 const DEFAULT_N = 1;
 
 const ALLOWED_SIZES = new Set([
+    '1024x1024',
+    '768x1024',
+    '1024x768',
     '1664x2496',
     '2496x1664',
     '1760x2368',
@@ -92,21 +122,6 @@ function ensureEnvironment() {
     if (!API_KEY) {
         throw new Error('SenseGen Plugin Error: 缺少 SENSENOVA_API_KEY，请在 config.env 中填写。');
     }
-    if (!PROJECT_BASE_PATH) {
-        throw new Error('SenseGen Plugin Error: 缺少 PROJECT_BASE_PATH 环境变量。');
-    }
-    if (!SERVER_PORT) {
-        throw new Error('SenseGen Plugin Error: 缺少 SERVER_PORT 环境变量。');
-    }
-    if (!IMAGESERVER_IMAGE_KEY) {
-        throw new Error('SenseGen Plugin Error: 缺少 IMAGESERVER_IMAGE_KEY 环境变量。');
-    }
-    if (!VAR_HTTP_URL) {
-        throw new Error('SenseGen Plugin Error: 缺少 VarHttpUrl 环境变量。');
-    }
-    if (USE_PUBLIC_URL && !VAR_HTTPS_URL) {
-        throw new Error('SenseGen Plugin Error: USE_PUBLIC_URL=true 时必须提供 VarHttpsUrl。');
-    }
 }
 
 async function requestImageGeneration(args) {
@@ -128,12 +143,13 @@ async function requestImageGeneration(args) {
     });
 
     const firstItem = response?.data?.data?.[0];
-    if (!firstItem || !firstItem.url) {
-        throw new Error(`SenseGen Plugin Error: API 未返回图片 URL。响应：${JSON.stringify(response.data)}`);
+    if (!firstItem || (!firstItem.url && !firstItem.b64_json)) {
+        throw new Error(`SenseGen Plugin Error: API 未返回图片数据。响应：${JSON.stringify(response.data)}`);
     }
 
     return {
-        remoteImageUrl: firstItem.url,
+        remoteImageUrl: firstItem.url || null,
+        b64Json: firstItem.b64_json || null,
         created: response?.data?.created
     };
 }
@@ -220,8 +236,14 @@ async function generateDocumentImage(rawArgs) {
     validateArgs(args);
 
     const apiResult = await requestImageGeneration(args);
-    const downloaded = await downloadImage(apiResult.remoteImageUrl);
-    const compressed = await compressToJpeg(downloaded.imageBuffer);
+    let rawBuffer;
+    if (apiResult.b64Json) {
+        rawBuffer = Buffer.from(apiResult.b64Json, 'base64');
+    } else {
+        const downloaded = await downloadImage(apiResult.remoteImageUrl);
+        rawBuffer = downloaded.imageBuffer;
+    }
+    const compressed = await compressToJpeg(rawBuffer);
     const imageExtension = compressed.extension;
     const saved = await saveImageLocally(compressed.imageBuffer, imageExtension);
     const accessibleImageUrl = buildAccessibleImageUrl(saved.generatedFileName);

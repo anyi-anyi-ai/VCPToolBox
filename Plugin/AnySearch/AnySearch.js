@@ -427,7 +427,15 @@ function executeSearchTasks(tasks) {
   const endpoint = getSearchEndpoint();
   const promises = tasks.map((task) => {
     const body = { query: task.query };
-    if (task.sub_domain) body.tag = task.sub_domain;
+    if (task.sub_domain) {
+      // API 的 tag 只接受「域.子域」格式（如 code.doc）；纯顶层域（general 等）会被 400 拒绝。
+      if (!task.sub_domain.includes(".")) {
+        fail(
+          `无效 sub_domain "${task.sub_domain}"：API 要求「域.子域」格式（例如 code.doc）。纯顶层域请直接省略该参数，或先调用 get_sub_domains 查询可用子域。`
+        );
+      }
+      body.tag = task.sub_domain;
+    }
     if (task.zone) body.zone = task.zone;
     if (task.params) body.params = task.params;
     if (task.max_results !== undefined) body.max_results = task.max_results;

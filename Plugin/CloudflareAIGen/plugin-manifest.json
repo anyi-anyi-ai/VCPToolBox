@@ -1,0 +1,92 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "CloudflareAIGen",
+  "displayName": "Cloudflare Workers AI 图像生成器",
+  "version": "1.0.0",
+  "description": "基于 Cloudflare Workers AI 官方企业级边缘算力生图插件。每个 Cloudflare 免费账户每天固定赠送 10,000 Neurons 免费神经元算力（约可出 40~80 张高分辨率图）。支持 FLUX.1-schnell、SDXL 1.0、SDXL-Lightning 等顶级开源绘图模型，由 Cloudflare 全球顶级 CDN 网络保障 99.99% 高可用稳定性。",
+  "author": "VCP Engineering",
+  "pluginType": "synchronous",
+  "entryPoint": {
+    "type": "nodejs",
+    "command": "node CloudflareAIGen.js"
+  },
+  "communication": {
+    "protocol": "stdio",
+    "timeout": 120000
+  },
+  "configSchema": {
+    "CLOUDFLARE_ACCOUNT_ID": "string(必需)，Cloudflare 控制台右上角复制的 Account ID",
+    "CLOUDFLARE_API_TOKEN": "string(必需)，具备 Workers AI 运行权限的 API Token",
+    "DEFAULT_MODEL": "string(可选)，默认模型，可选 @cf/black-forest-labs/flux-1-schnell, @cf/stabilityai/stable-diffusion-xl-base-1.0, @cf/bytedance/stable-diffusion-xl-lightning, @cf/lykon/dreamshaper-8-lcm",
+    "HTTP_PROXY": "string(可选)，网络代理地址，例如 http://127.0.0.1:7890",
+    "SAVE_DIR": "string(可选)，本地图片保存目录，留空使用项目根目录下的 image/cloudflare"
+  },
+  "capabilities": {
+    "invocationCommands": [
+      {
+        "command": "CloudflareGenerateImage",
+        "commandIdentifier": "CloudflareGenerateImage",
+        "description": "通过 Cloudflare Workers AI 官方 API 生成图像。参数说明：\n- prompt: 必需。画面提示词，支持中英文。\n- model: 可选。模型标识，支持：\n  * '@cf/black-forest-labs/flux-1-schnell' (默认，FLUX极速版，画质构图最强)\n  * '@cf/stabilityai/stable-diffusion-xl-base-1.0' (SDXL 1.0 经典高画质)\n  * '@cf/bytedance/stable-diffusion-xl-lightning' (字节跳动 4步极速出图)\n  * '@cf/lykon/dreamshaper-8-lcm' (动漫二次元与梦幻写实风格)\n- num_steps: 可选。推理步数，flux为4~8步，sdxl为20~30步，lightning为4步。\n- width: 可选。图片宽度，默认 1024。\n- height: 可选。图片高度，默认 1024。\n- seed: 可选。随机数种子。\n- guidance: 可选。提示词引导系数 (CFG)，默认 7.5 (Flux使用 1.0~3.5)。\n- show_base64: 可选。是否在响应中返回 base64 数据流，默认 false。",
+        "example": "```text\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」CloudflareAIGen「末」,\ncommand:「始」CloudflareGenerateImage「末」,\nprompt:「始」a tranquil zen garden in autumn, red maple leaves, stone lantern, 8k photographic「末」,\nmodel:「始」@cf/black-forest-labs/flux-1-schnell「末」\n<<<[END_TOOL_REQUEST]>>>\n```"
+      }
+    ]
+  },
+  "jev": {
+    "schemaVersion": 1,
+    "enabled": true,
+    "category": "媒体娱乐",
+    "jevDescPrompt": "调用 Cloudflare Workers AI 官方企业级边缘算力生成高质量图像（每日免费 10000 神经元配额，支持 FLUX.1 与 SDXL）。",
+    "jevPrompt": "根据用户画风需求选择模型：综合最高画质选 flux；欧美经典插画选 sdxl；极速快速预览选 lightning；二次元立绘选 dreamshaper（默认 flux）。",
+    "agentPrompt": "当需要使用 Cloudflare 企业级免费算力出图时，使用 {媒体娱乐} 中的 `CloudflareAIGen`，在【】中写提示词，在 [] 中可选指明模型与尺寸：\nJEV:「始」请使用 {媒体娱乐} 中的 `CloudflareAIGen`，围绕【秋日阳光透过枫树林】，并参考[@cf/black-forest-labs/flux-1-schnell, 1024x1024]。「末」",
+    "defaultCommand": "CloudflareGenerateImage",
+    "commands": [
+      {
+        "commandIdentifier": "CloudflareGenerateImage",
+        "description": "通过 Cloudflare 官方 API 生成图像",
+        "aliases": [
+          "cf生图",
+          "cloudflare绘图",
+          "cf画图",
+          "生成图片"
+        ],
+        "parameters": {
+          "prompt": {
+            "type": "text",
+            "source": "primary",
+            "description": "画面提示词与主体描述"
+          },
+          "model": {
+            "type": "enum",
+            "description": "生图模型风格",
+            "values": {
+              "flux": "FLUX.1 官方极速版，综合画质最高",
+              "sdxl": "SDXL 1.0 官方经典版",
+              "lightning": "字节跳动 4步极速出图",
+              "dreamshaper": "二次元与梦幻写实风格"
+            },
+            "aliases": {
+              "flux": [
+                "flux1",
+                "黑森林",
+                "默认"
+              ],
+              "sdxl": [
+                "sdxl1.0",
+                "经典"
+              ],
+              "lightning": [
+                "极速",
+                "闪电"
+              ],
+              "dreamshaper": [
+                "二次元",
+                "动漫"
+              ]
+            },
+            "default": "flux"
+          }
+        }
+      }
+    ]
+  }
+}

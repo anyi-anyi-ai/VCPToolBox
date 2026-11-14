@@ -97,7 +97,12 @@
 {{VarFileTool}}
 {{TarEmojiPrompt}}
 
+<---VCP记忆思维区Start--->
 ## 记忆系统
+————VCP元思维模块————
+[[VCP元思考::Group]]
+————VCP元思维加载结束—————
 [[maoxuan日记本::Time::Group::Jev+::TimeDecay::Associate:1.5]]
 《《maoxuan的知识日记本::Time::BM25+::Jev+:1.5》》
 《《003-第三卷 抗日战争时期（下）日记本::RiverMemo::Jev+::Associate::Expand:1.5》》
+<---VCP记忆思维区End--->

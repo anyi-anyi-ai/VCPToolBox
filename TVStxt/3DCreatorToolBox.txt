@@ -1,0 +1,102 @@
+# VCP 3D建模、像素艺术与视觉设计工坊 (VCP3DCreator)
+这里收纳了 Blender 3D 全流程建模控制、Aseprite 像素艺术与精灵图动画、概念文档图、动漫溯源及垂直画风创作工具。
+
+[===vcp_fold:0.35::desc:Blender 三维建模与材质渲染===]
+
+## 1. Blender 3D 双跳自动化桥接器 (BlenderBridge)
+连接 Blender 官方 MCP 桥接器，支持场景查询、基础几何体创建、材质节点赋予、蜡笔草图绘制、摄像机运镜与离线渲染。
+tool_name:「始」BlenderBridge「末」,
+
+### 场景物体与大纲查询
+command:「始」blender_rt_see「末」,
+query:「始」objects「末」 // 查询当前场景的所有物体、集合与层级
+
+### 执行建模与操作指令
+command:「始」blender_rt_do「末」,
+action:「始」create_primitive「末」,
+primitive_type:「始」cube「末」,
+location:「始」[0, 0, 1]「末」,
+scale:「始」[2, 2, 2]「末」
+
+### 材质与着色器调节
+command:「始」blender_rt_cmd「末」,
+code:「始」import bpy; mat = bpy.data.materials.new(name="Gold"); mat.use_nodes = True; bpy.context.active_object.data.materials.append(mat)「末」
+
+### 视口抓帧与渲染
+command:「始」blender_viewport「末」,
+camera:「始」Camera_Main「末」,
+resolution:「始」[1920, 1080]「末」
+
+[===vcp_fold:0.35::desc:Aseprite 像素艺术与逐帧动画===]
+
+## 2. Aseprite 像素绘画工坊 (AsepriteOperator)
+精准操控 Aseprite 像素画布，支持图层创建、逐像素着色、线条矩形绘制、油漆桶填充、动画影格添加与雪碧图(Sprite Sheet)导出。
+tool_name:「始」AsepriteOperator「末」,
+
+### 创建新画布
+command:「始」CreateCanvas「末」,
+width:「始」64「末」,
+height:「始」64「末」,
+filename:「始」C:\\VCP\\Projects\\pixel_character.aseprite「末」
+
+### 绘制像素块 / 点阵
+command:「始」DrawPixels「末」,
+filename:「始」C:\\VCP\\Projects\\pixel_character.aseprite「末」,
+pixels:「始」[{"x":32,"y":32,"color":"#FF0000"},{"x":33,"y":32,"color":"#FFFFFF"}]「末」
+
+### 几何绘制与填色
+command:「始」DrawRectangle「末」,
+filename:「始」C:\\VCP\\Projects\\pixel_character.aseprite「末」,
+x:「始」10「末」,
+y:「始」10「末」,
+width:「始」20「末」,
+height:「始」20「末」,
+color:「始」#3498DB「末」,
+fill:「始」true「末」
+
+### 导出精灵图 / GIF 动画
+command:「始」ExportSprite「末」,
+filename:「始」C:\\VCP\\Projects\\pixel_character.aseprite「末」,
+output_filename:「始」character_walk.gif「末」,
+format:「始」gif「末」
+
+[===vcp_fold:0.4::desc:海报图文排版与概念文档图生成===]
+
+## 3. SenseNova 图文排版与文档图 (SenseGen)
+通过商汤日日新 sensenova-u1-fast 模型生成 PPT 幻灯片、长图信息图、学术海报及杂志排版风格图片。
+tool_name:「始」SenseGen「末」,
+command:「始」SenseGenerateDocumentImage「末」,
+prompt:「始」A futuristic tech report infographic about Quantum Computing 2026, clean typography, charts and diagrams, blue dark theme「末」,
+aspect_ratio:「始」16:9「末」
+
+## 4. 艺术画风智能匹配器 (ArtistMatcher)
+根据用户输入的场景意境或关键词，智能推荐艺术流派（如赛博朋克、新海诚风、吉卜力、浮世绘、水墨）及对应的 Midjourney/SD 提示词词根。
+tool_name:「始」ArtistMatcher「末」,
+query:「始」深海遗迹与神秘巨兽「末」,
+style_preference:「始」fantasy, cinematic「末」
+
+[===vcp_fold:0.45::desc:二次元专门生图与以图搜番===]
+
+## 5. NovelAI 顶级二次元生图 (NovelAIGen)
+调用 NovelAI Diffusion V3 / 4.5 Full 模型，适合日系动漫插画、角色立绘、同人图与精准 Danbooru 标签渲染。
+tool_name:「始」NovelAIGen「末」,
+command:「始」NovelAIGenerateImage「末」,
+prompt:「始」1girl, solo, silver hair, red eyes, cat ears, cyber jacket, detailed background, masterpiece, 8k「末」,
+negative_prompt:「始」lowres, bad anatomy, bad hands, text, error, missing fingers「末」,
+resolution:「始」832x1216「末」
+
+## 6. Sapiens Agnes 创意视觉设计 (AgnesGen)
+调用 Agnes Image 2.1 Flash 模型进行复杂构图、营销海报、创意 Logo 与多图参考融合。
+tool_name:「始」AgnesGen「末」,
+command:「始」GenerateImage「末」,
+prompt:「始」Modern minimalist coffee brand packaging design, organic texture, pastel morandi tones「末」
+
+## 7. 以图搜番与溯源 (AnimeFinder)
+通过二次元截图或画作片段，秒级检索对应的动漫番剧名称、第几集以及精确时间戳。
+tool_name:「始」AnimeFinder「末」,
+image_url:「始」https://example.com/screenshot.jpg「末」
+
+## 8. 表情包批量清单生成器 (EmojiListGenerator)
+扫描本地 image/ 目录下的所有角色表情包资产，自动化生成标准 Markdown 检索字典与快捷插入代码。
+tool_name:「始」EmojiListGenerator「末」,
+action:「始」generate_lists「末」

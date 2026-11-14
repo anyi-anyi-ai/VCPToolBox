@@ -1,0 +1,98 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "PollinationsGen",
+  "displayName": "Pollinations AI 极速免费生图",
+  "version": "1.0.0",
+  "description": "基于 Pollinations.ai 官方接口的高性能免费图像生成插件。无需 API Key，零配额上限限制，每日不限量免费出图。支持 FLUX.1、Flux-Realism、Flux-Anime、Turbo 等开源顶级绘图模型，支持指定长宽比、随机种子与无水印生成。",
+  "author": "VCP Engineering",
+  "pluginType": "synchronous",
+  "entryPoint": {
+    "type": "nodejs",
+    "command": "node PollinationsGen.js"
+  },
+  "communication": {
+    "protocol": "stdio",
+    "timeout": 120000
+  },
+  "configSchema": {
+    "DEFAULT_MODEL": "string(可选)，默认使用的模型，可选 flux, flux-realism, flux-anime, flux-3d, turbo，默认为 flux",
+    "HTTP_PROXY": "string(可选)，网络代理地址，如 http://127.0.0.1:7890，国外直连可留空",
+    "SAVE_DIR": "string(可选)，本地图片保存目录，留空使用系统默认 image/ 目录",
+    "DEFAULT_WIDTH": "number(可选)，默认图片宽度，默认 1024",
+    "DEFAULT_HEIGHT": "number(可选)，默认图片高度，默认 1024"
+  },
+  "capabilities": {
+    "invocationCommands": [
+      {
+        "command": "PollinationsGenerate",
+        "commandIdentifier": "PollinationsGenerate",
+        "description": "调用 Pollinations 免费高可用接口生成高质量图片。参数说明：\n- prompt: 必需。画面提示词，支持中英文描述。\n- model: 可选。绘图模型，可选 'flux' (默认, 综合画质最高)、'flux-realism' (写实人像摄影)、'flux-anime' (二次元动漫特化)、'flux-3d' (3D立体渲染)、'turbo' (秒级极速渲染)。\n- width: 可选。宽度，范围 256~2048，默认 1024。\n- height: 可选。高度，范围 256~2048，默认 1024。\n- seed: 可选。随机种子 (整数)，相同种子保证相同构图。\n- nologo: 可选。是否去除水印，默认为 true。\n- enhance: 可选。是否让 Pollinations AI 自动扩展优化提示词，默认为 false。\n- show_base64: 可选。是否返回 base64 图片数据，默认为 false。",
+        "example": "```text\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」PollinationsGen「末」,\ncommand:「始」PollinationsGenerate「末」,\nprompt:「始」1girl, silver hair, anime style, highly detailed, 4k「末」,\nmodel:「始」flux-anime「末」,\nwidth:「始」1024「末」,\nheight:「始」1024「末」\n<<<[END_TOOL_REQUEST]>>>\n```"
+      }
+    ]
+  },
+  "jev": {
+    "schemaVersion": 1,
+    "enabled": true,
+    "category": "媒体娱乐",
+    "jevDescPrompt": "调用 Pollinations 开源公共免费通道极速生成图像（无额度限制、免 Key、支持多种风格）。",
+    "jevPrompt": "根据画面类型选择模型：综合通用选 flux；写实人像摄影选 flux-realism；二次元动漫选 flux-anime；3D立体设计选 flux-3d（默认 flux）。",
+    "agentPrompt": "当需要使用无需 Key 的免费公共通道极速生图时，使用 {媒体娱乐} 中的 `PollinationsGen`：\nJEV:「始」请使用 {媒体娱乐} 中的 `PollinationsGen`，围绕【红枫树下的白猫】。「末」",
+    "defaultCommand": "PollinationsGenerate",
+    "commands": [
+      {
+        "commandIdentifier": "PollinationsGenerate",
+        "description": "通过 Pollinations 免费通道极速生成图像",
+        "aliases": [
+          "免费生图",
+          "极速画图",
+          "免key出图"
+        ],
+        "parameters": {
+          "prompt": {
+            "type": "text",
+            "source": "primary",
+            "description": "画面提示词与主体描述"
+          },
+          "model": {
+            "type": "enum",
+            "description": "生图模型风格",
+            "values": {
+              "flux": "FLUX.1 综合画质最高",
+              "flux-realism": "写实人像与真实摄影风格",
+              "flux-anime": "二次元动漫特化风格",
+              "flux-3d": "3D立体渲染与手办风格",
+              "turbo": "秒级极速渲染"
+            },
+            "aliases": {
+              "flux": [
+                "默认",
+                "flux1"
+              ],
+              "flux-realism": [
+                "写实",
+                "真实",
+                "摄影"
+              ],
+              "flux-anime": [
+                "动漫",
+                "二次元",
+                "动画"
+              ],
+              "flux-3d": [
+                "3d",
+                "立体",
+                "手办"
+              ],
+              "turbo": [
+                "极速",
+                "快速"
+              ]
+            },
+            "default": "flux"
+          }
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,94 @@
+# VCP 生命科学、学术文献与硬核考据收纳箱 (VCPScienceToolBox)
+这里收纳了全球顶会论文检索、生物医药 PubMed 库、NCBI 基因组数据库、KEGG 代谢通路图谱、学术 PDF 解析与高精度科学计算工具。
+
+[===vcp_fold:0.35::desc:前沿学术论文与跨库引文检索===]
+
+## 1. arXiv 每日顶会前沿学术检索 (ArxivDailyPapers)
+自动追踪并检索 cs.AI, cs.CV, cs.CL, stat.ML, quant-ph 等分类的最新预印本文献。
+tool_name:「始」ArxivDailyPapers「末」,
+query:「始」agentic memory reflection transformer「末」,
+category:「始」cs.AI「末」,
+max_results:「始」5「末」
+
+## 2. CrossRef 全球期刊引文网络检索 (CrossRefDailyPapers)
+全球学术期刊跨库引文索引与 DOI 权威反查工具。
+tool_name:「始」CrossRefDailyPapers「末」,
+query:「始」CRISPR gene editing therapeutics 2026「末」,
+sort:「始」relevance「末」,
+rows:「始」5「末」
+
+## 3. 学术 PDF 深度研读与公式解析 (PaperReader)
+深入解析学术论文 PDF，提取章节结构、核心公式 LaTeX、图表说明与结论摘要。
+tool_name:「始」PaperReader「末」,
+command:「始」read_paper「末」,
+pdf_path_or_url:「始」https://arxiv.org/pdf/2401.12345.pdf「末」,
+extract_equations:「始」true「末」
+
+[===vcp_fold:0.35::desc:PubMed 生物医药文献与临床数据===]
+
+## 4. PubMed 权威医学文献库检索 (PubMedSearch)
+NCBI 官方 E-utilities 深度封装，支持多字段布尔检索、MeSH 主题词过滤、引文网络追溯与全文直达。
+tool_name:「始」PubMedSearch「末」,
+
+### 综合检索文献
+command:「始」search_articles「末」,
+query:「始」"Alzheimer's disease"[Title] AND "immunotherapy"[Abstract]「末」,
+max_results:「始」5「末」
+
+### 获取文献详细元数据与摘要
+command:「始」get_article_details「末」,
+pmid:「始」34567890「末」
+
+### 获取参考文献或施引文献
+command:「始」get_cited_by「末」,
+pmid:「始」34567890「末」
+
+### 导出标准学术引用格式 (APA / BibTeX)
+command:「始」export_citation「末」,
+pmid:「始」34567890「末」,
+format:「始」bibtex「末」
+
+[===vcp_fold:0.4::desc:NCBI 基因组与 KEGG 代谢通路数据库===]
+
+## 5. NCBI 生物数据集检索 (NCBIDatasets)
+检索 NCBI 全球基因组、转录组、蛋白质分类、质粒与分类群权威数据。
+tool_name:「始」NCBIDatasets「末」,
+command:「始」search_gene「末」,
+gene_symbol:「始」TP53「末」,
+taxon:「始」human「末」
+
+## 6. KEGG 生物代谢通路与化学反应图谱 (KEGGSearch)
+检索京都基因与基因组百科全书（KEGG），查询生化通路、酶催化反应、化合物及药物靶点网络。
+tool_name:「始」KEGGSearch「末」,
+
+### 通路检索
+command:「始」search_pathways「末」,
+query:「始」glycolysis「末」
+
+### 通路图谱与基因关联详情
+command:「始」get_pathway_info「末」,
+pathway_id:「始」hsa00010「末」
+
+### 获取化合物详情
+command:「始」get_compound_info「末」,
+compound_id:「始」C00031「末」
+
+[===vcp_fold:0.5::desc:科学计算与历史比较语言学===]
+
+## 7. 符号科学计算与误差传递 (SciCalculator)
+高精度符号数学、微积分、数理统计、假设检验与误差传播计算工具。
+tool_name:「始」SciCalculator「末」,
+expression:「始」integral('sin(x)*exp(-x)', 0, pi)「末」
+
+### 常用功能语法：
+- 基础运算与特殊函数: `sqrt`, `log(x, base)`, `exp`, `erf`, `gamma`
+- 微积分: `integral('x**2 + 3*x', 0, 1)`（定积分），`integral('x**3')`（返回 LaTeX 不定积分公式）
+- 统计与检验: `mean([1,2,3])`, `variance([1,2,3])`, `t_test([sample1], [sample2])`
+- 误差传递: `error_propagation('a*b/(c+d)', {'a':(10,0.1), 'b':(5,0.05), 'c':(2,0.01), 'd':(3,0.02)})`
+
+## 8. 全球语言学与历史词汇比较数据库 (LexibankOperator)
+访问世界语言词汇比较数据库（Lexibank / CLDF），查询语系同源词、语音演变规律与地理语言学分布。
+tool_name:「始」LexibankOperator「末」,
+command:「始」search_cognates「末」,
+concept:「始」water「末」,
+language_family:「始」Sino-Tibetan「末」

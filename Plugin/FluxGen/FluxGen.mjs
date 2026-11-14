@@ -1,15 +1,41 @@
 #!/usr/bin/env node
 import axios from "axios";
 import fs from 'fs/promises';
+import fsSync from 'fs';
 import path from 'path';
-import { v4 as uuidv4 } from 'uuid'; // For generating unique filenames
+import { v4 as uuidv4 } from 'uuid';
+import { fileURLToPath } from 'url';
 
-// --- Configuration (from environment variables set by Plugin.js) ---
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+function loadLocalEnv() {
+    const envPath = path.join(__dirname, 'config.env');
+    if (fsSync.existsSync(envPath)) {
+        try {
+            const content = fsSync.readFileSync(envPath, 'utf8');
+            content.split(String.fromCharCode(10)).forEach(line => {
+                const trimmed = line.trim();
+                if (!trimmed || trimmed.startsWith('#')) return;
+                const idx = trimmed.indexOf('=');
+                if (idx > -1) {
+                    const k = trimmed.slice(0, idx).trim();
+                    const v = trimmed.slice(idx + 1).trim();
+                    if (!process.env[k]) {
+                        process.env[k] = v;
+                    }
+                }
+            });
+        } catch (_) {}
+    }
+}
+loadLocalEnv();
+
 const SILICONFLOW_API_KEY = process.env.SILICONFLOW_API_KEY;
-const PROJECT_BASE_PATH = process.env.PROJECT_BASE_PATH;
-const SERVER_PORT = process.env.SERVER_PORT;
-const IMAGESERVER_IMAGE_KEY = process.env.IMAGESERVER_IMAGE_KEY; // Key for our own image server
-const VAR_HTTP_URL = process.env.VarHttpUrl; // Read VarHttpUrl from env
+const PROJECT_BASE_PATH = process.env.PROJECT_BASE_PATH || path.resolve(__dirname, '..', '..');
+const SERVER_PORT = process.env.SERVER_PORT || '5000';
+const IMAGESERVER_IMAGE_KEY = process.env.IMAGESERVER_IMAGE_KEY || '';
+const VAR_HTTP_URL = process.env.VarHttpUrl || 'http://localhost';
 
 // SiliconFlow API specific configurations
 const SILICONFLOW_API_CONFIG = {
@@ -17,11 +43,9 @@ const SILICONFLOW_API_CONFIG = {
     ENDPOINTS: {
         IMAGE_GENERATION: '/v1/images/generations'
     },
-    MODEL_ID: "black-forest-labs/FLUX.1-dev",
+    MODEL_ID: process.env.SILICONFLOW_MODEL || "Tongyi-MAI/Z-Image-Turbo",
     MODEL_ID_IMG2IMG: "siliconflow/kaiwei-flux-kontext-dev/d20v0cs50mis73faguu0",
     DEFAULT_PARAMS: {
-        num_inference_steps: 24,
-        guidance_scale: 7.5, // May not be used by Flux, but API might accept
         batch_size: 1
     }
 };
@@ -80,9 +104,7 @@ async function generateImageAndSave(args) {
     if (!SERVER_PORT) {
         throw new Error("FluxGen Plugin Error: SERVER_PORT environment variable is required for constructing image URL.");
     }
-    if (!IMAGESERVER_IMAGE_KEY) {
-        throw new Error("FluxGen Plugin Error: IMAGESERVER_IMAGE_KEY environment variable is required for constructing image URL.");
-    }
+// IMAGESERVER_IMAGE_KEY is optional fallback
     if (!VAR_HTTP_URL) {
         throw new Error("FluxGen Plugin Error: VarHttpUrl environment variable is required for constructing image URL.");
     }
@@ -215,9 +237,7 @@ async function generateImageFromImage(args) {
     if (!SERVER_PORT) {
         throw new Error("FluxGen Plugin Error: SERVER_PORT environment variable is required for constructing image URL.");
     }
-    if (!IMAGESERVER_IMAGE_KEY) {
-        throw new Error("FluxGen Plugin Error: IMAGESERVER_IMAGE_KEY environment variable is required for constructing image URL.");
-    }
+// IMAGESERVER_IMAGE_KEY is optional fallback
     if (!VAR_HTTP_URL) {
         throw new Error("FluxGen Plugin Error: VarHttpUrl environment variable is required for constructing image URL.");
     }

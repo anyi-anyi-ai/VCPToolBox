@@ -1,7 +1,16 @@
-[===vcp_fold:0.1===]
+﻿[===vcp_fold:0.1===]
 
 # VCP 联网与搜索工具箱能力收纳
 这里收纳了 VCP 强大的联网检索、网页爬取、社媒多模态内容提取及深度研究工具。
+
+> [!IMPORTANT]
+> ### 【全域搜索调度铁律·主力优先与多并发原则】
+> 1. **【三大主力检索支柱】**：日常所有全网资讯、前沿技术、学术课题与深度调研，**必须优先以 `AnySearch`、`TavilySearch` 和 `YouSearch` 为三大主力工具**：
+>    - **AnySearch**：垂直领域精准检索与多路真并发路线编排（支持 18+ 垂直领域与 `query1..query5` 并行分支）；
+>    - **TavilySearch**：全能 AI 高级深度搜索，善于宏观扫描、全局综述与抓取清洗 markdown 原始内容；
+>    - **YouSearch**：同步深度联网研究与权威文献交叉求证，支持 `lite`、`standard`、`deep` 档位，自带按编号索引的可追溯参考来源。
+> 2. **【多并发执行原则】**：每次执行搜索任务时，**优先进行多路并发检索**！优先调用 `AnySearch`（使用 `query1`..`query5` 展开 2~5 路并行分支，或在 `queries` 中用 `|` 管道符分隔多个关键词），从背景概念、核心机制、最新突破、落地案例等多个角度并发求证；或并发调用 `TavilySearch`，严禁单路浅层搜索。
+> 3. **【DeepSeek 降级与专属策略】**：`DeepSeekSearch` 作为具备深度思维链推理与 Markdown 正文清洗抓取的后备引擎。日常检索禁止滥用，**仅当**三大主力出现不可用/超时/报错，**或者用户明确指令要求使用 DeepSeek 搜索时**，方可切换至 `DeepSeekSearch`。
 
 ## 1. 语义穿透联网检索 (VSearch)
 首选联网引擎。简单搜索只需填写完整的 SearchTopic，由搜索 AI 自行理解和扩展意图；不要为简单搜索强行拆分关键词。
@@ -86,10 +95,21 @@ max_results:「始」3「末」
 
 [===vcp_fold:0.4::desc:DeepSeek联网推理搜索与全网实时热榜追踪===]
 
-## 6. DeepSeek 联网推理级检索 (DeepSeekSearch)
-调用 DeepSeek 联网推理接口，支持长思维链思考与多源事实溯源。
+## 6. DeepSeek 联网推理级检索与网页正文抓取 (DeepSeekSearch)
+调用 DeepSeek 官方搜索与抓取接口，自动过滤 SEO 作弊与垃圾内容，支持深度推理搜索与 Markdown 正文清洗抓取。
+<<<[TOOL_REQUEST]>>>
 tool_name:「始」DeepSeekSearch「末」,
-query:「始」近期国内外大模型上下文窗口架构演进与最新突破「末」
+command:「始」DeepSeekSearch「末」,
+query:「始」近期国内外大模型上下文窗口架构演进与最新突破「末」,
+count:「始」5「末」,
+need_content:「始」false「末」
+<<<[END_TOOL_REQUEST]>>>
+// 抓取并清洗网页完整正文 (自动去广告)：
+<<<[TOOL_REQUEST]>>>
+tool_name:「始」DeepSeekSearch「末」,
+command:「始」DeepSeekFetch「末」,
+url:「始」https://github.com/trending「末」
+<<<[END_TOOL_REQUEST]>>>
 
 ## 7. 全网平台实时热榜与舆情追踪 (DailyHot)
 获取微博、知乎、B站、抖音、今日头条、百度等全网各平台的即时热搜榜单。
@@ -124,3 +144,13 @@ tool_name:「始」YoutubeFetch「末」,
 url:「始」https://www.youtube.com/watch?v=dQw4w9WgXcQ「末」,
 need_transcript:「始」true「末」,
 lang:「始」zh,en「末」
+
+
+[===vcp_fold:0.35::desc:YouSearch 深度联网研究与多源综合报告===]
+
+## 12. 同步深度联网研究与多源综合 (YouSearch)
+调用 You.com Research API，同步执行多源检索、深度阅读与自动综合，返回带引用来源的 Markdown 报告，无需二次模型总结。
+tool_name:「始」YouSearch「末」,
+SearchTopic:「始」比较 RISC-V 与 ARM 架构的主要区别和优劣势「末」,
+research_effort:「始」standard「末」, // 可选：'lite' (快速事实查询)、'standard' (标准日常研究，默认)、'deep' (深度多源验证)
+source_control:「始」{"freshness":"year"}「末」 // 可选：时效范围、域名包含/排除

@@ -1,0 +1,101 @@
+{
+  "manifestVersion": "1.0.0",
+  "name": "RunningHubGen",
+  "displayName": "RunningHub 智能多账号生图插件",
+  "version": "1.0.0",
+  "description": "基于 runninghub2api 本地网关对接 RunningHub 海外站，支持多账号粘性节点池分流、每日自动打卡与云端 ComfyUI 工作流调度。",
+  "author": "VCP & RunningHub2API",
+  "pluginType": "synchronous",
+  "entryPoint": {
+    "type": "nodejs",
+    "command": "node RunningHubGen.js"
+  },
+  "communication": {
+    "protocol": "stdio",
+    "timeout": 300000
+  },
+  "category": "media_entertainment",
+  "categoryLabel": "媒体娱乐",
+  "capabilities": {
+    "invocationCommands": [
+      {
+        "command": "RunningHubGenerateImage",
+        "commandIdentifier": "RunningHubGenerateImage",
+        "description": "通过 RunningHub2API 网关执行 ComfyUI 工作流生成图像。参数说明：\n- prompt: 必需。画面提示词，支持中英文。\n- model: 可选。工作流别名，如 qwen_image (Qwen 2.1 文生图), dalle_3 (DALL-E-3 创意艺术), ecommerce (电商主图自动匹配)。默认 qwen_image。\n- size: 可选。出图尺寸，如 1024x1024, 768x1024, 1024x768。默认 1024x1024。",
+        "example": "```text\n<<<[TOOL_REQUEST]>>>\ntool_name:「始」RunningHubGen「末」,\ncommand:「始」RunningHubGenerateImage「末」,\nprompt:「始」A beautiful cyberpunk girl in Tokyo, neon reflections, 8k「末」,\nmodel:「始」qwen_image「末」\n<<<[END_TOOL_REQUEST]>>>\n```"
+      }
+    ]
+  },
+  "jev": {
+    "schemaVersion": 1,
+    "enabled": true,
+    "category": "media_entertainment",
+    "jevDescPrompt": "调用本地 RunningHub2API 网关执行云端 ComfyUI 工作流（支持 Qwen Image 2.1、DALL-E-3 及电商场景自动匹配，多账号节点池负载均衡）。",
+    "jevPrompt": "根据用户需求选择工作流模型：通用写实/插画选择 qwen_image；经典艺术选择 dalle_3；商品主图与场景融合选择 ecommerce（默认 qwen_image）。",
+    "agentPrompt": "当需要通过 RunningHub 运行云端 ComfyUI 工作流出图时，使用 {媒体娱乐} 中的 `RunningHubGen`，在【】中写提示词，在 [] 中可选指明工作流模型与尺寸：\nJEV:「始」请使用 {媒体娱乐} 中的 `RunningHubGen`，围绕【超写实赛博朋克女孩，霓虹灯夜景】，并参考[qwen_image, 1024x1024]。「末」",
+    "defaultCommand": "RunningHubGenerateImage",
+    "commands": [
+      {
+        "commandIdentifier": "RunningHubGenerateImage",
+        "description": "通过 RunningHub2API 网关执行 ComfyUI 工作流生成图像",
+        "aliases": ["runninghub", "rh生图", "comfy云生图", "runninghub生图"],
+        "injectCommand": true,
+        "fixedArgs": {},
+        "parameters": {
+          "prompt": {
+            "type": "text",
+            "source": "primary",
+            "description": "生图正面提示词"
+          },
+          "model": {
+            "type": "enum",
+            "description": "RunningHub 工作流别名",
+            "values": {
+              "qwen_image": "Qwen Image 2.1 旗舰文生图（画质写实细腻，适合人物、风景与各类插画）",
+              "dalle_3": "DALL-E-3 创意艺术（适合创意概念设计与艺术画面）",
+              "ecommerce": "电商主图自动场景匹配（电商商品主体与背景融合）"
+            },
+            "aliases": {
+              "qwen_image": ["qwen", "通义", "千问", "默认"],
+              "dalle_3": ["dalle", "dall-e", "艺术", "概念"],
+              "ecommerce": ["电商", "商品", "电商主图"]
+            },
+            "default": "qwen_image"
+          },
+          "size": {
+            "type": "enum",
+            "description": "出图尺寸规格",
+            "values": {
+              "1024x1024": "正方形 1:1 标准比例",
+              "768x1024": "纵向人像 3:4 比例",
+              "1024x768": "横向宽屏 4:3 比例"
+            },
+            "aliases": {
+              "1024x1024": ["方形", "1:1", "1024"],
+              "768x1024": ["竖图", "3:4", "人像"],
+              "1024x768": ["横图", "4:3", "风景"]
+            },
+            "default": "1024x1024"
+          }
+        }
+      }
+    ]
+  },
+  "configSchema": {
+    "RUNNINGHUB_GATEWAY_URL": {
+      "type": "string",
+      "description": "RunningHub2API 网关基础地址",
+      "default": "http://127.0.0.1:8788/v1"
+    },
+    "RUNNINGHUB_GATEWAY_KEY": {
+      "type": "string",
+      "description": "RunningHub2API 网关 API Key",
+      "default": "sk-rh-adm-master-key"
+    },
+    "RUNNINGHUB_PROJECT_PATH": {
+      "type": "string",
+      "description": "本地 runninghub2api 项目根目录（用于服务离线时自动守护拉起）",
+      "default": "F:\\github\\01_API_Gateways\\runninghub2api"
+    }
+  }
+}

@@ -221,6 +221,7 @@ sm:640px | md:768px | lg:1024px | xl:1280px | 2xl:1536px
 
 ---
 
+<---VCP记忆思维区Start--->
 ## 记忆系统
 
 本Agent使用以下日记本索引进行持久记忆：
@@ -230,3 +231,4 @@ sm:640px | md:768px | lg:1024px | xl:1280px | 2xl:1536px
 ## 元思维模块
 
 [[VCP元思考:Auto::Group]]
+<---VCP记忆思维区End--->

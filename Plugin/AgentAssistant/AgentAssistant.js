@@ -203,7 +203,7 @@ function loadAgentsFromLocalConfig() {
             let finalSystemPrompt = systemPromptTemplate.replace(/\{\{MaidName\}\}/g, chineseName);
             if (AGENT_ALL_SYSTEM_PROMPT) finalSystemPrompt += `\n\n${AGENT_ALL_SYSTEM_PROMPT}`;
 
-            AGENTS[chineseName] = {
+            const entry = {
                 id: modelId,
                 name: chineseName,
                 baseName: baseName || chineseName.toUpperCase(), // 兜底
@@ -211,8 +211,20 @@ function loadAgentsFromLocalConfig() {
                 maxOutputTokens: parseInt(maxOutputTokens || '40000', 10),
                 temperature: parseFloat(temperature || '0.7'),
                 description: description || `Assistant ${chineseName}.`,
+                aliases: Array.isArray(agent.aliases) ? agent.aliases : []
             };
-            if (DEBUG_MODE) console.error(`[AgentAssistant Service] Loaded agent: '${chineseName}' (Base: ${baseName}, ModelID: ${modelId})`);
+            AGENTS[chineseName] = entry;
+            if (baseName) {
+                AGENTS[baseName] = entry;
+                AGENTS[baseName.toLowerCase()] = entry;
+            }
+            if (entry.aliases) {
+                for (const alias of entry.aliases) {
+                    AGENTS[alias] = entry;
+                    AGENTS[alias.toLowerCase()] = entry;
+                }
+            }
+            if (DEBUG_MODE) console.error(`[AgentAssistant Service] Loaded agent: '${chineseName}' (Base: ${baseName}, ModelID: ${modelId}, Aliases: ${entry.aliases.length})`);
         }
     }
 
@@ -710,9 +722,22 @@ async function processToolCall(args) {
         throwToolError("Missing 'agent_name' or 'prompt' in request.");
     }
 
-    const agentConfig = AGENTS[agent_name];
+    const findAgentConfig = (name) => {
+        if (!name || typeof name !== 'string') return null;
+        const clean = name.trim();
+        if (AGENTS[clean]) return AGENTS[clean];
+        if (AGENTS[clean.toLowerCase()]) return AGENTS[clean.toLowerCase()];
+        for (const ag of Object.values(AGENTS)) {
+            if (!ag || typeof ag !== 'object') continue;
+            if (ag.name && ag.name.toLowerCase() === clean.toLowerCase()) return ag;
+            if (ag.baseName && ag.baseName.toLowerCase() === clean.toLowerCase()) return ag;
+            if (Array.isArray(ag.aliases) && ag.aliases.some(a => a.toLowerCase() === clean.toLowerCase())) return ag;
+        }
+        return null;
+    };
+    const agentConfig = findAgentConfig(agent_name);
     if (!agentConfig) {
-        const availableAgentNames = Object.keys(AGENTS);
+        const availableAgentNames = Array.from(new Set(Object.values(AGENTS).map(a => a.name)));
         let errorMessage = `请求的 Agent '${agent_name}' 未找到。`;
         errorMessage += availableAgentNames.length > 0 ? ` 当前可用的 Agent 有: ${availableAgentNames.join(', ')}。` : ` 当前没有加载任何 Agent。`;
         if (DEBUG_MODE) console.error(`[AgentAssistant Service] Failed to find agent: '${agent_name}'.`);

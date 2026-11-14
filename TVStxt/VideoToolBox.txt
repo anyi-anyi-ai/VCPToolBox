@@ -1,0 +1,56 @@
+# VCP 视频生成与动态视觉交互收纳箱 (VCPVideoToolBox)
+这里收纳了高品质文生视频、图生视频、视频续写、二次元动态镜头及多模态卡片交互渲染工具。
+
+[===vcp_fold:0.35::desc:Grok 高清视频生成与续写===]
+
+## 1. Grok 视频生成 (GrokVideo / GrokVideoGen)
+极速生成 6 秒高清动态视频，带高质量音效或配音，支持文生视频、底图动画化、镜头续写与拼接。
+tool_name:「始」GrokVideoGen「末」,
+
+### 图生视频 / 动态画作
+command:「始」submit「末」,
+image_url:「始」https://example.com/character.png「末」,
+prompt:「始」A beautiful anime girl standing in the autumn breeze, sakura petals falling softly, cinematic lighting, 4k「末」
+
+### 视频续写
+command:「始」submit「末」,
+video_url:「始」https://example.com/part1.mp4「末」,
+prompt:「始」Camera pans up slowly into the starry night sky with fireworks blooming「末」
+
+### 视频序列拼接
+command:「始」concat「末」,
+video_url1:「始」https://example.com/part1.mp4「末」,
+video_url2:「始」https://example.com/part2.mp4「末」
+
+[===vcp_fold:0.4::desc:Agnes 动态二次元镜头生成===]
+
+## 2. Agnes 动漫与电影级视频 (AgnesVideoGen)
+专攻二次元角色动作连贯性与动态镜头运镜的视频生成引擎。
+tool_name:「始」AgnesVideoGen「末」,
+command:「始」submit_video_task「末」,
+prompt:「始」Cinematic tracking shot, cyberpunk city, rain reflections, neon lights, girl turning around and smiling「末」,
+aspect_ratio:「始」16:9「末」, // 可选：16:9, 9:16, 1:1
+motion_strength:「始」0.7「末」 // 运动幅度：0.1 ~ 1.0
+
+### 查询任务进度
+command:「始」query_video_task「末」,
+task_id:「始」任务ID「末」
+
+[===vcp_fold:0.45::desc:通用多引擎视频渲染与拼接===]
+
+## 3. 通用视频合成器 (VideoGenerator)
+支持多模型后端调度的视频渲染与转码引擎。
+tool_name:「始」VideoGenerator「末」,
+command:「始」generate_video「末」,
+prompt:「始」Drone view flying through dramatic clouds over a mountain peak at sunset「末」,
+duration:「始」5「末」, // 视频秒数
+fps:「始」24「末」
+
+## 4. 多模态与富媒体卡片渲染 (MediaRenderer)
+在前端 Vchat 对话流中渲染交互式富媒体卡片、内嵌播放器、HTML5 动态画板与多媒体容器。
+tool_name:「始」MediaRenderer「末」,
+command:「始」render_media_card「末」,
+media_type:「始」video「末」, // 可选：'video', 'audio', 'interactive_card'
+media_url:「始」https://example.com/output.mp4「末」,
+title:「始」概念预告片预览「末」,
+description:「始」第 3 幕过场动画渲染回执「末」

@@ -214,3 +214,10 @@ OpenVCPChatBrowser(url)
 本服务器支持表情包功能
 DS表情包列表为{{DS表情包}}
 你可以灵活的在你的输出中插入表情包，调用方式为<img src="{{VarHttpUrl}}:{{Port}}/pw={{Image_Key}}/images/DS表情包/打招呼.jpg" width="150">。
+<---VCP记忆思维区Start--->
+————VCP元思维模块————
+[[VCP元思考::Group]]
+————VCP元思维加载结束—————
+《《DeepSeek的知识日记本::Time::RiverMemo::Jev+::Associate:1.5》》
+《《DeepSeek日记本::Time::RiverMemo::Jev+::Associate:1.5》》
+<---VCP记忆思维区End--->

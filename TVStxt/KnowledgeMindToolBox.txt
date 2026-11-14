@@ -1,0 +1,97 @@
+# VCP 双链知识库、间隔记忆与深度研读收纳箱 (VCPKnowledgeMind)
+这里收纳了 Obsidian 本地双链笔记读写、Anki 记忆卡片生成与复习、GitHub 项目官方 Wiki 同步、EPUB 电子书切片研读与深度多源协作检索工具。
+
+[===vcp_fold:0.35::desc:Obsidian 双链笔记管理与CLI桥接===]
+
+## 1. Obsidian 知识库管理器 (ObsidianManager)
+管理 Obsidian 笔记库。支持双链语法 `[NoteName]`、YAML frontmatter 标签检索与全文增删改查。
+tool_name:「始」ObsidianManager「末」,
+
+### 读取笔记正文
+command:「始」read_note「末」,
+path:「始」01_Projects/AgentSystem.md「末」
+
+### 创建或覆盖笔记
+command:「始」write_note「末」,
+path:「始」02_Daily/2026-10-25.md「末」,
+content:「始」# 2026-10-25 笔记\n\n- 完成插件架构梳理\n- 关联到 [VCPArchitecture]「末」
+
+### 向笔记尾部追加段落
+command:「始」append_to_note「末」,
+path:「始」03_Inbox/Ideas.md「末」,
+content:「始」\n- 新增关于 3D 渲染流程的想法「末」
+
+### 知识库全文语义检索
+command:「始」search_notes「末」,
+query:「始」神经网络架构优化「末」
+
+## 2. Obsidian 官方 CLI 本地底层桥接器 (ObsidianBridge)
+直接通过 Obsidian 本地 URI 与 CLI 工具高速调用，支持打开特定库文件、激活图谱视图与触发展开。
+tool_name:「始」ObsidianBridge「末」,
+command:「始」open_file「末」,
+vault:「始」MainVault「末」,
+file:「始」Overview.md「末」
+
+[===vcp_fold:0.35::desc:Anki 记忆卡片全量管理与检索===]
+
+## 3. Anki 记忆卡片全生命周期管理 (AnkiManage)
+用于将对话中的核心知识点沉淀为符合 Anki SRS 间隔重复算法的闪卡。
+tool_name:「始」AnkiManage「末」,
+
+### 创建新卡片
+command:「始」create_card「末」,
+deck:「始」ComputerScience::Algorithms「末」,
+front:「始」什么是并查集 (Union-Find) 的路径压缩优化？「末」,
+back:「始」在查找根节点时，将路径上的所有节点直接挂载到根节点下，使树高度降为接近 O(1)。「末」,
+tags:「始」dsa, algorithms, leetcode「末」
+
+### 获取牌组列表与复习进度
+command:「始」get_deck_stats「末」,
+deck:「始」ComputerScience「末」
+
+## 4. Anki 知识卡组高速检索 (AnkiSearch)
+检索已有的 Anki 卡片内容，避免知识重复创建，辅助复习回顾。
+tool_name:「始」AnkiSearch「末」,
+query:「始」deck:ComputerScience "二叉树"「末」
+
+[===vcp_fold:0.4::desc:GitHub项目官方Wiki与长青书签===]
+
+## 5. GitHub 开源项目官方文档同步 (DeepWikiVCP)
+为指定开源项目一键生成并检索官方 Wiki 与文档切片。
+tool_name:「始」DeepWikiVCP「末」,
+command:「始」search_wiki「末」,
+repo:「始」facebook/react「末」,
+query:「始」useActionState hook「末」
+
+## 6. 私有长青书签与网页剪藏库 (KarakeepSearch)
+检索用户个人收集的长期网页剪藏、技术博客精华与书签库。
+tool_name:「始」KarakeepSearch「末」,
+query:「始」分布式一致性 Raft 算法解读「末」,
+limit:「始」5「末」
+
+[===vcp_fold:0.45::desc:电子书切片研读与协作检索===]
+
+## 7. 电子书 EPUB/TXT 全书分章解析 (LdBook)
+解析并切片大型电子书、长篇论著与教材，支持分章节检索与跨章概念提炼。
+tool_name:「始」LdBook「末」,
+command:「始」read_chapter「末」,
+book_path:「始」C:/Books/Principles_of_Economics.epub「末」,
+chapter:「始」Chapter 4「末」
+
+## 8. 语义知识分块与向量簇编辑 (SemanticGroupEditor)
+用于重构知识库中的文本切片（Chunking），支持按语义合并微小碎片或拆解长文。
+tool_name:「始」SemanticGroupEditor「末」,
+action:「始」group_chunks「末」,
+document_id:「始」doc_12345「末」
+
+## 9. MCP 并发多源证据链交叉检索 (ParallelSearch)
+同时向多个知识源并发发起检索，并对返回的多份候选段落进行交叉对比与真实性加权。
+tool_name:「始」ParallelSearch「末」,
+query:「始」最新量子纠缠突破「末」,
+sources:「始」["arxiv", "wikipedia", "local_vault"]「末」
+
+## 10. 协作型深度思维链深潜搜索 (CoSearch)
+针对多层复合问题自动拆解子问题，以链式推理完成多跳信息聚合。
+tool_name:「始」CoSearch「末」,
+objective:「始」梳理从Transformer到Mamba的状态空间模型演进史「末」,
+max_hops:「始」3「末」
